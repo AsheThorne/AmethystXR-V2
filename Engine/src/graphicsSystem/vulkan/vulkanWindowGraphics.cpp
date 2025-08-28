@@ -346,70 +346,59 @@ void AxrVulkanWindowGraphics::getRenderingMatrices(
     glm::mat4& viewMatrix,
     glm::mat4& projectionMatrix
 ) const {
-    float fov;
-    glm::vec3 position;
-    glm::quat orientation;
-    float nearPlane;
-    float farPlane;
-    if (AXR_FAILED(getCameraData(viewIndex, position, orientation, fov, nearPlane, farPlane))) {
+    AxrCameraInfo cameraInfo{};
+    if (AXR_FAILED(getCameraInfo(viewIndex, cameraInfo))) {
         return;
     }
 
-    viewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(orientation));
-
-    const float aspectRatio = static_cast<float>(m_SwapchainExtent.height) / static_cast<float>(m_SwapchainExtent.
-        width);
-    const float verticalFovRadians = 2.0f * atan(tan(glm::radians(fov) / 2.0f) * aspectRatio);
+    viewMatrix = glm::inverse(
+        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
+        glm::toMat4(cameraInfo.Orientation)
+    );
 
     projectionMatrix = glm::perspective(
-        verticalFovRadians,
+        cameraInfo.Fov.Up + cameraInfo.Fov.Down,
         static_cast<float>(m_SwapchainExtent.width) / static_cast<float>(m_SwapchainExtent.height),
-        nearPlane,
-        farPlane
+        cameraInfo.ZNear,
+        cameraInfo.ZFar
     );
     projectionMatrix[1][1] *= -1.0f;
 }
 
-AxrResult AxrVulkanWindowGraphics::getCameraData(
+AxrResult AxrVulkanWindowGraphics::getCameraInfo(
     const uint32_t viewIndex,
-    glm::vec3& position,
-    glm::quat& orientation,
-    float& nearPlane,
-    float& farPlane
+    AxrCameraInfo& cameraInfo
 ) const {
-    float fov;
-    return getCameraData(viewIndex, position, orientation, fov, nearPlane, farPlane);
-}
-
-AxrResult AxrVulkanWindowGraphics::getCameraData(
-    const uint32_t viewIndex,
-    glm::vec3& position,
-    glm::quat& orientation,
-    float& fov,
-    float& nearPlane,
-    float& farPlane
-) const {
-    const AxrScene_T activeScene = m_LoadedScenes.getActiveScene();
-    if (activeScene == nullptr) {
-        axrLogErrorLocation("No active scene.");
+    AxrTransformComponent cameraTransform{};
+    AxrCameraComponent camera{};
+    if (AXR_FAILED(getCameraComponents(cameraTransform, camera))) {
         return AXR_ERROR;
     }
 
-    if (!activeScene->isMainCameraValid()) {
-        axrLogErrorLocation("No main camera.");
-        return AXR_ERROR;
-    }
+    const float halfHorizontalFovRadians = glm::radians(camera.Fov) * 0.5f;
+    const float halfVerticalFovRadians = atan(
+        tan(halfHorizontalFovRadians) *
+        (static_cast<float>(m_SwapchainExtent.height) / static_cast<float>(m_SwapchainExtent.width))
+    );
 
-    const AxrEntityConst_T cameraEntity = activeScene->getMainCamera();
-    auto [cameraComponent, cameraTransformComponent] = cameraEntity
-        .get<AxrCameraComponent, AxrTransformComponent>();
-
-    position = cameraTransformComponent.Position;
-    orientation = cameraTransformComponent.Orientation;
-
-    fov = cameraComponent.Fov;
-    nearPlane = cameraComponent.NearPlane;
-    farPlane = cameraComponent.FarPlane;
+    cameraInfo = AxrCameraInfo{
+        .Position = cameraTransform.Position,
+        .Orientation = cameraTransform.Orientation,
+        .Fov = AxrCameraFov{
+            .Up = halfVerticalFovRadians,
+            .Down = halfVerticalFovRadians,
+            .Left = halfHorizontalFovRadians,
+            .Right = halfHorizontalFovRadians,
+        },
+        .PixelWidth = static_cast<float>(m_SwapchainExtent.width),
+        .PixelHeight = static_cast<float>(m_SwapchainExtent.height),
+        .AspectRatio = static_cast<float>(m_SwapchainExtent.width) /
+        static_cast<float>(m_SwapchainExtent.height),
+        // TODO: Maybe rename 'NearPlane' and 'FarPlane' to 'ZNear' and 'ZFar' everywhere it's mentioned.
+        //  `Plane` indicates more than what it is. which is just the distance.
+        .ZNear = camera.NearPlane,
+        .ZFar = camera.FarPlane
+    };
 
     return AXR_SUCCESS;
 }
@@ -491,6 +480,39 @@ void AxrVulkanWindowGraphics::resetSetupWindowGraphics() {
     resetMsaaSampleCount();
     resetSwapchainFormats();
     destroySurface();
+}
+
+AxrResult AxrVulkanWindowGraphics::getCameraComponents(
+    AxrTransformComponent& transform,
+    AxrCameraComponent& camera
+) const {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    const AxrScene_T activeScene = m_LoadedScenes.getActiveScene();
+    if (activeScene == nullptr) {
+        axrLogErrorLocation("No active scene.");
+        return AXR_ERROR;
+    }
+
+    if (!activeScene->isMainCameraValid()) {
+        axrLogErrorLocation("No main camera.");
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    const AxrEntityConst_T cameraEntity = activeScene->getMainCamera();
+    auto [cameraComponent, cameraTransformComponent] = cameraEntity
+        .get<AxrCameraComponent, AxrTransformComponent>();
+
+    transform = cameraTransformComponent;
+    camera = cameraComponent;
+
+    return AXR_SUCCESS;
 }
 
 AxrResult AxrVulkanWindowGraphics::createSurface() {

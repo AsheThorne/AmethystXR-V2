@@ -148,27 +148,17 @@ public:
 
         // ---- Camera Data Uniform Buffer----
 
-        glm::vec3 cameraPosition;
-        glm::quat cameraOrientation;
-        float nearPlane;
-        float farPlane;
-        axrResult = m_RenderTarget.getCameraData(
-            viewIndex,
-            cameraPosition,
-            cameraOrientation,
-            nearPlane,
-            farPlane
-        );
+        AxrCameraInfo cameraInfo{};
+        axrResult = m_RenderTarget.getCameraInfo(viewIndex, cameraInfo);
         if (AXR_FAILED(axrResult)) {
             axrLogErrorLocation("Failed to get camera data.");
             return axrResult;
         }
 
         AxrEngineAssetUniformBuffer_CameraData cameraDataUniformBuffer{};
-        // TODO: Get camera dimensions
-        cameraDataUniformBuffer.Dimensions = glm::vec2(0.0f, 0.0f);
-        cameraDataUniformBuffer.NearPlane = nearPlane;
-        cameraDataUniformBuffer.FarPlane = farPlane;
+        cameraDataUniformBuffer.Dimensions = glm::vec2(cameraInfo.PixelWidth, cameraInfo.PixelHeight);
+        cameraDataUniformBuffer.NearPlane = cameraInfo.ZNear;
+        cameraDataUniformBuffer.FarPlane = cameraInfo.ZFar;
 
         axrResult = sceneData->setUniformBufferData(
             platformType,
@@ -283,7 +273,7 @@ public:
 
             if (!uiElements.empty()) {
                 axrResult = sceneData->setUniformBufferData(
-                    AXR_PLATFORM_TYPE_UNDEFINED,
+                    platformType,
                     axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
                     currentFrame,
                     viewIndex,
@@ -302,26 +292,15 @@ public:
         return AXR_SUCCESS;
     }
 
-    /// Get the camera data for the given view
+    /// Get the camera info for the given view
     /// @param viewIndex View index
-    /// @param position Output camera position
-    /// @param orientation Output camera orientation
-    /// @param nearPlane Output near plane
-    /// @param farPlane Output far plane
-    [[nodiscard]] AxrResult getCameraData(
+    /// @param cameraInfo Output camera info
+    /// @returns AXR_SUCCESS if the function succeeded.
+    [[nodiscard]] AxrResult getCameraInfo(
         const uint32_t viewIndex,
-        glm::vec3& position,
-        glm::quat& orientation,
-        float& nearPlane,
-        float& farPlane
+        AxrCameraInfo& cameraInfo
     ) const {
-        return m_RenderTarget.getCameraData(
-            viewIndex,
-            position,
-            orientation,
-            nearPlane,
-            farPlane
-        );
+        return m_RenderTarget.getCameraInfo(viewIndex, cameraInfo);
     }
 
     /// Wait for the current frame's fence

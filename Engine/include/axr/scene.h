@@ -71,6 +71,7 @@ struct AxrModelComponent {
 
 /// Entity camera component
 struct AxrCameraComponent {
+    /// Horizontal fov in degrees
     float Fov;
     float NearPlane;
     float FarPlane;

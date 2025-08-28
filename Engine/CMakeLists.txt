@@ -154,6 +154,7 @@ set(AXR_CPP_FILES
     ${AXR_SRC_DIR}/windowSystem/win32/win32WindowSystem.cpp
     # ---- Graphics System ----
     ${AXR_SRC_DIR}/graphicsSystem/graphicsSystem.cpp
+    ${AXR_SRC_DIR}/graphicsSystem/graphicsCommonStructs.hpp
     # ---- Graphics System - Vulkan ----
     ${AXR_SRC_DIR}/graphicsSystem/vulkan/vulkanGraphicsSystem.cpp
     ${AXR_SRC_DIR}/graphicsSystem/vulkan/vulkanUtils.cpp

@@ -363,63 +363,60 @@ void AxrVulkanXrGraphics::getRenderingMatrices(
     glm::mat4& viewMatrix,
     glm::mat4& projectionMatrix
 ) const {
-    XrFovf fov;
-    glm::vec3 position;
-    glm::quat orientation;
-    float nearPlane;
-    float farPlane;
-    if (AXR_FAILED(getCameraData(viewIndex, position, orientation, fov, nearPlane, farPlane))) {
+    AxrCameraInfo cameraInfo{};
+    if (AXR_FAILED(getCameraInfo(viewIndex, cameraInfo))) {
         return;
     }
 
-    viewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(orientation));
+    viewMatrix = glm::inverse(
+        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
+        glm::toMat4(cameraInfo.Orientation)
+    );
 
     projectionMatrix = createProjectionMatrix(
-        fov,
-        nearPlane,
-        farPlane
+        cameraInfo.Fov,
+        cameraInfo.ZNear,
+        cameraInfo.ZFar
     );
 }
 
-AxrResult AxrVulkanXrGraphics::getCameraData(
+AxrResult AxrVulkanXrGraphics::getCameraInfo(
     const uint32_t viewIndex,
-    glm::vec3& position,
-    glm::quat& orientation,
-    float& nearPlane,
-    float& farPlane
+    AxrCameraInfo& cameraInfo
 ) const {
-    XrFovf fov;
-    return getCameraData(viewIndex, position, orientation, fov, nearPlane, farPlane);
-}
-
-AxrResult AxrVulkanXrGraphics::getCameraData(
-    const uint32_t viewIndex,
-    glm::vec3& position,
-    glm::quat& orientation,
-    XrFovf& fov,
-    float& nearPlane,
-    float& farPlane
-) const {
-    if (viewIndex > m_FrameRenderData.CompositionLayerViews.size() - 1) {
+    if (viewIndex > m_FrameRenderData.CompositionLayerViews.size() - 1 ||
+        viewIndex > m_Views.size() - 1) {
         axrLogErrorLocation("View index out of bounds.");
         return AXR_ERROR;
     }
 
-    position = glm::vec3(
-        m_FrameRenderData.CompositionLayerViews[viewIndex].pose.position.x,
-        m_FrameRenderData.CompositionLayerViews[viewIndex].pose.position.y,
-        m_FrameRenderData.CompositionLayerViews[viewIndex].pose.position.z
-    );
-    orientation = glm::quat(
-        m_FrameRenderData.CompositionLayerViews[viewIndex].pose.orientation.w,
-        m_FrameRenderData.CompositionLayerViews[viewIndex].pose.orientation.x,
-        m_FrameRenderData.CompositionLayerViews[viewIndex].pose.orientation.y,
-        m_FrameRenderData.CompositionLayerViews[viewIndex].pose.orientation.z
-    );
+    const XrCompositionLayerProjectionView& compositionLayer = m_FrameRenderData.CompositionLayerViews[viewIndex];
+    const View& view = m_Views[viewIndex];
 
-    fov = m_FrameRenderData.CompositionLayerViews[viewIndex].fov;
-    nearPlane = m_XrSystem.getNearClippingPlane();
-    farPlane = m_XrSystem.getFarClippingPlane();
+    cameraInfo = AxrCameraInfo{
+        .Position = glm::vec3(
+            compositionLayer.pose.position.x,
+            compositionLayer.pose.position.y,
+            compositionLayer.pose.position.z
+        ),
+        .Orientation = glm::quat(
+            compositionLayer.pose.orientation.w,
+            compositionLayer.pose.orientation.x,
+            compositionLayer.pose.orientation.y,
+            compositionLayer.pose.orientation.z
+        ),
+        .Fov = AxrCameraFov{
+            .Up = compositionLayer.fov.angleUp,
+            .Down = compositionLayer.fov.angleDown,
+            .Left = compositionLayer.fov.angleLeft,
+            .Right = compositionLayer.fov.angleRight,
+        },
+        .PixelWidth = static_cast<float>(view.SwapchainExtent.width),
+        .PixelHeight = static_cast<float>(view.SwapchainExtent.height),
+        .AspectRatio = static_cast<float>(view.SwapchainExtent.width) / static_cast<float>(view.SwapchainExtent.height),
+        .ZNear = m_XrSystem.getNearClippingPlane(),
+        .ZFar = m_XrSystem.getFarClippingPlane(),
+    };
 
     return AXR_SUCCESS;
 }
@@ -1211,14 +1208,14 @@ void AxrVulkanXrGraphics::destroyFramebuffers(View& view) const {
 }
 
 glm::mat4 AxrVulkanXrGraphics::createProjectionMatrix(
-    const XrFovf fov,
+    const AxrCameraFov& fov,
     const float nearClip,
     const float farClip
 ) const {
-    const float l = glm::tan(fov.angleLeft);
-    const float r = glm::tan(fov.angleRight);
-    const float d = glm::tan(fov.angleDown);
-    const float u = glm::tan(fov.angleUp);
+    const float l = glm::tan(fov.Left);
+    const float r = glm::tan(fov.Right);
+    const float d = glm::tan(fov.Down);
+    const float u = glm::tan(fov.Up);
 
     const float w = r - l;
     const float h = d - u;

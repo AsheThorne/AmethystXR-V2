@@ -1468,30 +1468,24 @@ AxrResult AxrVulkanGraphicsSystem::renderCurrentFrame(
 
         // ---- Render Alpha Blended Materials ----
 
-        glm::vec3 cameraPosition;
-        glm::quat cameraOrientation;
-        float cameraNearPlane;
-        float cameraFarPlane;
+        AxrCameraInfo cameraInfo{};
         // We always use view index 0 here because we want all views to order the transparent objects the same.
         // It would look terrible if both eyes in VR rendered the objects in a different order.
-        axrResult = renderCommands.getCameraData(
+        axrResult = renderCommands.getCameraInfo(
             0,
-            cameraPosition,
-            cameraOrientation,
-            cameraNearPlane,
-            cameraFarPlane
+            cameraInfo
         );
         if (AXR_SUCCEEDED(axrResult)) {
             std::vector<AxrVulkanMaterialForRendering> alphaBlendMaterials =
                 sceneData->getMaterialsForRendering(AXR_MATERIAL_ALPHA_RENDER_MODE_ALPHA_BLEND);
             glm::mat4 viewMatrix = glm::inverse(
-                glm::translate(glm::mat4(1.0f), cameraPosition) *
-                glm::toMat4(cameraOrientation)
+                glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
+                glm::toMat4(cameraInfo.Orientation)
             );
             std::vector<SortableMeshReference> sortedMeshReferences = getSortedMeshReferences(
                 viewMatrix,
-                cameraNearPlane,
-                cameraFarPlane,
+                cameraInfo.ZNear,
+                cameraInfo.ZFar,
                 alphaBlendMaterials
             );
 
@@ -1526,9 +1520,6 @@ AxrResult AxrVulkanGraphicsSystem::renderCurrentFrame(
                 viewIndex,
                 renderCommands,
                 sceneData,
-                cameraPosition,
-                cameraOrientation,
-                cameraNearPlane,
                 uiCanvasConfig
             );
         }
@@ -1557,9 +1548,6 @@ void AxrVulkanGraphicsSystem::renderClayUI(
     const uint32_t viewIndex,
     const AxrVulkanRenderCommands<RenderTarget>& renderCommands,
     AxrVulkanSceneData* sceneData,
-    const glm::vec3& cameraPosition,
-    const glm::quat& cameraOrientation,
-    const float cameraNearPlane,
     const AxrUICanvasConfig& uiCanvasConfig
 ) const {
     if (m_PhysicalDevice == VK_NULL_HANDLE) {
@@ -1579,6 +1567,40 @@ void AxrVulkanGraphicsSystem::renderClayUI(
         ),
         m_Dispatch
     );
+
+    AxrCameraInfo cameraInfo{};
+    // We always use view index 0 here because we want all views to order the transparent objects the same.
+    // It would look terrible if both eyes in VR rendered the objects in a different order.
+    const AxrResult axrResult = renderCommands.getCameraInfo(
+        viewIndex,
+        cameraInfo
+    );
+    if (AXR_FAILED(axrResult)) {
+        axrLogErrorLocation("Failed to get camera info.");
+        return;
+    }
+
+    // TODO: Don't do Z test on this UI. if an object intercepts with the camera, it can be drawing just in front of the UI. 
+    float uiDistance = -cameraInfo.ZNear * 2 - 0.001f;
+    float uiFrustumLeft = uiDistance * std::tan(std::abs(cameraInfo.Fov.Left));
+    float uiFrustumRight = -uiDistance * std::tan(std::abs(cameraInfo.Fov.Right));
+    float uiFrustumDown = uiDistance * std::tan(std::abs(cameraInfo.Fov.Down));
+    float uiFrustumUp = -uiDistance * std::tan(std::abs(cameraInfo.Fov.Up));
+
+    glm::mat4 inverseViewMatrix =
+        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
+        glm::toMat4(cameraInfo.Orientation);
+    glm::vec3 uiTopLeft = inverseViewMatrix * glm::vec4(uiFrustumLeft, uiFrustumUp, uiDistance, 1.0f);
+    glm::vec3 uiBottomLeft = inverseViewMatrix * glm::vec4(uiFrustumLeft, uiFrustumDown, uiDistance, 1.0f);
+    glm::vec3 uiBottomRight = inverseViewMatrix * glm::vec4(uiFrustumRight, uiFrustumDown, uiDistance, 1.0f);
+    float uiWidth = glm::distance(uiBottomRight, uiBottomLeft);
+    float uiHeight = glm::distance(uiBottomLeft, uiTopLeft);
+
+    auto uiTransform = AxrTransformComponent{
+        .Position = uiBottomLeft,
+        .Scale = glm::vec3(1.0f, 1.0f, 1.0f),
+        .Orientation = cameraInfo.Orientation,
+    };
 
     for (int32_t renderCommandIndex = 0;
          renderCommandIndex < uiCanvasConfig.ClayRenderCommands.length;
@@ -1633,6 +1655,11 @@ void AxrVulkanGraphicsSystem::renderClayUI(
         }
 
         uint32_t bufferDataOffset = renderCommandIndex * uniformBufferAlignment;
+        uiTransform.Scale = glm::vec3(
+            uiWidth,
+            uiHeight,
+            1.0f
+        );
 
         auto pipelines = AxrVulkanRenderCommandPipelines{
             .WindowPipeline = *materialForRendering->WindowPipeline,
@@ -1661,22 +1688,13 @@ void AxrVulkanGraphicsSystem::renderClayUI(
             }
         );
 
-        // Add offset so it's just in front of the camera's near clipping plane
-        glm::vec3 nearPlaneOffset = cameraOrientation * glm::vec3(0.0f, 0.0f, -cameraNearPlane * 2);
-
-        auto cameraTransform = AxrTransformComponent{
-            .Position = cameraPosition + nearPlaneOffset,
-            .Scale = glm::vec3(1.0f, 1.0f, 1.0f),
-            .Orientation = cameraOrientation,
-        };
-
         for (const AxrVulkanMeshForRendering& mesh : materialForRendering->Meshes) {
             renderCommands.pushConstants(
                 viewIndex,
                 *materialForRendering->PipelineLayout,
                 mesh.PushConstantShaderStages,
                 mesh.PushConstantBufferName,
-                &cameraTransform,
+                &uiTransform,
                 sceneData
             );
             renderCommands.draw(viewIndex, mesh);

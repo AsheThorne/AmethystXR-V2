@@ -198,14 +198,14 @@ axr::Result SponzaScene::setup() {
         AxrTransformComponent{
             .Position = glm::vec3(0.0f, 1.0f, -0.5f),
             .Scale = glm::vec3(1.0f, 1.0f, 1.0f),
-            .Orientation = glm::quat(glm::vec3(0.0f, glm::radians(90.0f), 0.0f)),
+            .Orientation = glm::quat(glm::vec3(0.0f, glm::radians(45.0f), 0.0f)),
         }
     );
 
     m_CameraEntity.emplace<AxrCameraComponent>(
         AxrCameraComponent{
             .Fov = 90.0f,
-            .NearPlane = 0.1f,
+            .NearPlane = 0.01f,
             .FarPlane = 1000.0f,
         }
     );
@@ -361,8 +361,8 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
         .id = CLAY_ID("OuterContainer"),
         .layout = Clay_LayoutConfig {
         .sizing = Clay_Sizing {
-        .width = CLAY_SIZING_FIT(100),
-        .height = CLAY_SIZING_FIT(100)},
+        .width = CLAY_SIZING_GROW(0),
+        .height = CLAY_SIZING_GROW(0)},
         .padding = CLAY_PADDING_ALL(16),
         .childGap = 16,
         },

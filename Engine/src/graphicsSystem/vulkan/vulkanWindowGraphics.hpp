@@ -10,6 +10,7 @@
 #include "sceneData/vulkanLoadedScenesCollection.hpp"
 #include "vulkanSurfaceDetails.hpp"
 #include "axr/graphicsSystem.h"
+#include "../graphicsCommonStructs.hpp"
 
 // ----------------------------------------- //
 // Vulkan Headers
@@ -193,33 +194,13 @@ public:
     /// @param viewMatrix Output view matrix
     /// @param projectionMatrix Output projection matrix
     void getRenderingMatrices(uint32_t viewIndex, glm::mat4& viewMatrix, glm::mat4& projectionMatrix) const;
-    /// Get the camera data for the given view
+    /// Get the camera info for the given view
     /// @param viewIndex View index
-    /// @param position Output camera position
-    /// @param orientation Output camera orientation
-    /// @param nearPlane Output near plane
-    /// @param farPlane Output far plane
-    [[nodiscard]] AxrResult getCameraData(
+    /// @param cameraInfo Output camera info
+    /// @returns AXR_SUCCESS if the function succeeded.
+    [[nodiscard]] AxrResult getCameraInfo(
         uint32_t viewIndex,
-        glm::vec3& position,
-        glm::quat& orientation,
-        float& nearPlane,
-        float& farPlane
-    ) const;
-    /// Get the camera data for the given view
-    /// @param viewIndex View index
-    /// @param position Output camera position
-    /// @param orientation Output camera orientation
-    /// @param fov Output fov
-    /// @param nearPlane Output near plane
-    /// @param farPlane Output far plane
-    [[nodiscard]] AxrResult getCameraData(
-        uint32_t viewIndex,
-        glm::vec3& position,
-        glm::quat& orientation,
-        float& fov,
-        float& nearPlane,
-        float& farPlane
+        AxrCameraInfo& cameraInfo
     ) const;
 
 private:
@@ -285,6 +266,15 @@ private:
     [[nodiscard]] AxrResult setupWindowGraphics();
     /// Reset the setupWindowGraphics() function 
     void resetSetupWindowGraphics();
+
+    /// Get the camera components
+    /// @param transform Camera transform component
+    /// @param camera Camera component
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult getCameraComponents(
+        AxrTransformComponent& transform,
+        AxrCameraComponent& camera
+    ) const;
 
     // ---- Surface ----
 
