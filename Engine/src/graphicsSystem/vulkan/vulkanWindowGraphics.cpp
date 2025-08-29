@@ -40,7 +40,8 @@ AxrVulkanWindowGraphics::AxrVulkanWindowGraphics(const Config& config):
     m_CurrentImageIndex(0),
     m_CurrentFrame(0),
     m_IsSwapchainOutOfDate(false),
-    m_MsaaSampleCount(vk::SampleCountFlagBits::e1) {
+    m_MsaaSampleCount(vk::SampleCountFlagBits::e1),
+    m_FrameRenderData() {
 }
 
 AxrVulkanWindowGraphics::~AxrVulkanWindowGraphics() {
@@ -184,13 +185,31 @@ bool AxrVulkanWindowGraphics::isReady() const {
     return m_IsReady;
 }
 
-AxrResult AxrVulkanWindowGraphics::beginRendering(const AxrVulkanSceneData* sceneData) const {
-    // Nothing needed here
+AxrResult AxrVulkanWindowGraphics::beginRendering(const AxrVulkanSceneData* sceneData) {
+    AxrCameraInfo cameraInfo{};
+    if (AXR_FAILED(getCameraInfo(0, cameraInfo))) {
+        return AXR_ERROR;
+    }
+
+    m_FrameRenderData.RenderMatrices.ViewMatrix = glm::inverse(
+        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
+        glm::toMat4(cameraInfo.Orientation)
+    );
+
+    m_FrameRenderData.RenderMatrices.ProjectionMatrix = glm::perspective(
+        cameraInfo.Fov.Up + cameraInfo.Fov.Down,
+        static_cast<float>(m_SwapchainExtent.width) / static_cast<float>(m_SwapchainExtent.height),
+        cameraInfo.ZNear,
+        cameraInfo.ZFar
+    );
+    m_FrameRenderData.RenderMatrices.ProjectionMatrix[1][1] *= -1.0f;
+
     return AXR_SUCCESS;
 }
 
-AxrResult AxrVulkanWindowGraphics::endRendering() const {
-    // Nothing needed here
+AxrResult AxrVulkanWindowGraphics::endRendering() {
+    m_FrameRenderData.reset();
+
     return AXR_SUCCESS;
 }
 
@@ -346,23 +365,8 @@ void AxrVulkanWindowGraphics::getRenderingMatrices(
     glm::mat4& viewMatrix,
     glm::mat4& projectionMatrix
 ) const {
-    AxrCameraInfo cameraInfo{};
-    if (AXR_FAILED(getCameraInfo(viewIndex, cameraInfo))) {
-        return;
-    }
-
-    viewMatrix = glm::inverse(
-        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
-        glm::toMat4(cameraInfo.Orientation)
-    );
-
-    projectionMatrix = glm::perspective(
-        cameraInfo.Fov.Up + cameraInfo.Fov.Down,
-        static_cast<float>(m_SwapchainExtent.width) / static_cast<float>(m_SwapchainExtent.height),
-        cameraInfo.ZNear,
-        cameraInfo.ZFar
-    );
-    projectionMatrix[1][1] *= -1.0f;
+    viewMatrix = m_FrameRenderData.RenderMatrices.ViewMatrix;
+    projectionMatrix = m_FrameRenderData.RenderMatrices.ProjectionMatrix;
 }
 
 AxrResult AxrVulkanWindowGraphics::getCameraInfo(

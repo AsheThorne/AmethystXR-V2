@@ -2832,6 +2832,7 @@ namespace axr {
         // ---- Push Constant Buffers ----
         PushConstantBufferStart = AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_START,
         PushConstantBufferModelMatrix = AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX,
+        PushConstantBufferMvpMatrix = AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX,
         PushConstantBufferEnd = AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_END,
 
         // ---- Images ----
@@ -3180,6 +3181,51 @@ namespace axr {
 
     static_assert(
         sizeof(AxrEngineAssetPushConstantBuffer_ModelMatrix) == sizeof(axr::EngineAssetPushConstantBuffer_ModelMatrix),
+        "Original type and wrapper have different size!"
+    );
+
+    /// Engine asset push constant buffer named 'Model Matrix' structure
+    struct alignas(16) EngineAssetPushConstantBuffer_MvpMatrix {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        alignas(16) glm::mat4 MvpMatrix = {};
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default Constructor
+        EngineAssetPushConstantBuffer_MvpMatrix() = default;
+
+        /// Constructor
+        /// @param mvpMatrix The mvp matrix
+        EngineAssetPushConstantBuffer_MvpMatrix(
+            const glm::mat4& mvpMatrix
+        ): MvpMatrix(mvpMatrix) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the EngineAssetPushConstantBuffer_MvpMatrix as an AxrEngineAssetPushConstantBuffer_MvpMatrix
+        /// @returns This as an AxrEngineAssetPushConstantBuffer_MvpMatrix
+        const AxrEngineAssetPushConstantBuffer_MvpMatrix* toRaw() const {
+            return reinterpret_cast<const AxrEngineAssetPushConstantBuffer_MvpMatrix*>(this);
+        }
+
+        /// Get a handle to the EngineAssetPushConstantBuffer_MvpMatrix as an AxrEngineAssetPushConstantBuffer_MvpMatrix
+        /// @returns This as an AxrEngineAssetPushConstantBuffer_MvpMatrix
+        AxrEngineAssetPushConstantBuffer_MvpMatrix* toRaw() {
+            return reinterpret_cast<AxrEngineAssetPushConstantBuffer_MvpMatrix*>(this);
+        }
+    };
+
+    static_assert(
+        sizeof(AxrEngineAssetPushConstantBuffer_MvpMatrix) == sizeof(axr::EngineAssetPushConstantBuffer_MvpMatrix),
         "Original type and wrapper have different size!"
     );
 #endif

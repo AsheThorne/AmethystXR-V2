@@ -187,7 +187,7 @@ axr::Result AlphaTestScene::setup() {
     strcpy_s(modelComponent.ModelName, modelName.c_str());
     strcpy_s(
         modelComponent.PushConstantBufferName,
-        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
     );
 
     m_Entity.emplace<AxrModelComponent>(modelComponent);
@@ -342,7 +342,7 @@ axr::Result AlphaTestScene::setup() {
         strcpy_s(cyanGlassModelComponent.ModelName, glassModelName.c_str());
         strcpy_s(
             cyanGlassModelComponent.PushConstantBufferName,
-            axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+            axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
         );
 
         cyanGlassEntity.emplace<AxrModelComponent>(cyanGlassModelComponent);
@@ -368,7 +368,7 @@ axr::Result AlphaTestScene::setup() {
         strcpy_s(magentaGlassModelComponent.ModelName, glassModelName.c_str());
         strcpy_s(
             magentaGlassModelComponent.PushConstantBufferName,
-            axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+            axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
         );
 
         magentaGlassEntity.emplace<AxrModelComponent>(magentaGlassModelComponent);
@@ -394,7 +394,7 @@ axr::Result AlphaTestScene::setup() {
         strcpy_s(yellowGlassModelComponent.ModelName, glassModelName.c_str());
         strcpy_s(
             yellowGlassModelComponent.PushConstantBufferName,
-            axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+            axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
         );
 
         yellowGlassEntity.emplace<AxrModelComponent>(yellowGlassModelComponent);

@@ -187,7 +187,7 @@ axr::Result SponzaScene::setup() {
     strcpy_s(modelComponent.ModelName, modelName.c_str());
     strcpy_s(
         modelComponent.PushConstantBufferName,
-        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
     );
 
     m_Entity.emplace<AxrModelComponent>(modelComponent);
@@ -278,7 +278,7 @@ axr::Result SponzaScene::setup() {
     strcpy_s(headModelComponent.ModelName, testCubeModelName);
     strcpy_s(
         headModelComponent.PushConstantBufferName,
-        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
     );
 
     m_XrHeadEntity.emplace<AxrModelComponent>(headModelComponent);
@@ -316,7 +316,7 @@ axr::Result SponzaScene::setup() {
     strcpy_s(handModelComponent.ModelName, testCubeModelName);
     strcpy_s(
         handModelComponent.PushConstantBufferName,
-        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
     );
 
     m_XrHandEntity.emplace<AxrModelComponent>(handModelComponent);

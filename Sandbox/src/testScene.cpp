@@ -68,7 +68,7 @@ axr::Result TestScene::setup() {
     strcpy_s(modelComponent.ModelName, modelName);
     strcpy_s(
         modelComponent.PushConstantBufferName,
-        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferModelMatrix)
+        axr::engineAssetGetName(axr::EngineAssetEnum::PushConstantBufferMvpMatrix)
     );
 
     m_Entity.emplace<AxrModelComponent>(

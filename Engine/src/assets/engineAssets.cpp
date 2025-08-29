@@ -77,6 +77,10 @@ const std::unordered_map EngineAssetBufferNames{
         AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX,
         "AXR:PushConstantBufferModelMatrix"
     ),
+    std::pair(
+        AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX,
+        "AXR:PushConstantBufferMvpMatrix"
+    ),
 };
 
 // ----------------------------------------- //
@@ -261,6 +265,9 @@ uint32_t axrEngineAssetGetPushConstantBufferSize(const AxrEngineAssetEnum engine
         case AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX: {
             return sizeof(AxrEngineAssetPushConstantBuffer_ModelMatrix);
         }
+        case AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX: {
+            return sizeof(AxrEngineAssetPushConstantBuffer_MvpMatrix);
+        }
         case AXR_ENGINE_ASSET_UNDEFINED:
         default: { // NOLINT(clang-diagnostic-covered-switch-default)
             return 0;
@@ -357,19 +364,13 @@ AxrResult axrEngineAssetCreateShader_DefaultVert(const AxrGraphicsApiEnum graphi
         }
     };
 
-    AxrShaderUniformBufferLayout sceneDataBufferLayout{
-        .Binding = 0,
-        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA)
-    };
-
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
     AxrShaderPushConstantBufferLayout modelMatrixBufferLayout{
-        .BufferSize = axrEngineAssetGetPushConstantBufferSize(AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX)
+        .BufferSize = axrEngineAssetGetPushConstantBufferSize(AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX)
     };
 #endif
 
     std::array bufferLayouts{
-        reinterpret_cast<AxrShaderBufferLayout_T>(&sceneDataBufferLayout),
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
         reinterpret_cast<AxrShaderBufferLayout_T>(&modelMatrixBufferLayout),
 #endif
@@ -412,7 +413,7 @@ AxrResult axrEngineAssetCreateShader_DefaultVert(const AxrGraphicsApiEnum graphi
 
 AxrResult axrEngineAssetCreateShader_DefaultFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
     AxrShaderImageSamplerBufferLayout imageSamplerBufferLayout{
-        .Binding = 1,
+        .Binding = 0,
     };
 
     std::array bufferLayouts{
@@ -454,11 +455,11 @@ AxrResult axrEngineAssetCreateShader_DefaultFrag(const AxrGraphicsApiEnum graphi
 
 AxrResult axrEngineAssetCreateShader_DefaultFrag_Mask(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
     AxrShaderImageSamplerBufferLayout imageSamplerBufferLayout{
-        .Binding = 1,
+        .Binding = 0,
     };
 
     AxrShaderUniformBufferLayout uniformBufferLayout{
-        .Binding = 2,
+        .Binding = 1,
         .BufferSize = sizeof(float),
     };
 
@@ -831,27 +832,13 @@ AxrResult axrEngineAssetCreateMaterial_DefaultMaterial(
     AxrMaterial& material,
     std::vector<AxrEngineAssetEnum>& materialShaders
 ) {
-    AxrShaderUniformBufferLink sceneDataBufferLink{
-        .Binding = 0,
-        .BufferName = {},
-    };
-    strncpy_s(
-        sceneDataBufferLink.BufferName,
-        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA),
-        AXR_MAX_ASSET_NAME_SIZE
-    );
-
-    std::array vertexBufferLinks{
-        reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
-    };
-
     AxrShaderValues vertexShaderValues{
-        .BufferLinkCount = static_cast<uint32_t>(vertexBufferLinks.size()),
-        .BufferLinks = vertexBufferLinks.data(),
+        .BufferLinkCount = 0,
+        .BufferLinks = nullptr,
     };
 
     AxrShaderImageSamplerBufferLink imageSamplerBufferLink{
-        .Binding = 1,
+        .Binding = 0,
         .ImageName = {},
         .ImageSamplerName = {},
     };
@@ -859,7 +846,7 @@ AxrResult axrEngineAssetCreateMaterial_DefaultMaterial(
     strncpy_s(imageSamplerBufferLink.ImageSamplerName, materialValues.ImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
 
     AxrShaderUniformBufferLink uniformBufferLink{
-        .Binding = 2,
+        .Binding = 1,
         .BufferName = {},
     };
     strncpy_s(uniformBufferLink.BufferName, materialValues.AlphaCutoffBufferName, AXR_MAX_ASSET_NAME_SIZE);

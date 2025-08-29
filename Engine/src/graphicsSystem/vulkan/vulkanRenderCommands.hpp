@@ -556,10 +556,12 @@ public:
 
         // ---- Set Model Matrix Push Constant Buffer ----
 
-        if (strcmp(
-            axrEngineAssetGetPushConstantBufferName(AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX),
-            bufferName
-        ) == 0) {
+        if (
+            strcmp(
+                axrEngineAssetGetPushConstantBufferName(AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX),
+                bufferName
+            ) == 0
+        ) {
             if (transformComponent == nullptr) {
                 axrLogErrorLocation("Unable to use model matrix push constant. Transform component is null.");
                 return;
@@ -567,6 +569,44 @@ public:
 
             const auto engineAssetData = AxrEngineAssetPushConstantBuffer_ModelMatrix{
                 .ModelMatrix = axrTransformGetMatrix(*transformComponent)
+            };
+
+            commandBuffer.pushConstants(
+                pipelineLayout,
+                stageFlags,
+                0,
+                sizeof(engineAssetData),
+                &engineAssetData,
+                m_Dispatch
+            );
+            return;
+        }
+
+        // ---- Set Mvp Matrix Push Constant Buffer ----
+
+        if (
+            strcmp(
+                axrEngineAssetGetPushConstantBufferName(AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX),
+                bufferName
+            ) == 0
+        ) {
+            if (transformComponent == nullptr) {
+                axrLogErrorLocation("Unable to use mvp matrix push constant. Transform component is null.");
+                return;
+            }
+
+            AxrEngineAssetUniformBuffer_SceneData sceneDataUniformBuffer{};
+
+            m_RenderTarget.getRenderingMatrices(
+                viewIndex,
+                sceneDataUniformBuffer.ViewMatrix,
+                sceneDataUniformBuffer.ProjectionMatrix
+            );
+
+            const auto engineAssetData = AxrEngineAssetPushConstantBuffer_MvpMatrix{
+                .MvpMatrix = sceneDataUniformBuffer.ProjectionMatrix *
+                sceneDataUniformBuffer.ViewMatrix *
+                axrTransformGetMatrix(*transformComponent)
             };
 
             commandBuffer.pushConstants(

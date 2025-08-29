@@ -851,7 +851,7 @@ enum AxrEngineAssetEnum {
     // ---- Push Constant Buffers - Max of 32 ----
     AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_START = 97,
     AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX = 97,
-    // TODO: Add AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX which is model, view, projection already calculated
+    AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX = 98,
     AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_END = 128,
 
     // ---- Images - Max of 64 ----
@@ -939,6 +939,11 @@ union AxrEngineAssetUniformBuffer_UIElement {
 /// Engine asset push constant buffer named 'Model Matrix' structure
 struct alignas(16) AxrEngineAssetPushConstantBuffer_ModelMatrix {
     alignas(16) glm::mat4 ModelMatrix;
+};
+
+/// Engine asset push constant buffer named 'Mvp Matrix' structure
+struct alignas(16) AxrEngineAssetPushConstantBuffer_MvpMatrix {
+    alignas(16) glm::mat4 MvpMatrix;
 };
 #endif
 

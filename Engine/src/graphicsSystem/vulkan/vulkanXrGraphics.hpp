@@ -67,14 +67,24 @@ public:
         float WidthOverlap;
     };
 
+    /// Render matrices
+    struct RenderMatrices {
+        glm::mat4 ViewMatrix;
+        glm::mat4 ProjectionMatrix;
+    };
+
     // Render data for each frame
     struct RenderData {
         XrTime PredictedDisplayTime;
+        /// One for each view
         std::vector<XrCompositionLayerProjectionView> CompositionLayerViews;
+        /// One for each view
+        std::vector<RenderMatrices> RenderMatrices;
 
         void reset() {
             PredictedDisplayTime = 0;
             CompositionLayerViews.clear();
+            RenderMatrices.clear();
         }
     };
 

@@ -201,6 +201,7 @@ AxrResult AxrVulkanXrGraphics::beginRendering(const AxrVulkanSceneData* sceneDat
     setViewableRegionExtent(xrViews);
 
     m_FrameRenderData.CompositionLayerViews.resize(xrViews.size());
+    m_FrameRenderData.RenderMatrices.resize(xrViews.size());
     for (size_t i = 0; i < m_FrameRenderData.CompositionLayerViews.size(); ++i) {
         m_FrameRenderData.CompositionLayerViews[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
         m_FrameRenderData.CompositionLayerViews[i].fov = xrViews[i].fov;
@@ -217,8 +218,25 @@ AxrResult AxrVulkanXrGraphics::beginRendering(const AxrVulkanSceneData* sceneDat
                 .height = static_cast<int32_t>(m_Views[i].SwapchainExtent.height),
             },
         };
+
+        AxrCameraInfo cameraInfo{};
+        if (AXR_FAILED(getCameraInfo(i, cameraInfo))) {
+            continue;
+        }
+
+        m_FrameRenderData.RenderMatrices[i].ViewMatrix = glm::inverse(
+            glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
+            glm::toMat4(cameraInfo.Orientation)
+        );
+
+        m_FrameRenderData.RenderMatrices[i].ProjectionMatrix = createProjectionMatrix(
+            cameraInfo.Fov,
+            cameraInfo.ZNear,
+            cameraInfo.ZFar
+        );
     }
 
+    // We don't really care about the result of this
     axrResult = m_XrSystem.updatePoseActions(m_FrameRenderData.PredictedDisplayTime, sceneData->getEcsRegistryHandle());
 
     return AXR_SUCCESS;
@@ -363,21 +381,13 @@ void AxrVulkanXrGraphics::getRenderingMatrices(
     glm::mat4& viewMatrix,
     glm::mat4& projectionMatrix
 ) const {
-    AxrCameraInfo cameraInfo{};
-    if (AXR_FAILED(getCameraInfo(viewIndex, cameraInfo))) {
+    if (viewIndex > m_FrameRenderData.RenderMatrices.size() - 1) {
+        axrLogErrorLocation("View index out of bounds.");
         return;
     }
 
-    viewMatrix = glm::inverse(
-        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
-        glm::toMat4(cameraInfo.Orientation)
-    );
-
-    projectionMatrix = createProjectionMatrix(
-        cameraInfo.Fov,
-        cameraInfo.ZNear,
-        cameraInfo.ZFar
-    );
+    viewMatrix = m_FrameRenderData.RenderMatrices[viewIndex].ViewMatrix;
+    projectionMatrix = m_FrameRenderData.RenderMatrices[viewIndex].ProjectionMatrix;
 }
 
 AxrResult AxrVulkanXrGraphics::getCameraInfo(

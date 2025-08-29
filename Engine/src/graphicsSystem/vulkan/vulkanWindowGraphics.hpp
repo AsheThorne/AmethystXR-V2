@@ -47,6 +47,21 @@ public:
         const std::vector<vk::Format>& SwapchainDepthFormatOptions;
     };
 
+    /// Render matrices
+    struct RenderMatrices {
+        glm::mat4 ViewMatrix;
+        glm::mat4 ProjectionMatrix;
+    };
+
+    // Render data for each frame
+    struct RenderData {
+        RenderMatrices RenderMatrices;
+
+        void reset() {
+            RenderMatrices = {};
+        }
+    };
+
     // ----------------------------------------- //
     // Special Functions
     // ----------------------------------------- //
@@ -55,7 +70,7 @@ public:
 
     /// Constructor
     /// @param config window graphics config
-    AxrVulkanWindowGraphics(const Config& config);
+    explicit AxrVulkanWindowGraphics(const Config& config);
     /// Copy Constructor
     /// @param src Source AxrVulkanWindowGraphics to copy from
     AxrVulkanWindowGraphics(const AxrVulkanWindowGraphics& src) = delete;
@@ -117,10 +132,10 @@ public:
     /// Begin rendering
     /// @param sceneData Active scene data
     /// @returns AXR_SUCCESS if the function succeeded
-    [[nodiscard]] AxrResult beginRendering(const AxrVulkanSceneData* sceneData) const;
+    [[nodiscard]] AxrResult beginRendering(const AxrVulkanSceneData* sceneData);
     /// End rendering
     /// @returns AXR_SUCCESS if the function succeeded
-    [[nodiscard]] AxrResult endRendering() const;
+    [[nodiscard]] AxrResult endRendering();
     /// Get the number of views
     /// @returns The number of views
     [[nodiscard]] uint32_t getViewCount() const;
@@ -256,6 +271,8 @@ private:
     uint32_t m_CurrentFrame;
     bool m_IsSwapchainOutOfDate;
     vk::SampleCountFlagBits m_MsaaSampleCount;
+
+    RenderData m_FrameRenderData;
 
     // ----------------------------------------- //
     // Private Functions
