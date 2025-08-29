@@ -1576,7 +1576,6 @@ void AxrVulkanGraphicsSystem::renderClayUI(
         return;
     }
 
-    // TODO: Don't do Z test on this UI. if an object intercepts with the camera, it can be drawing just in front of the UI. 
     float uiDistance = -cameraInfo.ZNear * 2 - 0.001f;
     float uiFrustumLeft = uiDistance * std::tan(std::abs(cameraInfo.Fov.Left));
     float uiFrustumRight = -uiDistance * std::tan(std::abs(cameraInfo.Fov.Right));
