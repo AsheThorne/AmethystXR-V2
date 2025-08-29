@@ -692,8 +692,8 @@ AxrResult AxrVulkanMaterialData::createPipeline(
 
     const vk::PipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo(
         {},
-        vk::True,
-        m_MaterialHandle->getAlphaRenderMode() == AXR_MATERIAL_ALPHA_RENDER_MODE_OPAQUE ? vk::True : vk::False,
+        m_MaterialHandle->enableDepthTest() ? vk::True : vk::False,
+        m_MaterialHandle->enableDepthWrite() ? vk::True : vk::False,
         vk::CompareOp::eLess,
         vk::False,
         vk::False,

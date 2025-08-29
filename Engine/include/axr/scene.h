@@ -30,8 +30,8 @@
 // Types
 // ----------------------------------------- //
 
-//TODO: Maybe define this in the hpp includes. here, in the .h includes, it should probably be entt::entity
 /// Entity handle
+// TODO: Maybe define this in the hpp includes. here, in the .h includes, it should probably be entt::entity
 typedef entt::handle AxrEntity_T;
 /// Const Entity handle
 typedef entt::const_handle AxrEntityConst_T;

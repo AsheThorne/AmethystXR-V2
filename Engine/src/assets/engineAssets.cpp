@@ -872,6 +872,8 @@ AxrResult axrEngineAssetCreateMaterial_DefaultMaterial(
         .FragmentShaderValues = &fragmentShaderValues,
         .BackfaceCullMode = materialValues.BackfaceCullMode,
         .AlphaRenderMode = materialValues.AlphaRenderMode,
+        .EnableDepthTest = true,
+        .EnableDepthWrite = materialValues.AlphaRenderMode == AXR_MATERIAL_ALPHA_RENDER_MODE_OPAQUE,
     };
     strncpy_s(
         materialConfig.Name,
@@ -971,6 +973,8 @@ AxrResult axrEngineAssetCreateMaterial_UIRectangle(
         .FragmentShaderValues = &fragmentShaderValues,
         .BackfaceCullMode = AXR_MATERIAL_BACKFACE_CULL_MODE_BACK,
         .AlphaRenderMode = AXR_MATERIAL_ALPHA_RENDER_MODE_ALPHA_BLEND,
+        .EnableDepthTest = false,
+        .EnableDepthWrite = false,
     };
     strncpy_s(
         materialConfig.Name,

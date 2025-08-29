@@ -78,6 +78,12 @@ public:
     /// Get the alpha rendering mode mode
     /// @returns The alpha rendering mode mode
     [[nodiscard]] AxrMaterialAlphaRenderModeEnum getAlphaRenderMode() const;
+    /// True if this material enables depth testing
+    /// @returns True if this material enables depth testing
+    [[nodiscard]] bool enableDepthTest() const;
+    /// True if this material enables depth writing
+    /// @returns True if this material enables depth writing
+    [[nodiscard]] bool enableDepthWrite() const;
 
     /// Get all uniform buffer links
     /// @returns A collection of uniform buffer links
@@ -119,6 +125,8 @@ private:
     AxrShaderValuesRAII m_FragmentShaderValues;
     AxrMaterialBackfaceCullModeEnum m_BackfaceCullMode;
     AxrMaterialAlphaRenderModeEnum m_AlphaRenderMode;
+    bool m_EnableDepthTest;
+    bool m_EnableDepthWrite;
     std::vector<AxrDynamicUniformBufferOffsetConfig> m_DynamicUniformBufferOffsets;
 
     // ----------------------------------------- //

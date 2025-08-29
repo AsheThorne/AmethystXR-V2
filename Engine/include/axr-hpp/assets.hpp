@@ -2506,6 +2506,8 @@ namespace axr {
         AxrShaderValues_T FragmentShaderValues = nullptr;
         axr::MaterialBackfaceCullModeEnum BackfaceCullMode = axr::MaterialBackfaceCullModeEnum::None;
         axr::MaterialAlphaRenderModeEnum AlphaRenderMode = axr::MaterialAlphaRenderModeEnum::Opaque;
+        bool EnableDepthTest = false;
+        bool EnableDepthWrite = false;
         uint32_t DynamicUniformBufferOffsetCount = 0;
         axr::DynamicUniformBufferOffsetConfig* DynamicUniformBufferOffsets = nullptr;
 
@@ -2526,6 +2528,8 @@ namespace axr {
         /// @param fragmentShaderValues The fragment shader values to use
         /// @param backfaceCullMode The material backface culling mode
         /// @param alphaRenderMode The material alpha rendering mode
+        /// @param enableDepthTest Whether to enable depth testing or not
+        /// @param enableDepthWrite Whether to enable depth writing or not
         /// @param dynamicUniformBufferOffsetCount Dynamic uniform buffer offset count
         /// @param dynamicUniformBufferOffsets Dynamic uniform buffer offsets
         MaterialConfig(
@@ -2536,12 +2540,16 @@ namespace axr {
             const axr::ShaderValues& fragmentShaderValues,
             const axr::MaterialBackfaceCullModeEnum backfaceCullMode,
             const axr::MaterialAlphaRenderModeEnum alphaRenderMode,
+            const bool enableDepthTest,
+            const bool enableDepthWrite,
             const uint32_t dynamicUniformBufferOffsetCount,
             const DynamicUniformBufferOffsetConfig* dynamicUniformBufferOffsets
         ): VertexShaderValues(vertexShaderValues.cloneRaw()),
             FragmentShaderValues(fragmentShaderValues.cloneRaw()),
             BackfaceCullMode(backfaceCullMode),
-            AlphaRenderMode(alphaRenderMode) {
+            AlphaRenderMode(alphaRenderMode),
+            EnableDepthTest(enableDepthTest),
+            EnableDepthWrite(enableDepthWrite) {
             if (name != nullptr) {
                 strncpy_s(Name, name, AXR_MAX_ASSET_NAME_SIZE);
             }
@@ -2580,6 +2588,8 @@ namespace axr {
 
             BackfaceCullMode = src.BackfaceCullMode;
             AlphaRenderMode = src.AlphaRenderMode;
+            EnableDepthTest = src.EnableDepthTest;
+            EnableDepthWrite = src.EnableDepthWrite;
             DynamicUniformBufferOffsetCount = src.DynamicUniformBufferOffsetCount;
             DynamicUniformBufferOffsets = clone(
                 src.DynamicUniformBufferOffsetCount,
@@ -2598,6 +2608,8 @@ namespace axr {
             FragmentShaderValues = src.FragmentShaderValues;
             BackfaceCullMode = src.BackfaceCullMode;
             AlphaRenderMode = src.AlphaRenderMode;
+            EnableDepthTest = src.EnableDepthTest;
+            EnableDepthWrite = src.EnableDepthWrite;
             DynamicUniformBufferOffsetCount = src.DynamicUniformBufferOffsetCount;
             DynamicUniformBufferOffsets = src.DynamicUniformBufferOffsets;
 
@@ -2608,6 +2620,8 @@ namespace axr {
             src.FragmentShaderValues = nullptr;
             src.BackfaceCullMode = axr::MaterialBackfaceCullModeEnum::None;
             src.AlphaRenderMode = axr::MaterialAlphaRenderModeEnum::Opaque;
+            src.EnableDepthTest = false;
+            src.EnableDepthWrite = false;
             src.DynamicUniformBufferOffsetCount = 0;
             src.DynamicUniformBufferOffsets = nullptr;
         }
@@ -2645,6 +2659,8 @@ namespace axr {
 
                 BackfaceCullMode = src.BackfaceCullMode;
                 AlphaRenderMode = src.AlphaRenderMode;
+                EnableDepthTest = src.EnableDepthTest;
+                EnableDepthWrite = src.EnableDepthWrite;
                 DynamicUniformBufferOffsetCount = src.DynamicUniformBufferOffsetCount;
                 DynamicUniformBufferOffsets = clone(
                     src.DynamicUniformBufferOffsetCount,
@@ -2669,6 +2685,8 @@ namespace axr {
                 FragmentShaderValues = src.FragmentShaderValues;
                 BackfaceCullMode = src.BackfaceCullMode;
                 AlphaRenderMode = src.AlphaRenderMode;
+                EnableDepthTest = src.EnableDepthTest;
+                EnableDepthWrite = src.EnableDepthWrite;
                 DynamicUniformBufferOffsetCount = src.DynamicUniformBufferOffsetCount;
                 DynamicUniformBufferOffsets = src.DynamicUniformBufferOffsets;
 
@@ -2679,6 +2697,8 @@ namespace axr {
                 src.FragmentShaderValues = nullptr;
                 src.BackfaceCullMode = axr::MaterialBackfaceCullModeEnum::None;
                 src.AlphaRenderMode = axr::MaterialAlphaRenderModeEnum::Opaque;
+                src.EnableDepthTest = false;
+                src.EnableDepthWrite = false;
                 src.DynamicUniformBufferOffsetCount = 0;
                 src.DynamicUniformBufferOffsets = nullptr;
             }
@@ -2729,6 +2749,8 @@ namespace axr {
             memset(FragmentShaderName, 0, sizeof(FragmentShaderName));
             BackfaceCullMode = axr::MaterialBackfaceCullModeEnum::None;
             AlphaRenderMode = axr::MaterialAlphaRenderModeEnum::Opaque;
+            EnableDepthTest = false;
+            EnableDepthWrite = false;
         }
 
         /// Clone the given dynamic uniform buffer configs

@@ -552,6 +552,7 @@ enum AxrUniformBufferTypeEnum {
 // ----------------------------------------- //
 
 /// Dynamic uniform buffer offset config
+// TODO: This should probably be per mesh instead of per material right?
 struct AxrDynamicUniformBufferOffsetConfig {
     uint32_t Binding;
     uint32_t OffsetIndex;
@@ -793,6 +794,8 @@ struct AxrMaterialConfig {
     AxrShaderValues_T FragmentShaderValues;
     AxrMaterialBackfaceCullModeEnum BackfaceCullMode;
     AxrMaterialAlphaRenderModeEnum AlphaRenderMode;
+    bool EnableDepthTest;
+    bool EnableDepthWrite;
     uint32_t DynamicUniformBufferOffsetCount;
     AxrDynamicUniformBufferOffsetConfig* DynamicUniformBufferOffsets;
 };
