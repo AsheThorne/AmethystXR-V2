@@ -108,14 +108,6 @@ enum AxrUIReferenceSpaceEnum {
 /// UI Canvas Config
 struct AxrUICanvasConfig {
     bool Enabled;
-    // TODO: Add Dimensions.
-    //  If the position is in camera space, it's range 0.0-1.0 as a percentage from the camera width/height (maybe?? maybe pixels???) (Maybe can go higher than 1.0 but not lower than 0.0)
-    //  If the position is in world space, it's in meters, the same as other objects in the world.
-    // TODO: We can probably remove these below
-    // glm::vec3 PositionOffset;
-    // AxrUIReferenceSpaceEnum PositionReferenceSpace;
-    // glm::quat OrientationOffset;
-    // AxrUIReferenceSpaceEnum OrientationReferenceSpace;
     Clay_RenderCommandArray ClayRenderCommands;
 };
 
