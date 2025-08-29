@@ -374,10 +374,10 @@ namespace axr {
         }
 
         /// Set the xr rendering clipping planes
-        /// @param nearPlane Near clipping plane
-        /// @param farPlane Far clipping plane
-        void setClippingPlane(const float nearPlane, const float farPlane) const {
-            axrXrSystemSetClippingPlane(m_XrSystem, nearPlane, farPlane);
+        /// @param zNear Near clipping plane
+        /// @param zFar Far clipping plane
+        void setClippingPlane(const float zNear, const float zFar) const {
+            axrXrSystemSetClippingPlane(m_XrSystem, zNear, zFar);
         }
 
         /// Start the xr session

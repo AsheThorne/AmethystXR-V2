@@ -1758,8 +1758,8 @@ AxrResult AxrVulkanGraphicsSystem::blitToWindowFromXrDevice() const {
 
 std::vector<AxrVulkanGraphicsSystem::SortableMeshReference> AxrVulkanGraphicsSystem::getSortedMeshReferences(
     const glm::mat4& viewMatrix,
-    const float nearPlane,
-    const float farPlane,
+    const float zNear,
+    const float zFar,
     const std::vector<AxrVulkanMaterialForRendering>& materialsForRendering
 ) const {
     std::vector<SortableMeshReference> sortedMeshReferences;
@@ -1773,7 +1773,7 @@ std::vector<AxrVulkanGraphicsSystem::SortableMeshReference> AxrVulkanGraphicsSys
 
             sortedMeshReferences.emplace_back(
                 SortableMeshReference{
-                    .SortKey = createSortKey(depthToUint(nearPlane, farPlane, depth), materialIndex),
+                    .SortKey = createSortKey(depthToUint(zNear, zFar, depth), materialIndex),
                     .MaterialIndex = materialIndex,
                     .MeshIndex = meshIndex,
                 }
@@ -1798,8 +1798,8 @@ float AxrVulkanGraphicsSystem::calculateSquaredDepth(
     return std::abs(glm::length2(viewMatrix * glm::vec4(transformComponent->Position, 1.0f)));
 }
 
-uint32_t AxrVulkanGraphicsSystem::depthToUint(const float nearPlane, const float farPlane, const float depth) const {
-    float normalized = (depth - nearPlane) / (farPlane - nearPlane);
+uint32_t AxrVulkanGraphicsSystem::depthToUint(const float zNear, const float zFar, const float depth) const {
+    float normalized = (depth - zNear) / (zFar - zNear);
     normalized = glm::clamp(normalized, 0.0f, 1.0f);
     return static_cast<uint32_t>(normalized * static_cast<float>(UINT32_MAX));
 }

@@ -157,8 +157,8 @@ public:
 
         AxrEngineAssetUniformBuffer_CameraData cameraDataUniformBuffer{};
         cameraDataUniformBuffer.Dimensions = glm::vec2(cameraInfo.PixelWidth, cameraInfo.PixelHeight);
-        cameraDataUniformBuffer.NearPlane = cameraInfo.ZNear;
-        cameraDataUniformBuffer.FarPlane = cameraInfo.ZFar;
+        cameraDataUniformBuffer.ZNear = cameraInfo.ZNear;
+        cameraDataUniformBuffer.ZFar = cameraInfo.ZFar;
 
         axrResult = sceneData->setUniformBufferData(
             platformType,

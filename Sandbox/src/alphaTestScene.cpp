@@ -205,8 +205,8 @@ axr::Result AlphaTestScene::setup() {
     m_CameraEntity.emplace<AxrCameraComponent>(
         AxrCameraComponent{
             .Fov = 90.0f,
-            .NearPlane = 0.1f,
-            .FarPlane = 1000.0f,
+            .ZNear = 0.1f,
+            .ZFar = 1000.0f,
         }
     );
 

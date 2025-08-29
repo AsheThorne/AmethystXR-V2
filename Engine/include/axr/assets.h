@@ -896,8 +896,8 @@ struct alignas(16) AxrEngineAssetUniformBuffer_SceneData {
 /// Engine asset uniform buffer named 'Camera Data' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_CameraData {
     alignas(8) glm::vec2 Dimensions;
-    alignas(4) float NearPlane;
-    alignas(4) float FarPlane;
+    alignas(4) float ZNear;
+    alignas(4) float ZFar;
 };
 
 /// Engine asset uniform buffer named 'UI Rectangle' structure

@@ -115,9 +115,9 @@ public:
     [[nodiscard]] bool isXrSessionRunning() const;
 
     /// Set the xr rendering clipping planes
-    /// @param nearPlane Near clipping plane
-    /// @param farPlane Far clipping plane
-    void setClippingPlane(float nearPlane, float farPlane);
+    /// @param zNear Near clipping plane
+    /// @param zFar Far clipping plane
+    void setClippingPlane(float zNear, float zFar);
 
     /// Start the xr session
     /// @returns AXR_SUCCESS if the function succeeded

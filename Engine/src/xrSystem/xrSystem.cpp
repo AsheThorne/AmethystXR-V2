@@ -37,13 +37,13 @@ bool axrXrSystemIsXrSessionRunning(const AxrXrSystemConst_T xrSystem) {
     return xrSystem->isXrSessionRunning();
 }
 
-void axrXrSystemSetClippingPlane(const AxrXrSystem_T xrSystem, const float nearPlane, const float farPlane) {
+void axrXrSystemSetClippingPlane(const AxrXrSystem_T xrSystem, const float zNear, const float zFar) {
     if (xrSystem == nullptr) {
         axrLogErrorLocation("`xrSystem` is null.");
         return;
     }
 
-    xrSystem->setClippingPlane(nearPlane, farPlane);
+    xrSystem->setClippingPlane(zNear, zFar);
 }
 
 AxrResult axrXrSystemStartXrSession(const AxrXrSystem_T xrSystem) {
@@ -114,9 +114,9 @@ bool AxrXrSystem::isXrSessionRunning() const {
     return m_IsSessionRunning;
 }
 
-void AxrXrSystem::setClippingPlane(const float nearPlane, const float farPlane) {
-    m_NearClippingPlane = nearPlane;
-    m_FarClippingPlane = farPlane;
+void AxrXrSystem::setClippingPlane(const float zNear, const float zFar) {
+    m_NearClippingPlane = zNear;
+    m_FarClippingPlane = zFar;
 }
 
 AxrResult AxrXrSystem::startXrSession() {

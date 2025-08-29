@@ -73,8 +73,8 @@ struct AxrModelComponent {
 struct AxrCameraComponent {
     /// Horizontal fov in degrees
     float Fov;
-    float NearPlane;
-    float FarPlane;
+    float ZNear;
+    float ZFar;
 };
 
 /// Entity mirror pose input action component

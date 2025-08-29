@@ -394,10 +394,8 @@ AxrResult AxrVulkanWindowGraphics::getCameraInfo(
         .PixelHeight = static_cast<float>(m_SwapchainExtent.height),
         .AspectRatio = static_cast<float>(m_SwapchainExtent.width) /
         static_cast<float>(m_SwapchainExtent.height),
-        // TODO: Maybe rename 'NearPlane' and 'FarPlane' to 'ZNear' and 'ZFar' everywhere it's mentioned.
-        //  `Plane` indicates more than what it is. which is just the distance.
-        .ZNear = camera.NearPlane,
-        .ZFar = camera.FarPlane
+        .ZNear = camera.ZNear,
+        .ZFar = camera.ZFar
     };
 
     return AXR_SUCCESS;

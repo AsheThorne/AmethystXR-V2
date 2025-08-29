@@ -397,14 +397,14 @@ private:
 
     /// Get a collection of each mesh in the given 'materials for rendering' sorted by depth
     /// @param viewMatrix Camera view matrix
-    /// @param nearPlane Camera near plane
-    /// @param farPlane Camera far plane
+    /// @param zNear Camera near clipping plane
+    /// @param zFar Camera far clipping plane
     /// @param materialsForRendering 'Materials for rendering' to sort
     /// @returns The sorted mesh references
     [[nodiscard]] std::vector<SortableMeshReference> getSortedMeshReferences(
         const glm::mat4& viewMatrix,
-        float nearPlane,
-        float farPlane,
+        float zNear,
+        float zFar,
         const std::vector<AxrVulkanMaterialForRendering>& materialsForRendering
     ) const;
     /// Calculate the squared depth of the given transform component
@@ -415,12 +415,12 @@ private:
         const glm::mat4& viewMatrix,
         const AxrTransformComponent* transformComponent
     ) const;
-    /// Convert the given depth to a uint32_t value. Ranging from `nearPlane` to `farPlane`
-    /// @param nearPlane Camera near plane
-    /// @param farPlane Camera far plane
+    /// Convert the given depth to a uint32_t value. Ranging from `zNear` to `zFar`
+    /// @param zNear Camera near clipping plane
+    /// @param zFar Camera far clipping plane
     /// @param depth Depth value
     /// @returns The given depth as a uint32_t value
-    [[nodiscard]] uint32_t depthToUint(float nearPlane, float farPlane, float depth) const;
+    [[nodiscard]] uint32_t depthToUint(float zNear, float zFar, float depth) const;
     /// Create a sort key for the given depth and material index
     /// @param depth Depth value
     /// @param materialIndex Material index
