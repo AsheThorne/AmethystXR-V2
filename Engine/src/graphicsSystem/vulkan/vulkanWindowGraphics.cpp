@@ -186,25 +186,7 @@ bool AxrVulkanWindowGraphics::isReady() const {
 }
 
 AxrResult AxrVulkanWindowGraphics::beginRendering(const AxrVulkanSceneData* sceneData) {
-    AxrCameraInfo cameraInfo{};
-    if (AXR_FAILED(getCameraInfo(0, cameraInfo))) {
-        return AXR_ERROR;
-    }
-
-    m_FrameRenderData.RenderMatrices.ViewMatrix = glm::inverse(
-        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
-        glm::toMat4(cameraInfo.Orientation)
-    );
-
-    m_FrameRenderData.RenderMatrices.ProjectionMatrix = glm::perspective(
-        cameraInfo.Fov.Up + cameraInfo.Fov.Down,
-        static_cast<float>(m_SwapchainExtent.width) / static_cast<float>(m_SwapchainExtent.height),
-        cameraInfo.ZNear,
-        cameraInfo.ZFar
-    );
-    m_FrameRenderData.RenderMatrices.ProjectionMatrix[1][1] *= -1.0f;
-
-    return AXR_SUCCESS;
+    return setCameraInfo();
 }
 
 AxrResult AxrVulkanWindowGraphics::endRendering() {
@@ -360,47 +342,11 @@ AxrResult AxrVulkanWindowGraphics::presentFrame(const uint32_t viewIndex) {
     return AXR_SUCCESS;
 }
 
-void AxrVulkanWindowGraphics::getRenderingMatrices(
-    const uint32_t viewIndex,
-    glm::mat4& viewMatrix,
-    glm::mat4& projectionMatrix
-) const {
-    viewMatrix = m_FrameRenderData.RenderMatrices.ViewMatrix;
-    projectionMatrix = m_FrameRenderData.RenderMatrices.ProjectionMatrix;
-}
-
 AxrResult AxrVulkanWindowGraphics::getCameraInfo(
     const uint32_t viewIndex,
     AxrCameraInfo& cameraInfo
 ) const {
-    AxrTransformComponent cameraTransform{};
-    AxrCameraComponent camera{};
-    if (AXR_FAILED(getCameraComponents(cameraTransform, camera))) {
-        return AXR_ERROR;
-    }
-
-    const float halfHorizontalFovRadians = glm::radians(camera.Fov) * 0.5f;
-    const float halfVerticalFovRadians = atan(
-        tan(halfHorizontalFovRadians) *
-        (static_cast<float>(m_SwapchainExtent.height) / static_cast<float>(m_SwapchainExtent.width))
-    );
-
-    cameraInfo = AxrCameraInfo{
-        .Position = cameraTransform.Position,
-        .Orientation = cameraTransform.Orientation,
-        .Fov = AxrCameraFov{
-            .Up = halfVerticalFovRadians,
-            .Down = halfVerticalFovRadians,
-            .Left = halfHorizontalFovRadians,
-            .Right = halfHorizontalFovRadians,
-        },
-        .PixelWidth = static_cast<float>(m_SwapchainExtent.width),
-        .PixelHeight = static_cast<float>(m_SwapchainExtent.height),
-        .AspectRatio = static_cast<float>(m_SwapchainExtent.width) /
-        static_cast<float>(m_SwapchainExtent.height),
-        .ZNear = camera.ZNear,
-        .ZFar = camera.ZFar
-    };
+    cameraInfo = m_FrameRenderData.CameraInfo;
 
     return AXR_SUCCESS;
 }
@@ -513,6 +459,52 @@ AxrResult AxrVulkanWindowGraphics::getCameraComponents(
 
     transform = cameraTransformComponent;
     camera = cameraComponent;
+
+    return AXR_SUCCESS;
+}
+
+AxrResult AxrVulkanWindowGraphics::setCameraInfo() {
+    AxrTransformComponent cameraTransform{};
+    AxrCameraComponent camera{};
+    if (AXR_FAILED(getCameraComponents(cameraTransform, camera))) {
+        return AXR_ERROR;
+    }
+
+    const float halfHorizontalFovRadians = glm::radians(camera.Fov) * 0.5f;
+    const float halfVerticalFovRadians = atan(
+        tan(halfHorizontalFovRadians) *
+        (static_cast<float>(m_SwapchainExtent.height) / static_cast<float>(m_SwapchainExtent.width))
+    );
+
+    auto projectionMatrix = glm::perspective(
+        halfVerticalFovRadians * 2,
+        static_cast<float>(m_SwapchainExtent.width) / static_cast<float>(m_SwapchainExtent.height),
+        camera.ZNear,
+        camera.ZFar
+    );
+    projectionMatrix[1][1] *= -1.0f;
+
+    m_FrameRenderData.CameraInfo = AxrCameraInfo{
+        .Position = cameraTransform.Position,
+        .Orientation = cameraTransform.Orientation,
+        .Fov = AxrCameraFov{
+            .Up = halfVerticalFovRadians,
+            .Down = halfVerticalFovRadians,
+            .Left = halfHorizontalFovRadians,
+            .Right = halfHorizontalFovRadians,
+        },
+        .ViewMatrix = glm::inverse(
+            glm::translate(glm::mat4(1.0f), cameraTransform.Position) *
+            glm::toMat4(cameraTransform.Orientation)
+        ),
+        .ProjectionMatrix = projectionMatrix,
+        .PixelWidth = static_cast<float>(m_SwapchainExtent.width),
+        .PixelHeight = static_cast<float>(m_SwapchainExtent.height),
+        .AspectRatio = static_cast<float>(m_SwapchainExtent.width) /
+        static_cast<float>(m_SwapchainExtent.height),
+        .ZNear = camera.ZNear,
+        .ZFar = camera.ZFar
+    };
 
     return AXR_SUCCESS;
 }

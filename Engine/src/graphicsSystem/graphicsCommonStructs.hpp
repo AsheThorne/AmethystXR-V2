@@ -19,6 +19,8 @@ struct AxrCameraInfo {
     glm::vec3 Position;
     glm::quat Orientation;
     AxrCameraFov Fov;
+    glm::mat4 ViewMatrix;
+    glm::mat4 ProjectionMatrix;
     float PixelWidth;
     float PixelHeight;
     float AspectRatio;

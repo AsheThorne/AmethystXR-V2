@@ -1478,12 +1478,8 @@ AxrResult AxrVulkanGraphicsSystem::renderCurrentFrame(
         if (AXR_SUCCEEDED(axrResult)) {
             std::vector<AxrVulkanMaterialForRendering> alphaBlendMaterials =
                 sceneData->getMaterialsForRendering(AXR_MATERIAL_ALPHA_RENDER_MODE_ALPHA_BLEND);
-            glm::mat4 viewMatrix = glm::inverse(
-                glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
-                glm::toMat4(cameraInfo.Orientation)
-            );
             std::vector<SortableMeshReference> sortedMeshReferences = getSortedMeshReferences(
-                viewMatrix,
+                cameraInfo.ViewMatrix,
                 cameraInfo.ZNear,
                 cameraInfo.ZFar,
                 alphaBlendMaterials
@@ -1587,9 +1583,7 @@ void AxrVulkanGraphicsSystem::renderClayUI(
     float uiFrustumDown = uiDistance * std::tan(std::abs(cameraInfo.Fov.Down));
     float uiFrustumUp = -uiDistance * std::tan(std::abs(cameraInfo.Fov.Up));
 
-    glm::mat4 inverseViewMatrix =
-        glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
-        glm::toMat4(cameraInfo.Orientation);
+    glm::mat4 inverseViewMatrix = glm::inverse(cameraInfo.ViewMatrix);
     glm::vec3 uiTopLeft = inverseViewMatrix * glm::vec4(uiFrustumLeft, uiFrustumUp, uiDistance, 1.0f);
     glm::vec3 uiBottomLeft = inverseViewMatrix * glm::vec4(uiFrustumLeft, uiFrustumDown, uiDistance, 1.0f);
     glm::vec3 uiBottomRight = inverseViewMatrix * glm::vec4(uiFrustumRight, uiFrustumDown, uiDistance, 1.0f);

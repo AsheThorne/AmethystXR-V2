@@ -67,24 +67,18 @@ public:
         float WidthOverlap;
     };
 
-    /// Render matrices
-    struct RenderMatrices {
-        glm::mat4 ViewMatrix;
-        glm::mat4 ProjectionMatrix;
-    };
-
     // Render data for each frame
     struct RenderData {
         XrTime PredictedDisplayTime;
         /// One for each view
         std::vector<XrCompositionLayerProjectionView> CompositionLayerViews;
         /// One for each view
-        std::vector<RenderMatrices> RenderMatrices;
+        std::vector<AxrCameraInfo> CameraInfos;
 
         void reset() {
             PredictedDisplayTime = 0;
             CompositionLayerViews.clear();
-            RenderMatrices.clear();
+            CameraInfos.clear();
         }
     };
 
@@ -242,11 +236,6 @@ public:
     /// @returns AXR_DONT_RENDER if we should skip rendering this frame.
     [[nodiscard]] AxrResult presentFrame(uint32_t viewIndex);
 
-    /// Get the rendering matrices for the given view
-    /// @param viewIndex View index
-    /// @param viewMatrix Output view matrix
-    /// @param projectionMatrix Output projection matrix
-    void getRenderingMatrices(uint32_t viewIndex, glm::mat4& viewMatrix, glm::mat4& projectionMatrix) const;
     /// Get the camera info for the given view
     /// @param viewIndex View index
     /// @param cameraInfo Output camera info
@@ -307,6 +296,10 @@ private:
     [[nodiscard]] AxrResult setupXrSessionGraphics();
     /// Reset the setupXrSessionGraphics() function 
     void resetSetupXrSessionGraphics();
+
+    /// Set the camera info for each view
+    /// @returns AXR_SUCCESS if the function succeeded.
+    [[nodiscard]] AxrResult setCameraInfo();
 
     /// Set the viewable region extent
     /// @param xrViews Xr views to use

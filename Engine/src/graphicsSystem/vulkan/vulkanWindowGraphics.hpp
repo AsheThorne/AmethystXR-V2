@@ -47,18 +47,12 @@ public:
         const std::vector<vk::Format>& SwapchainDepthFormatOptions;
     };
 
-    /// Render matrices
-    struct RenderMatrices {
-        glm::mat4 ViewMatrix;
-        glm::mat4 ProjectionMatrix;
-    };
-
     // Render data for each frame
     struct RenderData {
-        RenderMatrices RenderMatrices;
+        AxrCameraInfo CameraInfo;
 
         void reset() {
-            RenderMatrices = {};
+            CameraInfo = {};
         }
     };
 
@@ -204,11 +198,6 @@ public:
     /// @returns AXR_DONT_RENDER if we should skip rendering this frame.
     [[nodiscard]] AxrResult presentFrame(uint32_t viewIndex);
 
-    /// Get the rendering matrices for the given view
-    /// @param viewIndex View index
-    /// @param viewMatrix Output view matrix
-    /// @param projectionMatrix Output projection matrix
-    void getRenderingMatrices(uint32_t viewIndex, glm::mat4& viewMatrix, glm::mat4& projectionMatrix) const;
     /// Get the camera info for the given view
     /// @param viewIndex View index
     /// @param cameraInfo Output camera info
@@ -292,6 +281,10 @@ private:
         AxrTransformComponent& transform,
         AxrCameraComponent& camera
     ) const;
+
+    /// Set the camera info
+    /// @returns AXR_SUCCESS if the function succeeded.
+    [[nodiscard]] AxrResult setCameraInfo();
 
     // ---- Surface ----
 

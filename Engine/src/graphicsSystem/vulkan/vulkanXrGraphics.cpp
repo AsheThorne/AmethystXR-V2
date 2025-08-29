@@ -201,7 +201,6 @@ AxrResult AxrVulkanXrGraphics::beginRendering(const AxrVulkanSceneData* sceneDat
     setViewableRegionExtent(xrViews);
 
     m_FrameRenderData.CompositionLayerViews.resize(xrViews.size());
-    m_FrameRenderData.RenderMatrices.resize(xrViews.size());
     for (size_t i = 0; i < m_FrameRenderData.CompositionLayerViews.size(); ++i) {
         m_FrameRenderData.CompositionLayerViews[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
         m_FrameRenderData.CompositionLayerViews[i].fov = xrViews[i].fov;
@@ -218,22 +217,12 @@ AxrResult AxrVulkanXrGraphics::beginRendering(const AxrVulkanSceneData* sceneDat
                 .height = static_cast<int32_t>(m_Views[i].SwapchainExtent.height),
             },
         };
+    }
 
-        AxrCameraInfo cameraInfo{};
-        if (AXR_FAILED(getCameraInfo(i, cameraInfo))) {
-            continue;
-        }
-
-        m_FrameRenderData.RenderMatrices[i].ViewMatrix = glm::inverse(
-            glm::translate(glm::mat4(1.0f), cameraInfo.Position) *
-            glm::toMat4(cameraInfo.Orientation)
-        );
-
-        m_FrameRenderData.RenderMatrices[i].ProjectionMatrix = createProjectionMatrix(
-            cameraInfo.Fov,
-            cameraInfo.ZNear,
-            cameraInfo.ZFar
-        );
+    axrResult = setCameraInfo();
+    if (AXR_FAILED(axrResult)) {
+        endRendering();
+        return axrResult;
     }
 
     // We don't really care about the result of this
@@ -376,58 +365,16 @@ AxrResult AxrVulkanXrGraphics::presentFrame(const uint32_t viewIndex) {
     return AXR_SUCCESS;
 }
 
-void AxrVulkanXrGraphics::getRenderingMatrices(
-    const uint32_t viewIndex,
-    glm::mat4& viewMatrix,
-    glm::mat4& projectionMatrix
-) const {
-    if (viewIndex > m_FrameRenderData.RenderMatrices.size() - 1) {
-        axrLogErrorLocation("View index out of bounds.");
-        return;
-    }
-
-    viewMatrix = m_FrameRenderData.RenderMatrices[viewIndex].ViewMatrix;
-    projectionMatrix = m_FrameRenderData.RenderMatrices[viewIndex].ProjectionMatrix;
-}
-
 AxrResult AxrVulkanXrGraphics::getCameraInfo(
     const uint32_t viewIndex,
     AxrCameraInfo& cameraInfo
 ) const {
-    if (viewIndex > m_FrameRenderData.CompositionLayerViews.size() - 1 ||
-        viewIndex > m_Views.size() - 1) {
+    if (viewIndex > m_FrameRenderData.CameraInfos.size() - 1) {
         axrLogErrorLocation("View index out of bounds.");
         return AXR_ERROR;
     }
 
-    const XrCompositionLayerProjectionView& compositionLayer = m_FrameRenderData.CompositionLayerViews[viewIndex];
-    const View& view = m_Views[viewIndex];
-
-    cameraInfo = AxrCameraInfo{
-        .Position = glm::vec3(
-            compositionLayer.pose.position.x,
-            compositionLayer.pose.position.y,
-            compositionLayer.pose.position.z
-        ),
-        .Orientation = glm::quat(
-            compositionLayer.pose.orientation.w,
-            compositionLayer.pose.orientation.x,
-            compositionLayer.pose.orientation.y,
-            compositionLayer.pose.orientation.z
-        ),
-        .Fov = AxrCameraFov{
-            .Up = compositionLayer.fov.angleUp,
-            .Down = compositionLayer.fov.angleDown,
-            .Left = compositionLayer.fov.angleLeft,
-            .Right = compositionLayer.fov.angleRight,
-        },
-        .PixelWidth = static_cast<float>(view.SwapchainExtent.width),
-        .PixelHeight = static_cast<float>(view.SwapchainExtent.height),
-        .AspectRatio = static_cast<float>(view.SwapchainExtent.width) / static_cast<float>(view.SwapchainExtent.height),
-        .ZNear = m_XrSystem.getNearClippingPlane(),
-        .ZFar = m_XrSystem.getFarClippingPlane(),
-    };
-
+    cameraInfo = m_FrameRenderData.CameraInfos[viewIndex];
     return AXR_SUCCESS;
 }
 
@@ -504,6 +451,65 @@ void AxrVulkanXrGraphics::resetSetupXrSessionGraphics() {
     destroyRenderPass();
     resetMsaaSampleCount();
     resetSwapchainFormats();
+}
+
+AxrResult AxrVulkanXrGraphics::setCameraInfo() {
+    if (!m_FrameRenderData.CameraInfos.empty()) {
+        axrLogErrorLocation("Camera info already set.");
+        return AXR_ERROR;
+    }
+    
+    m_FrameRenderData.CameraInfos.resize(m_FrameRenderData.CompositionLayerViews.size());
+    for (size_t viewIndex = 0; viewIndex < m_FrameRenderData.CameraInfos.size(); ++viewIndex) {
+        const XrCompositionLayerProjectionView& compositionLayer = m_FrameRenderData.CompositionLayerViews[viewIndex];
+        const View& view = m_Views[viewIndex];
+
+        const auto position = glm::vec3(
+            compositionLayer.pose.position.x,
+            compositionLayer.pose.position.y,
+            compositionLayer.pose.position.z
+        );
+
+        const auto orientation = glm::quat(
+            compositionLayer.pose.orientation.w,
+            compositionLayer.pose.orientation.x,
+            compositionLayer.pose.orientation.y,
+            compositionLayer.pose.orientation.z
+        );
+
+        const auto fov = AxrCameraFov{
+            .Up = compositionLayer.fov.angleUp,
+            .Down = compositionLayer.fov.angleDown,
+            .Left = compositionLayer.fov.angleLeft,
+            .Right = compositionLayer.fov.angleRight,
+        };
+
+        const auto zNear = m_XrSystem.getNearClippingPlane();
+        const auto zFar = m_XrSystem.getFarClippingPlane();
+
+        m_FrameRenderData.CameraInfos[viewIndex] = AxrCameraInfo{
+            .Position = position,
+            .Orientation = orientation,
+            .Fov = fov,
+            .ViewMatrix = glm::inverse(
+                glm::translate(glm::mat4(1.0f), position) *
+                glm::toMat4(orientation)
+            ),
+            .ProjectionMatrix = createProjectionMatrix(
+                fov,
+                zNear,
+                zFar
+            ),
+            .PixelWidth = static_cast<float>(view.SwapchainExtent.width),
+            .PixelHeight = static_cast<float>(view.SwapchainExtent.height),
+            .AspectRatio = static_cast<float>(view.SwapchainExtent.width) / static_cast<float>(view.SwapchainExtent.
+                height),
+            .ZNear = zNear,
+            .ZFar = zFar,
+        };
+    }
+
+    return AXR_SUCCESS;
 }
 
 void AxrVulkanXrGraphics::setViewableRegionExtent(const std::vector<XrView>& xrViews) {

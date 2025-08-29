@@ -121,15 +121,18 @@ public:
 
         // ---- Scene Data Uniform Buffer----
 
-        AxrEngineAssetUniformBuffer_SceneData sceneDataUniformBuffer{};
+        AxrCameraInfo cameraInfo{};
+        axrResult = m_RenderTarget.getCameraInfo(viewIndex, cameraInfo);
+        if (AXR_FAILED(axrResult)) {
+            axrLogErrorLocation("Failed to get camera info.");
+            return axrResult;
+        }
 
-        m_RenderTarget.getRenderingMatrices(
-            viewIndex,
-            sceneDataUniformBuffer.ViewMatrix,
-            sceneDataUniformBuffer.ProjectionMatrix
-        );
-        sceneDataUniformBuffer.ViewProjectionMatrix =
-            sceneDataUniformBuffer.ProjectionMatrix * sceneDataUniformBuffer.ViewMatrix;
+        AxrEngineAssetUniformBuffer_SceneData sceneDataUniformBuffer{
+            .ViewMatrix = cameraInfo.ViewMatrix,
+            .ProjectionMatrix = cameraInfo.ProjectionMatrix,
+            .ViewProjectionMatrix = cameraInfo.ProjectionMatrix * cameraInfo.ViewMatrix,
+        };
 
         axrResult = sceneData->setUniformBufferData(
             platformType,
@@ -147,13 +150,6 @@ public:
         }
 
         // ---- Camera Data Uniform Buffer----
-
-        AxrCameraInfo cameraInfo{};
-        axrResult = m_RenderTarget.getCameraInfo(viewIndex, cameraInfo);
-        if (AXR_FAILED(axrResult)) {
-            axrLogErrorLocation("Failed to get camera data.");
-            return axrResult;
-        }
 
         AxrEngineAssetUniformBuffer_CameraData cameraDataUniformBuffer{};
         cameraDataUniformBuffer.Dimensions = glm::vec2(cameraInfo.PixelWidth, cameraInfo.PixelHeight);
@@ -546,6 +542,8 @@ public:
     ) const {
         if (axrStringIsEmpty(bufferName)) return;
 
+        AxrResult axrResult = AXR_SUCCESS;
+
         if (stageFlags == static_cast<vk::ShaderStageFlags>(VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM)) {
             axrLogErrorLocation("Shader stages are null.");
             return;
@@ -595,17 +593,16 @@ public:
                 return;
             }
 
-            AxrEngineAssetUniformBuffer_SceneData sceneDataUniformBuffer{};
-
-            m_RenderTarget.getRenderingMatrices(
-                viewIndex,
-                sceneDataUniformBuffer.ViewMatrix,
-                sceneDataUniformBuffer.ProjectionMatrix
-            );
+            AxrCameraInfo cameraInfo{};
+            axrResult = m_RenderTarget.getCameraInfo(viewIndex, cameraInfo);
+            if (AXR_FAILED(axrResult)) {
+                axrLogErrorLocation("Failed to get camera info.");
+                return;
+            }
 
             const auto engineAssetData = AxrEngineAssetPushConstantBuffer_MvpMatrix{
-                .MvpMatrix = sceneDataUniformBuffer.ProjectionMatrix *
-                sceneDataUniformBuffer.ViewMatrix *
+                .MvpMatrix = cameraInfo.ProjectionMatrix *
+                cameraInfo.ViewMatrix *
                 axrTransformGetMatrix(*transformComponent)
             };
 
