@@ -43,10 +43,7 @@ namespace axr {
         // Public Variables
         // ----------------------------------------- //
         bool Enabled = false;
-        // glm::vec3 PositionOffset = glm::vec3(0.0f);
-        // axr::UIReferenceSpaceEnum PositionReferenceSpace = axr::UIReferenceSpaceEnum::Camera;
-        // glm::quat OrientationOffset = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-        // axr::UIReferenceSpaceEnum OrientationReferenceSpace = axr::UIReferenceSpaceEnum::Camera;
+        bool EnableAntialiasing = false;
         Clay_RenderCommandArray ClayRenderCommands = {};
 
         // ----------------------------------------- //
@@ -58,19 +55,17 @@ namespace axr {
         /// Constructor
         UICanvasConfig() = default;
 
+        /// Constructor
+        /// @param enabled Enable rendering of the UI
+        /// @param enableAntialiasing Enable antialiasing of the UI
+        /// @param clayRenderCommands Clay render commands
         UICanvasConfig(
             const bool enabled,
-            // const glm::vec3 positionOffset,
-            // const axr::UIReferenceSpaceEnum positionReferenceSpace,
-            // const glm::quat orientationOffset,
-            // const axr::UIReferenceSpaceEnum orientationReferenceSpace,
+            const bool enableAntialiasing,
             const Clay_RenderCommandArray& clayRenderCommands
         ):
             Enabled(enabled),
-            // PositionOffset(positionOffset),
-            // PositionReferenceSpace(positionReferenceSpace),
-            // OrientationOffset(orientationOffset),
-            // OrientationReferenceSpace(orientationReferenceSpace),
+            EnableAntialiasing(enableAntialiasing),
             ClayRenderCommands(clayRenderCommands) {
         }
 

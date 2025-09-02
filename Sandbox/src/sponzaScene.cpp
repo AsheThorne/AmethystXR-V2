@@ -432,5 +432,5 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
 
     const Clay_RenderCommandArray renderCommands = Clay_EndLayout();
 
-    return axr::UICanvasConfig(true, renderCommands);
+    return axr::UICanvasConfig(true, true, renderCommands);
 }
