@@ -202,6 +202,14 @@ public:
                                         clayRenderCommand.renderData.rectangle.backgroundColor.b,
                                         clayRenderCommand.renderData.rectangle.backgroundColor.a
                                     ),
+                                    .Corners = AxrRoundedCorners{
+                                        .TopLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topLeft,
+                                        .TopRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topRight,
+                                        .BottomLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                                                              bottomLeft,
+                                        .BottomRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                                                               bottomRight,
+                                    },
                                 }
                             }
                         );
@@ -225,6 +233,14 @@ public:
                                         clayRenderCommand.renderData.border.color.b,
                                         clayRenderCommand.renderData.border.color.a
                                     ),
+                                    .Corners = AxrRoundedCorners{
+                                        .TopLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topLeft,
+                                        .TopRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topRight,
+                                        .BottomLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                                                              bottomLeft,
+                                        .BottomRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                                                               bottomRight,
+                                    },
                                 }
                             }
                         );
@@ -252,6 +268,14 @@ public:
                                         clayRenderCommand.renderData.image.backgroundColor.b,
                                         clayRenderCommand.renderData.image.backgroundColor.a
                                     ),
+                                    .Corners = AxrRoundedCorners{
+                                        .TopLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topLeft,
+                                        .TopRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topRight,
+                                        .BottomLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                                                              bottomLeft,
+                                        .BottomRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                                                               bottomRight,
+                                    },
                                 }
                             }
                         );

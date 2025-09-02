@@ -34,3 +34,11 @@ struct AxrPose {
     AxrVec3 position;
     AxrQuaternion orientation;
 };
+
+/// Axr Rounded Corners
+struct alignas(16) AxrRoundedCorners {
+    float TopLeftRadius;
+    float TopRightRadius;
+    float BottomLeftRadius;
+    float BottomRightRadius;
+};

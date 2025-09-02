@@ -366,10 +366,16 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
         .padding = CLAY_PADDING_ALL(16),
         .childGap = 16,
         },
-        .backgroundColor = Clay_Color{0.9f,
-        0.9f,
-        1.0f,
-        0.5f},
+        .backgroundColor = Clay_Color{0.0f,
+        0.0f,
+        0.0f,
+        0.8f},
+        .cornerRadius = Clay_CornerRadius{
+        .topLeft = 100,
+        .topRight = 100,
+        .bottomLeft = 100,
+        .bottomRight = 100,
+        },
         }
     ) {
         CLAY(
@@ -385,8 +391,14 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
             },
             .backgroundColor = Clay_Color{0.2f,
             0.7f,
-            0.0f,
-            0.9f},
+            0.1f,
+            0.5f},
+            .cornerRadius = Clay_CornerRadius{
+            .topLeft = 50,
+            .topRight = 50,
+            .bottomLeft = 0,
+            .bottomRight = 0,
+            },
             }
         ) {
         }

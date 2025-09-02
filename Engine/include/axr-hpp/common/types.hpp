@@ -20,11 +20,19 @@ namespace axr {
 
         // ---- Constructors ----
 
+        /// Default constructor
+        Vec2() = default;
+
+        /// Constructor
+        /// @param x X value
+        /// @param y Y value
         Vec2(const float x, const float y):
             x(x),
             y(y) {
         }
 
+        /// Constructor
+        /// @param vec2 Raw AxrVec2
         explicit Vec2(const AxrVec2& vec2):
             x(vec2.x),
             y(vec2.y) {
@@ -67,12 +75,21 @@ namespace axr {
 
         // ---- Constructors ----
 
+        /// Default constructor
+        Vec3() = default;
+
+        /// Constructor
+        /// @param x X value
+        /// @param y Y value
+        /// @param z Z value
         Vec3(const float x, const float y, const float z):
             x(x),
             y(y),
             z(z) {
         }
 
+        /// Constructor
+        /// @param vec3 Raw AxrVec3
         explicit Vec3(const AxrVec3& vec3):
             x(vec3.x),
             y(vec3.y),
@@ -117,6 +134,14 @@ namespace axr {
 
         // ---- Constructors ----
 
+        /// Default constructor
+        Color() = default;
+
+        /// Constructor
+        /// @param r R value
+        /// @param g G value
+        /// @param b B value
+        /// @param a A value
         Color(const float r, const float g, const float b, const float a):
             r(r),
             g(g),
@@ -124,6 +149,8 @@ namespace axr {
             a(a) {
         }
 
+        /// Constructor
+        /// @param color Raw AxrColor
         explicit Color(const AxrColor& color):
             r(color.r),
             g(color.g),
@@ -169,6 +196,14 @@ namespace axr {
 
         // ---- Constructors ----
 
+        /// Default constructor
+        Quaternion() = default;
+
+        /// Constructor
+        /// @param x X value
+        /// @param y Y value
+        /// @param z Z value
+        /// @param w W value
         Quaternion(const float x, const float y, const float z, const float w):
             x(x),
             y(y),
@@ -176,6 +211,8 @@ namespace axr {
             w(w) {
         }
 
+        /// Constructor
+        /// @param quaternion Raw AxrQuaternion
         explicit Quaternion(const AxrQuaternion& quaternion):
             x(quaternion.x),
             y(quaternion.y),
@@ -210,8 +247,8 @@ namespace axr {
         // ----------------------------------------- //
         // Public Variables
         // ----------------------------------------- //
-        axr::Vec3 position;
-        axr::Quaternion orientation;
+        axr::Vec3 position = {};
+        axr::Quaternion orientation = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -219,11 +256,19 @@ namespace axr {
 
         // ---- Constructors ----
 
+        /// Default constructor
+        Pose() = default;
+
+        /// Constructor
+        /// @param position Position value
+        /// @param orientation Orientation value
         Pose(const axr::Vec3 position, const axr::Quaternion orientation):
             position(position),
             orientation(orientation) {
         }
 
+        /// Constructor
+        /// @param pose Raw AxrPose
         explicit Pose(const AxrPose& pose):
             position(pose.position),
             orientation(pose.orientation) {
@@ -248,6 +293,73 @@ namespace axr {
 
     static_assert(
         sizeof(AxrPose) == sizeof(axr::Pose),
+        "Original type and wrapper have different size!"
+    );
+
+    /// Axr Rounded Corners
+    struct alignas (16) RoundedCorners {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        float TopLeftRadius = 0.0f;
+        float TopRightRadius = 0.0f;
+        float BottomLeftRadius = 0.0f;
+        float BottomRightRadius = 0.0f;
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default constructor
+        RoundedCorners() = default;
+
+        /// Constructor
+        /// @param topLeftRadius Top left radius
+        /// @param topRightRadius Top right radius
+        /// @param bottomLeftRadius Bottom left radius
+        /// @param bottomRightRadius Bottom right radius
+        RoundedCorners(
+            const float topLeftRadius,
+            const float topRightRadius,
+            const float bottomLeftRadius,
+            const float bottomRightRadius
+        ):
+            TopLeftRadius(topLeftRadius),
+            TopRightRadius(topRightRadius),
+            BottomLeftRadius(bottomLeftRadius),
+            BottomRightRadius(bottomRightRadius) {
+        }
+
+        /// Constructor
+        /// @param roundedCorners Raw AxrRoundedCorners
+        explicit RoundedCorners(const AxrRoundedCorners& roundedCorners):
+            TopLeftRadius(roundedCorners.TopLeftRadius),
+            TopRightRadius(roundedCorners.TopRightRadius),
+            BottomLeftRadius(roundedCorners.BottomLeftRadius),
+            BottomRightRadius(roundedCorners.BottomRightRadius) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the RoundedCorners as an AxrRoundedCorners
+        /// @returns This as an AxrRoundedCorners
+        const AxrRoundedCorners* toRaw() const {
+            return reinterpret_cast<const AxrRoundedCorners*>(this);
+        }
+
+        /// Get a handle to the RoundedCorners as an AxrRoundedCorners
+        /// @returns This as an AxrRoundedCorners
+        AxrRoundedCorners* toRaw() {
+            return reinterpret_cast<AxrRoundedCorners*>(this);
+        }
+    };
+
+    static_assert(
+        sizeof(AxrRoundedCorners) == sizeof(axr::RoundedCorners),
         "Original type and wrapper have different size!"
     );
 }

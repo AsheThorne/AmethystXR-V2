@@ -579,12 +579,18 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
 }
 
 AxrResult axrEngineAssetCreateShader_UIRectangleFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
+    AxrShaderUniformBufferLayout cameraDataBufferLayout{
+        .Binding = 1,
+        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA)
+    };
+
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
         .Binding = 2,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
     std::array bufferLayouts{
+        reinterpret_cast<AxrShaderBufferLayout_T>(&cameraDataBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&dynamicUniformBufferLayout),
     };
 
@@ -1378,22 +1384,22 @@ AxrResult axrEngineAssetCreateModel_UIRectangle(const std::string& modelName, Ax
         AxrVertex{
             .Position = {1.0f, 1.0f, 0.0f},
             .Color = {1.0f, 1.0f, 1.0f},
-            .TexCoord_0 = {1.0f, 0.0f},
+            .TexCoord_0 = {1.0f, 1.0f},
         },
         AxrVertex{
             .Position = {0.0f, 1.0f, 0.0f},
             .Color = {1.0f, 1.0f, 1.0f},
-            .TexCoord_0 = {0.0f, 0.0f},
+            .TexCoord_0 = {0.0f, 1.0f},
         },
         AxrVertex{
             .Position = {0.0f, 0.0f, 0.0f},
             .Color = {1.0f, 1.0f, 1.0f},
-            .TexCoord_0 = {0.0f, 1.0f},
+            .TexCoord_0 = {0.0f, 0.0f},
         },
         AxrVertex{
             .Position = {1.0f, 0.0f, 0.0f},
             .Color = {1.0f, 1.0f, 1.0f},
-            .TexCoord_0 = {1.0f, 1.0f},
+            .TexCoord_0 = {1.0f, 0.0f},
         },
     };
 

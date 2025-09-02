@@ -5,6 +5,7 @@
 // ----------------------------------------- //
 #include "axr/common/defines.h"
 #include "axr/common/enums.h"
+#include "axr/common/types.h"
 
 // ----------------------------------------- //
 // GLM Headers
@@ -909,7 +910,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIRectangle {
     alignas(8) glm::vec2 Position;
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
-    // AxrCornerRadius CornerRadius;
+    alignas(16) AxrRoundedCorners Corners;
 };
 
 /// Engine asset uniform buffer named 'UI Image' structure
@@ -918,7 +919,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
     alignas(8) glm::vec2 Position;
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
-    // AxrCornerRadius CornerRadius;
+    alignas(16) AxrRoundedCorners Corners;
 };
 
 /// Engine asset uniform buffer named 'UI Border' structure
@@ -927,7 +928,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIBorder {
     alignas(8) glm::vec2 Position;
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 Color;
-    // AxrCornerRadius CornerRadius;
+    alignas(16) AxrRoundedCorners Corners;
     // AxrBorderWidth Width;
 };
 

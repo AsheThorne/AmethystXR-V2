@@ -3002,6 +3002,7 @@ namespace axr {
         alignas(8) glm::vec2 Position = {};
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
+        alignas(16) axr::RoundedCorners Corners = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3016,13 +3017,16 @@ namespace axr {
         /// @param position The UI element position
         /// @param size The UI element size
         /// @param backgroundColor The background color
+        /// @param corners The rounded corners
         EngineAssetUniformBuffer_UIRectangle(
             const glm::vec2& position,
             const glm::vec2& size,
-            const glm::vec4& backgroundColor
+            const glm::vec4& backgroundColor,
+            const axr::RoundedCorners& corners
         ): Position(position),
             Size(size),
-            BackgroundColor(backgroundColor) {
+            BackgroundColor(backgroundColor),
+            Corners(corners) {
         }
 
         // ----------------------------------------- //
@@ -3056,6 +3060,7 @@ namespace axr {
         alignas(8) glm::vec2 Position = {};
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
+        alignas(16) axr::RoundedCorners Corners = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3070,13 +3075,16 @@ namespace axr {
         /// @param position The UI element position
         /// @param size The UI element size
         /// @param backgroundColor The background color
+        /// @param corners The rounded corners
         EngineAssetUniformBuffer_UIImage(
             const glm::vec2& position,
             const glm::vec2& size,
-            const glm::vec4& backgroundColor
+            const glm::vec4& backgroundColor,
+            const axr::RoundedCorners& corners
         ): Position(position),
             Size(size),
-            BackgroundColor(backgroundColor) {
+            BackgroundColor(backgroundColor),
+            Corners(corners) {
         }
 
         // ----------------------------------------- //
@@ -3110,6 +3118,7 @@ namespace axr {
         alignas(8) glm::vec2 Position = {};
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 Color = {};
+        alignas(16) axr::RoundedCorners Corners = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3124,13 +3133,16 @@ namespace axr {
         /// @param position The UI element position
         /// @param size The UI element size
         /// @param color The color
+        /// @param corners The rounded corners
         EngineAssetUniformBuffer_UIBorder(
             const glm::vec2& position,
             const glm::vec2& size,
-            const glm::vec4& color
+            const glm::vec4& color,
+            const axr::RoundedCorners& corners
         ): Position(position),
             Size(size),
-            Color(color) {
+            Color(color),
+            Corners(corners) {
         }
 
         // ----------------------------------------- //
