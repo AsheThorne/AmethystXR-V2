@@ -849,7 +849,10 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_START = 65,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA = 65,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA = 66,
-    AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS = 67,
+    // TODO: When implementing world space UI, make sure we make AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS constructable in the README.md
+    //  Since we will have to create a uniform buffer for each canvas in the world.
+    AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS = 67,
+    AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS = 68,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_END = 96,
 
     // ---- Push Constant Buffers - Max of 32 ----
@@ -902,6 +905,13 @@ struct alignas(16) AxrEngineAssetUniformBuffer_CameraData {
     alignas(8) glm::vec2 Dimensions;
     alignas(4) float ZNear;
     alignas(4) float ZFar;
+};
+
+/// Engine asset uniform buffer named 'UI Canvas' structure
+struct alignas(16) AxrEngineAssetUniformBuffer_UICanvas {
+    alignas(8) glm::vec2 Size;
+    alignas(4) bool EnableAntialiasing;
+    float _padding;
 };
 
 /// Engine asset uniform buffer named 'UI Rectangle' structure

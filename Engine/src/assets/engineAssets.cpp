@@ -70,6 +70,10 @@ const std::unordered_map EngineAssetBufferNames{
         "AXR:UniformBufferCameraData"
     ),
     std::pair(
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS,
+        "AXR:UniformBufferUICanvas"
+    ),
+    std::pair(
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         "AXR:UniformBufferUIElements"
     ),
@@ -193,6 +197,9 @@ uint64_t axrEngineAssetGetUniformBufferSize(const AxrEngineAssetEnum engineAsset
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
             return sizeof(AxrEngineAssetUniformBuffer_CameraData);
         }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
+            return sizeof(AxrEngineAssetUniformBuffer_UICanvas);
+        }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
             if (Clay_GetCurrentContext() == nullptr) {
                 axrLogWarningLocation("Clay context is null.");
@@ -221,6 +228,9 @@ uint64_t axrEngineAssetGetUniformBufferInstanceSize(const AxrEngineAssetEnum eng
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
             return sizeof(AxrEngineAssetUniformBuffer_CameraData);
         }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
+            return sizeof(AxrEngineAssetUniformBuffer_UIElement);
+        }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
             return sizeof(AxrEngineAssetUniformBuffer_UIElement);
         }
@@ -242,6 +252,9 @@ AxrUniformBufferTypeEnum axrEngineAssetGetUniformBufferType(const AxrEngineAsset
             return AXR_UNIFORM_BUFFER_TYPE_STANDARD;
         }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
+            return AXR_UNIFORM_BUFFER_TYPE_STANDARD;
+        }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
             return AXR_UNIFORM_BUFFER_TYPE_STANDARD;
         }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
@@ -518,9 +531,9 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
         .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA)
     };
 
-    AxrShaderUniformBufferLayout cameraDataBufferLayout{
+    AxrShaderUniformBufferLayout uiCanvasBufferLayout{
         .Binding = 1,
-        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA)
+        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS)
     };
 
     AxrShaderDynamicUniformBufferLayout uiElementBufferLayout{
@@ -536,7 +549,7 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
 
     std::array bufferLayouts{
         reinterpret_cast<AxrShaderBufferLayout_T>(&sceneDataBufferLayout),
-        reinterpret_cast<AxrShaderBufferLayout_T>(&cameraDataBufferLayout),
+        reinterpret_cast<AxrShaderBufferLayout_T>(&uiCanvasBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&uiElementBufferLayout),
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
         reinterpret_cast<AxrShaderBufferLayout_T>(&modelMatrixBufferLayout),
@@ -579,9 +592,9 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
 }
 
 AxrResult axrEngineAssetCreateShader_UIRectangleFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
-    AxrShaderUniformBufferLayout cameraDataBufferLayout{
+    AxrShaderUniformBufferLayout uiCanvasBufferLayout{
         .Binding = 1,
-        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA)
+        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS)
     };
 
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
@@ -590,7 +603,7 @@ AxrResult axrEngineAssetCreateShader_UIRectangleFrag(const AxrGraphicsApiEnum gr
     };
 
     std::array bufferLayouts{
-        reinterpret_cast<AxrShaderBufferLayout_T>(&cameraDataBufferLayout),
+        reinterpret_cast<AxrShaderBufferLayout_T>(&uiCanvasBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&dynamicUniformBufferLayout),
     };
 
@@ -728,6 +741,9 @@ AxrResult axrEngineAssetCreateUniformBuffer(const AxrEngineAssetEnum engineAsset
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
             return axrEngineAssetCreateUniformBuffer_CameraData(uniformBuffer);
         }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
+            return axrEngineAssetCreateUniformBuffer_UICanvas(uniformBuffer);
+        }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
             return axrEngineAssetCreateUniformBuffer_UIElements(uniformBuffer);
         }
@@ -765,6 +781,23 @@ AxrResult axrEngineAssetCreateUniformBuffer_CameraData(AxrUniformBuffer& uniform
     strncpy_s(
         uniformBufferConfig.Name,
         axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+
+    uniformBuffer = AxrUniformBuffer(uniformBufferConfig);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult axrEngineAssetCreateUniformBuffer_UICanvas(AxrUniformBuffer& uniformBuffer) {
+    AxrUniformBufferConfig uniformBufferConfig{
+        .Name = {},
+        .DataSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
+        .Data = nullptr,
+    };
+    strncpy_s(
+        uniformBufferConfig.Name,
+        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
         AXR_MAX_ASSET_NAME_SIZE
     );
 
@@ -938,7 +971,7 @@ AxrResult axrEngineAssetCreateMaterial_UIRectangle(
     };
     strncpy_s(
         cameraDataBufferLink.BufferName,
-        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA),
+        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
         AXR_MAX_ASSET_NAME_SIZE
     );
 
