@@ -33,8 +33,5 @@ void main() {
     );
 
     gl_Position = scene.viewProjectionMatrix * modelMatrix * vec4(position, 1.0);
-    fragPixelCoord = vec2(
-    inTexCoord.x * uiElement.size.x,
-    inTexCoord.y * uiElement.size.y
-    );
+    fragPixelCoord = inTexCoord * uiElement.size;
 }
