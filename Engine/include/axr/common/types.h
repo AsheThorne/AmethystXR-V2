@@ -37,8 +37,8 @@ struct AxrPose {
 
 /// Axr Rounded Corners
 struct alignas(16) AxrRoundedCorners {
-    float TopLeftRadius;
-    float TopRightRadius;
-    float BottomLeftRadius;
-    float BottomRightRadius;
+    alignas(4) float TopLeftRadius;
+    alignas(4) float TopRightRadius;
+    alignas(4) float BottomLeftRadius;
+    alignas(4) float BottomRightRadius;
 };

@@ -44,13 +44,13 @@ namespace axr {
 
         /// Get a handle to the Vec2 as an AxrVec2
         /// @returns This as an AxrVec2
-        const AxrVec2* toRaw() const {
+        [[nodiscard]] const AxrVec2* toRaw() const {
             return reinterpret_cast<const AxrVec2*>(this);
         }
 
         /// Get a handle to the Vec2 as an AxrVec2
         /// @returns This as an AxrVec2
-        AxrVec2* toRaw() {
+        [[nodiscard]] AxrVec2* toRaw() {
             return reinterpret_cast<AxrVec2*>(this);
         }
     };
@@ -102,13 +102,13 @@ namespace axr {
 
         /// Get a handle to the Vec3 as an AxrVec3
         /// @returns This as an AxrVec3
-        const AxrVec3* toRaw() const {
+        [[nodiscard]] const AxrVec3* toRaw() const {
             return reinterpret_cast<const AxrVec3*>(this);
         }
 
         /// Get a handle to the Vec3 as an AxrVec3
         /// @returns This as an AxrVec3
-        AxrVec3* toRaw() {
+        [[nodiscard]] AxrVec3* toRaw() {
             return reinterpret_cast<AxrVec3*>(this);
         }
     };
@@ -164,13 +164,13 @@ namespace axr {
 
         /// Get a handle to the Color as an AxrColor
         /// @returns This as an AxrColor
-        const AxrColor* toRaw() const {
+        [[nodiscard]] const AxrColor* toRaw() const {
             return reinterpret_cast<const AxrColor*>(this);
         }
 
         /// Get a handle to the Color as an AxrColor
         /// @returns This as an AxrColor
-        AxrColor* toRaw() {
+        [[nodiscard]] AxrColor* toRaw() {
             return reinterpret_cast<AxrColor*>(this);
         }
     };
@@ -226,13 +226,13 @@ namespace axr {
 
         /// Get a handle to the Quaternion as an AxrQuaternion
         /// @returns This as an AxrQuaternion
-        const AxrQuaternion* toRaw() const {
+        [[nodiscard]] const AxrQuaternion* toRaw() const {
             return reinterpret_cast<const AxrQuaternion*>(this);
         }
 
         /// Get a handle to the Quaternion as an AxrQuaternion
         /// @returns This as an AxrQuaternion
-        AxrQuaternion* toRaw() {
+        [[nodiscard]] AxrQuaternion* toRaw() {
             return reinterpret_cast<AxrQuaternion*>(this);
         }
     };
@@ -280,13 +280,13 @@ namespace axr {
 
         /// Get a handle to the Pose as an AxrPose
         /// @returns This as an AxrPose
-        const AxrPose* toRaw() const {
+        [[nodiscard]] const AxrPose* toRaw() const {
             return reinterpret_cast<const AxrPose*>(this);
         }
 
         /// Get a handle to the Pose as an AxrPose
         /// @returns This as an AxrPose
-        AxrPose* toRaw() {
+        [[nodiscard]] AxrPose* toRaw() {
             return reinterpret_cast<AxrPose*>(this);
         }
     };
@@ -301,10 +301,10 @@ namespace axr {
         // ----------------------------------------- //
         // Public Variables
         // ----------------------------------------- //
-        float TopLeftRadius = 0.0f;
-        float TopRightRadius = 0.0f;
-        float BottomLeftRadius = 0.0f;
-        float BottomRightRadius = 0.0f;
+        alignas(4) float TopLeftRadius = 0.0f;
+        alignas(4) float TopRightRadius = 0.0f;
+        alignas(4) float BottomLeftRadius = 0.0f;
+        alignas(4) float BottomRightRadius = 0.0f;
 
         // ----------------------------------------- //
         // Special Functions
@@ -347,13 +347,13 @@ namespace axr {
 
         /// Get a handle to the RoundedCorners as an AxrRoundedCorners
         /// @returns This as an AxrRoundedCorners
-        const AxrRoundedCorners* toRaw() const {
+        [[nodiscard]] const AxrRoundedCorners* toRaw() const {
             return reinterpret_cast<const AxrRoundedCorners*>(this);
         }
 
         /// Get a handle to the RoundedCorners as an AxrRoundedCorners
         /// @returns This as an AxrRoundedCorners
-        AxrRoundedCorners* toRaw() {
+        [[nodiscard]] AxrRoundedCorners* toRaw() {
             return reinterpret_cast<AxrRoundedCorners*>(this);
         }
     };
