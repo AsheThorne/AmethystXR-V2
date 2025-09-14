@@ -1,10 +1,10 @@
 #version 450
 
 struct RoundedCorners {
-    float TopLeftRadius;
-    float TopRightRadius;
-    float BottomLeftRadius;
-    float BottomRightRadius;
+    float topLeftRadius;
+    float topRightRadius;
+    float bottomLeftRadius;
+    float bottomRightRadius;
 };
 
 layout (location = 0) in vec2 fragPixelCoord;
@@ -35,27 +35,22 @@ vec2 translateSdf(vec2 position, vec2 offset) {
 
 void main() {
     vec2 elementCenter = uiElement.size / 2.0;
-    float radius = 0.0;
 
-    // Top Left corner
-    if (fragPixelCoord.x <= elementCenter.x && fragPixelCoord.y > elementCenter.y) {
-        radius = uiElement.corners.TopLeftRadius;
-    }
-    // Top Right corner
-    else if (fragPixelCoord.x > elementCenter.x && fragPixelCoord.y > elementCenter.y) {
-        radius = uiElement.corners.TopRightRadius;
-    }
-    // Bottom Left corner
-    else if (fragPixelCoord.x <= elementCenter.x && fragPixelCoord.y <= elementCenter.y) {
-        radius = uiElement.corners.BottomLeftRadius;
-    }
-    // Bottom Right corner
-    else if (fragPixelCoord.x > elementCenter.x && fragPixelCoord.y <= elementCenter.y) {
-        radius = uiElement.corners.BottomRightRadius;
-    }
+    // x: -1, y: -1 => Bottom Left.
+    // x: -1, y: 1 => Bottom Right.
+    // x: 1, y: -1 => Top Left.
+    // x: 1, y: 1 => Top Right.
+    vec2 fragQuadrant = sign(translateSdf(fragPixelCoord, elementCenter));
 
-    // Clamp the radius
+    // ---- Calculate corner radius ----
+
+    float topHalfRadius = mix(uiElement.corners.topRightRadius, uiElement.corners.topLeftRadius, step(fragQuadrant.x, 0.0));
+    float bottomHalfRadius = mix(uiElement.corners.bottomRightRadius, uiElement.corners.bottomLeftRadius, step(fragQuadrant.x, 0.0));
+    float radius = mix(topHalfRadius, bottomHalfRadius, step(fragQuadrant.y, 0.0));
+    // Clamp radius
     radius = min(radius, min(elementCenter.x, elementCenter.y));
+
+    // ---- Calculate sdf distance ----
 
     float sdfDistance = rectangleSdf(translateSdf(fragPixelCoord, elementCenter), elementCenter, radius);
 
