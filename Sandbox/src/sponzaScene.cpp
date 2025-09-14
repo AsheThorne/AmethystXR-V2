@@ -394,10 +394,23 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
             0.1f,
             0.5f},
             .cornerRadius = Clay_CornerRadius{
-            .topLeft = 50,
+            .topLeft = 25,
             .topRight = 50,
-            .bottomLeft = 0,
+            .bottomLeft = 70,
             .bottomRight = 0,
+            },
+            .border = Clay_BorderElementConfig {
+            .color = Clay_Color{0.3f,
+            0.02f,
+            0.6f,
+            1.0f},
+            .width = Clay_BorderWidth{
+            .left = 20,
+            .right = 20,
+            .top = 20,
+            .bottom = 20,
+            .betweenChildren = 0,
+            }
             },
             }
         ) {

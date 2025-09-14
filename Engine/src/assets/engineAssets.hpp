@@ -66,6 +66,11 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(AxrGraphicsApiEnum graphicsAp
 /// @param shader Output created shader
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateShader_UIRectangleFrag(AxrGraphicsApiEnum graphicsApi, AxrShader& shader);
+/// Create the 'UI Border Frag' engine asset shader
+/// @param graphicsApi The graphics api to use this shader with
+/// @param shader Output created shader
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateShader_UIBorderFrag(AxrGraphicsApiEnum graphicsApi, AxrShader& shader);
 
 
 // ---------------------------------------------------------------------------------- //
@@ -172,6 +177,14 @@ AxrResult axrEngineAssetCreateMaterial_DefaultMaterial(
 /// @param materialShaders Output required shaders for this material
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateMaterial_UIRectangle(
+    AxrMaterial& material,
+    std::vector<AxrEngineAssetEnum>& materialShaders
+);
+/// Create the 'UI Border' engine asset material
+/// @param material Output created material
+/// @param materialShaders Output required shaders for this material
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateMaterial_UIBorder(
     AxrMaterial& material,
     std::vector<AxrEngineAssetEnum>& materialShaders
 );

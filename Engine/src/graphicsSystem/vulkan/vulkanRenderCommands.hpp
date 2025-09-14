@@ -222,7 +222,7 @@ public:
                                         clayRenderCommand.renderData.rectangle.backgroundColor.b,
                                         clayRenderCommand.renderData.rectangle.backgroundColor.a
                                     ),
-                                    .Corners = AxrRoundedCorners{
+                                    .Corners = AxrUIRoundedCorners{
                                         .TopLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topLeft,
                                         .TopRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topRight,
                                         .BottomLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
@@ -253,13 +253,19 @@ public:
                                         clayRenderCommand.renderData.border.color.b,
                                         clayRenderCommand.renderData.border.color.a
                                     ),
-                                    .Corners = AxrRoundedCorners{
-                                        .TopLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topLeft,
-                                        .TopRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topRight,
-                                        .BottomLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                    .Corners = AxrUIRoundedCorners{
+                                        .TopLeftRadius = clayRenderCommand.renderData.border.cornerRadius.topLeft,
+                                        .TopRightRadius = clayRenderCommand.renderData.border.cornerRadius.topRight,
+                                        .BottomLeftRadius = clayRenderCommand.renderData.border.cornerRadius.
                                                                               bottomLeft,
-                                        .BottomRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                        .BottomRightRadius = clayRenderCommand.renderData.border.cornerRadius.
                                                                                bottomRight,
+                                    },
+                                    .Borders = AxrUIBorders{
+                                        .Left = clayRenderCommand.renderData.border.width.left,
+                                        .Right = clayRenderCommand.renderData.border.width.right,
+                                        .Top = clayRenderCommand.renderData.border.width.top,
+                                        .Bottom = clayRenderCommand.renderData.border.width.bottom,
                                     },
                                 }
                             }
@@ -288,12 +294,12 @@ public:
                                         clayRenderCommand.renderData.image.backgroundColor.b,
                                         clayRenderCommand.renderData.image.backgroundColor.a
                                     ),
-                                    .Corners = AxrRoundedCorners{
-                                        .TopLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topLeft,
-                                        .TopRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.topRight,
-                                        .BottomLeftRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                    .Corners = AxrUIRoundedCorners{
+                                        .TopLeftRadius = clayRenderCommand.renderData.image.cornerRadius.topLeft,
+                                        .TopRightRadius = clayRenderCommand.renderData.image.cornerRadius.topRight,
+                                        .BottomLeftRadius = clayRenderCommand.renderData.image.cornerRadius.
                                                                               bottomLeft,
-                                        .BottomRightRadius = clayRenderCommand.renderData.rectangle.cornerRadius.
+                                        .BottomRightRadius = clayRenderCommand.renderData.image.cornerRadius.
                                                                                bottomRight,
                                     },
                                 }

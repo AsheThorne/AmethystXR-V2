@@ -5,6 +5,7 @@
 // ----------------------------------------- //
 #include "axr/assets.h"
 #include "common/enums.hpp"
+#include "common/types.hpp"
 
 namespace axr {
     // ---------------------------------------------------------------------------------- //
@@ -3053,7 +3054,7 @@ namespace axr {
         alignas(8) glm::vec2 Position = {};
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
-        alignas(16) axr::RoundedCorners Corners = {};
+        alignas(16) axr::UIRoundedCorners Corners = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3073,7 +3074,7 @@ namespace axr {
             const glm::vec2& position,
             const glm::vec2& size,
             const glm::vec4& backgroundColor,
-            const axr::RoundedCorners& corners
+            const axr::UIRoundedCorners& corners
         ): Position(position),
             Size(size),
             BackgroundColor(backgroundColor),
@@ -3111,7 +3112,7 @@ namespace axr {
         alignas(8) glm::vec2 Position = {};
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
-        alignas(16) axr::RoundedCorners Corners = {};
+        alignas(16) axr::UIRoundedCorners Corners = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3131,7 +3132,7 @@ namespace axr {
             const glm::vec2& position,
             const glm::vec2& size,
             const glm::vec4& backgroundColor,
-            const axr::RoundedCorners& corners
+            const axr::UIRoundedCorners& corners
         ): Position(position),
             Size(size),
             BackgroundColor(backgroundColor),
@@ -3169,7 +3170,8 @@ namespace axr {
         alignas(8) glm::vec2 Position = {};
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 Color = {};
-        alignas(16) axr::RoundedCorners Corners = {};
+        alignas(16) axr::UIRoundedCorners Corners = {};
+        alignas(16) axr::UIBorders Borders = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3185,15 +3187,18 @@ namespace axr {
         /// @param size The UI element size
         /// @param color The color
         /// @param corners The rounded corners
+        /// @param borders The border thicknesses
         EngineAssetUniformBuffer_UIBorder(
             const glm::vec2& position,
             const glm::vec2& size,
             const glm::vec4& color,
-            const axr::RoundedCorners& corners
+            const axr::UIRoundedCorners& corners,
+            const axr::UIBorders& borders
         ): Position(position),
             Size(size),
             Color(color),
-            Corners(corners) {
+            Corners(corners),
+            Borders(borders) {
         }
 
         // ----------------------------------------- //

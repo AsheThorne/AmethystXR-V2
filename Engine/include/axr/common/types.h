@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+// ----------------------------------------- //
+// C/C++ Headers
+// ----------------------------------------- //
+#include <cstdint>
+
 /// Axr Vec2
 struct AxrVec2 {
     float x;
@@ -35,10 +40,18 @@ struct AxrPose {
     AxrQuaternion orientation;
 };
 
-/// Axr Rounded Corners
-struct alignas(16) AxrRoundedCorners {
+/// Axr UI Rounded Corners
+struct alignas(16) AxrUIRoundedCorners {
     alignas(4) float TopLeftRadius;
     alignas(4) float TopRightRadius;
     alignas(4) float BottomLeftRadius;
     alignas(4) float BottomRightRadius;
+};
+
+/// Axr UI Borders
+struct alignas(16) AxrUIBorders {
+    alignas(4) uint32_t Left;
+    alignas(4) uint32_t Right;
+    alignas(4) uint32_t Top;
+    alignas(4) uint32_t Bottom;
 };

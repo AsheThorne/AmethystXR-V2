@@ -1610,7 +1610,7 @@ void AxrVulkanGraphicsSystem::renderClayUI(
                 materialForRendering = sceneData->getUIRectangleMaterialForRendering();
                 break;
             case CLAY_RENDER_COMMAND_TYPE_BORDER:
-                axrLogErrorLocation("`Border` clay render command not supported.");
+                materialForRendering = sceneData->getUIBorderMaterialForRendering();
                 break;
             case CLAY_RENDER_COMMAND_TYPE_TEXT:
                 axrLogErrorLocation("`Text` clay render command not supported.");

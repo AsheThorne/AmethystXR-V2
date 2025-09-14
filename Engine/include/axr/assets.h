@@ -843,6 +843,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_SHADER_DEFAULT_FRAG_MASK = 3,
     AXR_ENGINE_ASSET_SHADER_UI_ELEMENT_VERT = 4,
     AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG = 5,
+    AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG = 6,
     AXR_ENGINE_ASSET_SHADER_END = 64,
 
     // ---- Uniform Buffers - Max of 32 ----
@@ -876,6 +877,7 @@ enum AxrEngineAssetEnum {
     // ---- Materials - Max of 64 ----
     AXR_ENGINE_ASSET_MATERIAL_START = 201,
     AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE = 201,
+    AXR_ENGINE_ASSET_MATERIAL_UI_BORDER = 202,
     AXR_ENGINE_ASSET_MATERIAL_END = 264,
 
     // ---- Models - Max of 64 ----
@@ -919,7 +921,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIRectangle {
     alignas(8) glm::vec2 Position;
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
-    alignas(16) AxrRoundedCorners Corners;
+    alignas(16) AxrUIRoundedCorners Corners;
 };
 
 /// Engine asset uniform buffer named 'UI Image' structure
@@ -928,7 +930,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
     alignas(8) glm::vec2 Position;
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
-    alignas(16) AxrRoundedCorners Corners;
+    alignas(16) AxrUIRoundedCorners Corners;
 };
 
 /// Engine asset uniform buffer named 'UI Border' structure
@@ -937,8 +939,8 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIBorder {
     alignas(8) glm::vec2 Position;
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 Color;
-    alignas(16) AxrRoundedCorners Corners;
-    // AxrBorderWidth Width;
+    alignas(16) AxrUIRoundedCorners Corners;
+    alignas(16) AxrUIBorders Borders;
 };
 
 /// Engine asset uniform buffer for a general UI element.

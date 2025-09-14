@@ -128,6 +128,9 @@ public:
     /// Get the `UI Rectangle` material for rendering
     /// @returns The `UI Rectangle` material for rendering. Or nullptr if it doesn't exist.
     [[nodiscard]] const AxrVulkanMaterialForRendering* getUIRectangleMaterialForRendering() const;
+    /// Get the `UI Border` material for rendering
+    /// @returns The `UI Border` material for rendering. Or nullptr if it doesn't exist.
+    [[nodiscard]] const AxrVulkanMaterialForRendering* getUIBorderMaterialForRendering() const;
 
     /// Set uniform buffer data.
     /// If `alignData` is true, `data` must contain whole instance objects without any padding between them.
@@ -206,6 +209,7 @@ private:
     std::vector<AxrVulkanMaterialForRendering> m_OITMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_UIMaterialsForRendering;
     int32_t m_UIRectangleMaterialForRenderingIndex = -1;
+    int32_t m_UIBorderMaterialForRenderingIndex = -1;
 
     // ----------------------------------------- //
     // Private Functions

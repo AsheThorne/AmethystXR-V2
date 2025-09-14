@@ -291,6 +291,15 @@ const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUIRectangleMaterialF
     return &m_UIMaterialsForRendering[m_UIRectangleMaterialForRenderingIndex];
 }
 
+const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUIBorderMaterialForRendering() const {
+    if (m_UIMaterialsForRendering.empty() ||
+        m_UIBorderMaterialForRenderingIndex < 0) {
+        return nullptr;
+    }
+
+    return &m_UIMaterialsForRendering[m_UIBorderMaterialForRenderingIndex];
+}
+
 AxrResult AxrVulkanSceneData::setUniformBufferData(
     const AxrPlatformType platformType,
     const std::string& bufferName,
@@ -1306,10 +1315,19 @@ AxrResult AxrVulkanSceneData::createAllMaterialLayoutData() {
     };
 
     if (isThisGlobalSceneData()) {
+        // ---- Rectangle UI ----
         AxrMaterial uiRectangleMaterial;
         std::vector<AxrEngineAssetEnum> uiRectangleShaders;
         axrEngineAssetCreateMaterial_UIRectangle(uiRectangleMaterial, uiRectangleShaders);
         m_LocalMaterials.push_back(std::move(uiRectangleMaterial));
+
+        createMaterialLayout(m_LocalMaterials.back());
+
+        // ---- Border UI ----
+        AxrMaterial uiBorderMaterial;
+        std::vector<AxrEngineAssetEnum> uiBorderShaders;
+        axrEngineAssetCreateMaterial_UIBorder(uiBorderMaterial, uiBorderShaders);
+        m_LocalMaterials.push_back(std::move(uiBorderMaterial));
 
         createMaterialLayout(m_LocalMaterials.back());
     }
@@ -1955,7 +1973,21 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
         AxrVulkanMaterialForRendering materialForRendering;
         axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
         if (AXR_SUCCEEDED(axrResult)) {
-            m_UIRectangleMaterialForRenderingIndex = m_UIMaterialsForRendering.size();
+            m_UIRectangleMaterialForRenderingIndex = static_cast<uint32_t>(m_UIMaterialsForRendering.size());
+            m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+        }
+    }
+
+    foundMaterialData = findMaterialData_shared(
+        axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_BORDER)
+    );
+    if (foundMaterialData == nullptr) {
+        axrLogErrorLocation("Failed to find UI Border material asset.");
+    } else {
+        AxrVulkanMaterialForRendering materialForRendering;
+        axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
+        if (AXR_SUCCEEDED(axrResult)) {
+            m_UIBorderMaterialForRenderingIndex = static_cast<uint32_t>(m_UIMaterialsForRendering.size());
             m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
         }
     }
@@ -1967,6 +1999,7 @@ void AxrVulkanSceneData::destroyUIMaterialsForRendering() {
     m_UIMaterialsForRendering.clear();
 
     m_UIRectangleMaterialForRenderingIndex = -1;
+    m_UIBorderMaterialForRenderingIndex = -1;
 }
 
 AxrResult AxrVulkanSceneData::addMaterialForRendering(

@@ -296,8 +296,8 @@ namespace axr {
         "Original type and wrapper have different size!"
     );
 
-    /// Axr Rounded Corners
-    struct alignas (16) RoundedCorners {
+    /// Axr UI Rounded Corners
+    struct alignas (16) UIRoundedCorners {
         // ----------------------------------------- //
         // Public Variables
         // ----------------------------------------- //
@@ -313,14 +313,14 @@ namespace axr {
         // ---- Constructors ----
 
         /// Default constructor
-        RoundedCorners() = default;
+        UIRoundedCorners() = default;
 
         /// Constructor
         /// @param topLeftRadius Top left radius
         /// @param topRightRadius Top right radius
         /// @param bottomLeftRadius Bottom left radius
         /// @param bottomRightRadius Bottom right radius
-        RoundedCorners(
+        UIRoundedCorners(
             const float topLeftRadius,
             const float topRightRadius,
             const float bottomLeftRadius,
@@ -333,8 +333,8 @@ namespace axr {
         }
 
         /// Constructor
-        /// @param roundedCorners Raw AxrRoundedCorners
-        explicit RoundedCorners(const AxrRoundedCorners& roundedCorners):
+        /// @param roundedCorners Raw AxrUIRoundedCorners
+        explicit UIRoundedCorners(const AxrUIRoundedCorners& roundedCorners):
             TopLeftRadius(roundedCorners.TopLeftRadius),
             TopRightRadius(roundedCorners.TopRightRadius),
             BottomLeftRadius(roundedCorners.BottomLeftRadius),
@@ -345,21 +345,88 @@ namespace axr {
         // Public Functions
         // ----------------------------------------- //
 
-        /// Get a handle to the RoundedCorners as an AxrRoundedCorners
-        /// @returns This as an AxrRoundedCorners
-        [[nodiscard]] const AxrRoundedCorners* toRaw() const {
-            return reinterpret_cast<const AxrRoundedCorners*>(this);
+        /// Get a handle to the UIRoundedCorners as an AxrUIRoundedCorners
+        /// @returns This as an AxrUIRoundedCorners
+        [[nodiscard]] const AxrUIRoundedCorners* toRaw() const {
+            return reinterpret_cast<const AxrUIRoundedCorners*>(this);
         }
 
-        /// Get a handle to the RoundedCorners as an AxrRoundedCorners
-        /// @returns This as an AxrRoundedCorners
-        [[nodiscard]] AxrRoundedCorners* toRaw() {
-            return reinterpret_cast<AxrRoundedCorners*>(this);
+        /// Get a handle to the UIRoundedCorners as an AxrUIRoundedCorners
+        /// @returns This as an AxrUIRoundedCorners
+        [[nodiscard]] AxrUIRoundedCorners* toRaw() {
+            return reinterpret_cast<AxrUIRoundedCorners*>(this);
         }
     };
 
     static_assert(
-        sizeof(AxrRoundedCorners) == sizeof(axr::RoundedCorners),
+        sizeof(AxrUIRoundedCorners) == sizeof(axr::UIRoundedCorners),
+        "Original type and wrapper have different size!"
+    );
+
+    /// Axr UI Borders
+    struct alignas (16) UIBorders {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        alignas(4) uint32_t Left = 0;
+        alignas(4) uint32_t Right = 0;
+        alignas(4) uint32_t Top = 0;
+        alignas(4) uint32_t Bottom = 0;
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default constructor
+        UIBorders() = default;
+
+        /// Constructor
+        /// @param left Left border thickness
+        /// @param right Right border thickness
+        /// @param top Top border thickness
+        /// @param bottom Bottom border thickness
+        UIBorders(
+            const uint32_t left,
+            const uint32_t right,
+            const uint32_t top,
+            const uint32_t bottom
+        ):
+            Left(left),
+            Right(right),
+            Top(top),
+            Bottom(bottom) {
+        }
+
+        /// Constructor
+        /// @param borders Raw AxrUIBorders
+        explicit UIBorders(const AxrUIBorders& borders):
+            Left(borders.Left),
+            Right(borders.Right),
+            Top(borders.Top),
+            Bottom(borders.Bottom) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the UIBorders as an AxrUIBorders
+        /// @returns This as an AxrUIBorders
+        [[nodiscard]] const AxrUIBorders* toRaw() const {
+            return reinterpret_cast<const AxrUIBorders*>(this);
+        }
+
+        /// Get a handle to the UIBorders as an AxrUIBorders
+        /// @returns This as an AxrUIBorders
+        [[nodiscard]] AxrUIBorders* toRaw() {
+            return reinterpret_cast<AxrUIBorders*>(this);
+        }
+    };
+
+    static_assert(
+        sizeof(AxrUIBorders) == sizeof(axr::UIBorders),
         "Original type and wrapper have different size!"
     );
 }
