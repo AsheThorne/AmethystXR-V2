@@ -175,7 +175,6 @@ public:
 
         AxrEngineAssetUniformBuffer_UICanvas uiCanvasUniformBuffer{};
         uiCanvasUniformBuffer.Size = glm::vec2(cameraInfo.PixelWidth, cameraInfo.PixelHeight);
-        uiCanvasUniformBuffer.EnableAntialiasing = uiCanvasConfig.EnableAntialiasing;
 
         axrResult = sceneData->setUniformBufferData(
             platformType,

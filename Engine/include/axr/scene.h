@@ -108,7 +108,6 @@ enum AxrUIReferenceSpaceEnum {
 /// UI Canvas Config
 struct AxrUICanvasConfig {
     bool Enabled;
-    bool EnableAntialiasing;
     Clay_RenderCommandArray ClayRenderCommands;
 };
 

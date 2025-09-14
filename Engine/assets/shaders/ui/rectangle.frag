@@ -11,7 +11,6 @@ layout (location = 0) in vec2 fragPixelCoord;
 
 layout (std140, binding = 1) uniform UICanvas {
     vec2 size;
-    bool enableAntiAliasing;
 } uiCanvas;
 
 layout (std140, binding = 2) uniform UIElement {
@@ -60,14 +59,8 @@ void main() {
 
     float sdfDistance = rectangleSdf(translateSdf(fragPixelCoord, elementCenter), elementCenter, radius);
 
-    if (uiCanvas.enableAntiAliasing) {
-        float smoothedAlpha = 1.0 - smoothstep(-1.0, 1.0, sdfDistance);
-        outColor = mix(vec4(0.0), uiElement.backgroundColor, smoothedAlpha);
-    } else {
-        if (sdfDistance <= 0.0) {
-            outColor = uiElement.backgroundColor;
-        } else {
-            outColor = vec4(0.0);
-        }
-    }
+    // ---- Calculate color with antialiasing ----
+
+    float smoothedAlpha = 1.0 - smoothstep(-1.0, 1.0, sdfDistance);
+    outColor = mix(vec4(0.0), uiElement.backgroundColor, smoothedAlpha);
 }

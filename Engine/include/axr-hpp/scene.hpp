@@ -43,7 +43,6 @@ namespace axr {
         // Public Variables
         // ----------------------------------------- //
         bool Enabled = false;
-        bool EnableAntialiasing = false;
         Clay_RenderCommandArray ClayRenderCommands = {};
 
         // ----------------------------------------- //
@@ -57,15 +56,12 @@ namespace axr {
 
         /// Constructor
         /// @param enabled Enable rendering of the UI
-        /// @param enableAntialiasing Enable antialiasing of the UI
         /// @param clayRenderCommands Clay render commands
         UICanvasConfig(
             const bool enabled,
-            const bool enableAntialiasing,
             const Clay_RenderCommandArray& clayRenderCommands
         ):
             Enabled(enabled),
-            EnableAntialiasing(enableAntialiasing),
             ClayRenderCommands(clayRenderCommands) {
         }
 

@@ -910,8 +910,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_CameraData {
 /// Engine asset uniform buffer named 'UI Canvas' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UICanvas {
     alignas(8) glm::vec2 Size;
-    alignas(4) bool EnableAntialiasing;
-    float _padding;
+    float _padding[2];
 };
 
 /// Engine asset uniform buffer named 'UI Rectangle' structure
