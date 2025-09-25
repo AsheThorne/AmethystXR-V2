@@ -74,49 +74,21 @@ AxrResult axrEngineAssetCreateShader_UIBorderFrag(AxrGraphicsApiEnum graphicsApi
 
 
 // ---------------------------------------------------------------------------------- //
-//                               Buffer Engine Assets                                 //
+//                           Uniform Buffer Engine Assets                             //
 // ---------------------------------------------------------------------------------- //
 
 /// Check if the given engine asset is a uniform buffer
 /// @param engineAssetEnum Engine asset to check
 /// @returns True if the given engine asset is a uniform buffer
 bool axrEngineAssetIsUniformBuffer(AxrEngineAssetEnum engineAssetEnum);
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-/// Check if the given engine asset is a push constant buffer
-/// @param engineAssetEnum Engine asset to check
-/// @returns True if the given engine asset is a push constant buffer
-bool axrEngineAssetIsPushConstantBuffer(AxrEngineAssetEnum engineAssetEnum);
-#endif
-
-/// Get the name for the given buffer engine asset
-/// @param engineAssetEnum Engine asset to get the name of
-/// @returns The name of the given buffer engine asset
-const char* axrEngineAssetGetBufferName(AxrEngineAssetEnum engineAssetEnum);
 /// Get the name for the given uniform buffer engine asset
 /// @param engineAssetEnum Engine asset to get the name of
 /// @returns The name of the given uniform buffer engine asset
 const char* axrEngineAssetGetUniformBufferName(AxrEngineAssetEnum engineAssetEnum);
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-/// Get the name for the given push constant buffer engine asset
-/// @param engineAssetEnum Engine asset to get the name of
-/// @returns The name of the given push constant buffer engine asset
-const char* axrEngineAssetGetPushConstantBufferName(AxrEngineAssetEnum engineAssetEnum);
-#endif
-
-/// Check if the given name is reserved for a buffer engine asset
-/// @param name Name to check
-/// @returns True if the given name is reserved for a buffer engine asset
-bool axrEngineAssetIsBufferNameReserved(const char* name);
 /// Check if the given name is reserved for a uniform buffer engine asset
 /// @param name Name to check
 /// @returns True if the given name is reserved for a uniform buffer engine asset
 bool axrEngineAssetIsUniformBufferNameReserved(const char* name);
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-/// Check if the given name is reserved for a push constant buffer engine asset
-/// @param name Name to check
-/// @returns True if the given name is reserved for a push constant buffer engine asset
-bool axrEngineAssetIsPushConstantBufferNameReserved(const char* name);
-#endif
 
 /// Create an engine asset uniform buffer
 /// @param engineAssetEnum Uniform buffer engine asset
@@ -140,6 +112,25 @@ AxrResult axrEngineAssetCreateUniformBuffer_UICanvas(AxrUniformBuffer& uniformBu
 /// @param uniformBuffer Output created uniform buffer
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateUniformBuffer_UIElements(AxrUniformBuffer& uniformBuffer);
+
+#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
+// ---------------------------------------------------------------------------------- //
+//                        Push Constant Buffer Engine Assets                          //
+// ---------------------------------------------------------------------------------- //
+
+/// Check if the given engine asset is a push constant buffer
+/// @param engineAssetEnum Engine asset to check
+/// @returns True if the given engine asset is a push constant buffer
+bool axrEngineAssetIsPushConstantBuffer(AxrEngineAssetEnum engineAssetEnum);
+/// Get the name for the given push constant buffer engine asset
+/// @param engineAssetEnum Engine asset to get the name of
+/// @returns The name of the given push constant buffer engine asset
+const char* axrEngineAssetGetPushConstantBufferName(AxrEngineAssetEnum engineAssetEnum);
+/// Check if the given name is reserved for a push constant buffer engine asset
+/// @param name Name to check
+/// @returns True if the given name is reserved for a push constant buffer engine asset
+bool axrEngineAssetIsPushConstantBufferNameReserved(const char* name);
+#endif
 
 // ---------------------------------------------------------------------------------- //
 //                              Material Engine Assets                                //

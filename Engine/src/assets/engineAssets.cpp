@@ -14,7 +14,6 @@
 // ----------------------------------------- //
 // C/C++ Headers
 // ----------------------------------------- //
-#include <ranges>
 #include <unordered_map>
 #include <string>
 
@@ -22,6 +21,19 @@
 // Clay Headers
 // ----------------------------------------- //
 #include "clay.h"
+
+// ----------------------------------------- //
+// Engine Asset Prefixes
+// ----------------------------------------- //
+
+#define AXR_ENGINE_ASSET_PREFIX "AXR:"
+#define AXR_ENGINE_ASSET_SHADER_PREFIX AXR_ENGINE_ASSET_PREFIX "Shader_"
+#define AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX AXR_ENGINE_ASSET_PREFIX "UniformBuffer_"
+#define AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_PREFIX AXR_ENGINE_ASSET_PREFIX "PushConstantBuffer_"
+#define AXR_ENGINE_ASSET_MODEL_PREFIX AXR_ENGINE_ASSET_PREFIX "Model_"
+#define AXR_ENGINE_ASSET_IMAGE_SAMPLER_PREFIX AXR_ENGINE_ASSET_PREFIX "ImageSampler_"
+#define AXR_ENGINE_ASSET_IMAGE_PREFIX AXR_ENGINE_ASSET_PREFIX "Image_"
+#define AXR_ENGINE_ASSET_MATERIAL_PREFIX AXR_ENGINE_ASSET_PREFIX "Material_"
 
 // ---------------------------------------------------------------------------------- //
 //                                 Global Variables                                   //
@@ -35,59 +47,67 @@
 const std::unordered_map EngineAssetShaderNames{
     std::pair(
         AXR_ENGINE_ASSET_SHADER_DEFAULT_VERT,
-        "AXR:ShaderDefaultVert"
+        AXR_ENGINE_ASSET_SHADER_PREFIX "DefaultVert"
     ),
     std::pair(
         AXR_ENGINE_ASSET_SHADER_DEFAULT_FRAG,
-        "AXR:ShaderDefaultFrag"
+        AXR_ENGINE_ASSET_SHADER_PREFIX "DefaultFrag"
     ),
     std::pair(
         AXR_ENGINE_ASSET_SHADER_DEFAULT_FRAG_MASK,
-        "AXR:ShaderDefaultFrag_Mask"
+        AXR_ENGINE_ASSET_SHADER_PREFIX "DefaultFrag_Mask"
     ),
     std::pair(
         AXR_ENGINE_ASSET_SHADER_UI_ELEMENT_VERT,
-        "AXR:ShaderUIElementVert"
+        AXR_ENGINE_ASSET_SHADER_PREFIX "UIElementVert"
     ),
     std::pair(
         AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG,
-        "AXR:ShaderUIRectangleFrag"
+        AXR_ENGINE_ASSET_SHADER_PREFIX "UIRectangleFrag"
     ),
     std::pair(
         AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG,
-        "AXR:ShaderUIBorderFrag"
+        AXR_ENGINE_ASSET_SHADER_PREFIX "UIBorderFrag"
     ),
 };
 
 // ----------------------------------------- //
-// Buffer Engine Assets
+// Uniform Buffer Engine Assets
 // ----------------------------------------- //
 
-/// Engine asset buffer names
-const std::unordered_map EngineAssetBufferNames{
+/// Engine asset uniform buffer names
+const std::unordered_map EngineAssetUniformBufferNames{
     std::pair(
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA,
-        "AXR:UniformBufferSceneData"
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "SceneData"
     ),
     std::pair(
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA,
-        "AXR:UniformBufferCameraData"
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "CameraData"
     ),
     std::pair(
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS,
-        "AXR:UniformBufferUICanvas"
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "UICanvas"
     ),
     std::pair(
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
-        "AXR:UniformBufferUIElements"
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "UIElements"
     ),
+};
+
+// ----------------------------------------- //
+// Push Constant Buffer Engine Assets
+// ----------------------------------------- //
+
+/// Engine asset push constant buffer names
+const std::unordered_map EngineAssetPushConstantBufferNames{
     std::pair(
         AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX,
-        "AXR:PushConstantBufferModelMatrix"
+        AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_PREFIX "ModelMatrix"
     ),
     std::pair(
         AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX,
-        "AXR:PushConstantBufferMvpMatrix"
+        AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_PREFIX "MvpMatrix"
     ),
 };
 
@@ -95,11 +115,11 @@ const std::unordered_map EngineAssetBufferNames{
 // Model Engine Assets
 // ----------------------------------------- //
 
-/// Engine asset image names
+/// Engine asset model names
 const std::unordered_map EngineAssetModelNames{
     std::pair(
         AXR_ENGINE_ASSET_MODEL_UI_RECTANGLE,
-        "AXR:ModelUIRectangle"
+        AXR_ENGINE_ASSET_MODEL_PREFIX "UIRectangle"
     ),
 };
 
@@ -111,11 +131,11 @@ const std::unordered_map EngineAssetModelNames{
 const std::unordered_map EngineAssetImageSamplerNames{
     std::pair(
         AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT,
-        "AXR:ImageSamplerNearestRepeat"
+        AXR_ENGINE_ASSET_IMAGE_SAMPLER_PREFIX "NearestRepeat"
     ),
     std::pair(
         AXR_ENGINE_ASSET_IMAGE_SAMPLER_LINEAR_REPEAT,
-        "AXR:ImageSamplerLinearRepeat"
+        AXR_ENGINE_ASSET_IMAGE_SAMPLER_PREFIX "LinearRepeat"
     ),
 };
 
@@ -127,7 +147,7 @@ const std::unordered_map EngineAssetImageSamplerNames{
 const std::unordered_map EngineAssetImageNames{
     std::pair(
         AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE,
-        "AXR:ImageMissingTexture"
+        AXR_ENGINE_ASSET_IMAGE_PREFIX "MissingTexture"
     ),
 };
 
@@ -139,11 +159,15 @@ const std::unordered_map EngineAssetImageNames{
 const std::unordered_map EngineAssetMaterialNames{
     std::pair(
         AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE,
-        "AXR:MaterialUIRectangle"
+        AXR_ENGINE_ASSET_MATERIAL_PREFIX "UIRectangle"
     ),
     std::pair(
         AXR_ENGINE_ASSET_MATERIAL_UI_BORDER,
-        "AXR:MaterialUIBorder"
+        AXR_ENGINE_ASSET_MATERIAL_PREFIX "UIBorder"
+    ),
+    std::pair(
+        AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE,
+        AXR_ENGINE_ASSET_MATERIAL_PREFIX "UIImage"
     ),
 };
 
@@ -152,25 +176,29 @@ const std::unordered_map EngineAssetMaterialNames{
 // ---------------------------------------------------------------------------------- //
 
 bool axrEngineAssetIsNameReserved(const char* name) {
-    return axrEngineAssetIsShaderNameReserved(name) ||
-        axrEngineAssetIsBufferNameReserved(name) ||
-        axrEngineAssetIsImageSamplerNameReserved(name) ||
-        axrEngineAssetIsImageNameReserved(name) ||
-        axrEngineAssetIsModelNameReserved(name) ||
-        axrEngineAssetIsMaterialNameReserved(name);
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_PREFIX,
+        strlen(AXR_ENGINE_ASSET_PREFIX)
+    ) == 0) {
+        return true;
+    }
+
+    return false;
 }
 
 const char* axrEngineAssetGetName(const AxrEngineAssetEnum engineAssetEnum) {
     if (axrEngineAssetIsShader(engineAssetEnum)) {
         return axrEngineAssetGetShaderName(engineAssetEnum);
     }
-    if (axrEngineAssetIsUniformBuffer(engineAssetEnum)
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-        || axrEngineAssetIsPushConstantBuffer(engineAssetEnum)
-#endif
-    ) {
-        return axrEngineAssetGetBufferName(engineAssetEnum);
+    if (axrEngineAssetIsUniformBuffer(engineAssetEnum)) {
+        return axrEngineAssetGetUniformBufferName(engineAssetEnum);
     }
+#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
+    if (axrEngineAssetIsPushConstantBuffer(engineAssetEnum)) {
+        return axrEngineAssetGetPushConstantBufferName(engineAssetEnum);
+    }
+#endif
     if (axrEngineAssetIsImageSampler(engineAssetEnum)) {
         return axrEngineAssetGetImageSamplerName(engineAssetEnum);
     }
@@ -318,7 +346,7 @@ const char* axrEngineAssetGetShaderName(const AxrEngineAssetEnum engineAssetEnum
 
     const auto foundEngineAssetIt = EngineAssetShaderNames.find(engineAssetEnum);
     if (foundEngineAssetIt == EngineAssetShaderNames.end()) {
-        axrLogError("Failed to find name for engine asset: {0}.", static_cast<int>(engineAssetEnum));
+        axrLogError("Failed to find name for shader engine asset: {0}.", static_cast<int>(engineAssetEnum));
         return "";
     }
 
@@ -326,10 +354,12 @@ const char* axrEngineAssetGetShaderName(const AxrEngineAssetEnum engineAssetEnum
 }
 
 bool axrEngineAssetIsShaderNameReserved(const char* name) {
-    for (const auto& engineAssetName : EngineAssetShaderNames | std::views::values) {
-        if (std::strcmp(engineAssetName, name) == 0) {
-            return true;
-        }
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_SHADER_PREFIX,
+        strlen(AXR_ENGINE_ASSET_SHADER_PREFIX)
+    ) == 0) {
+        return true;
     }
 
     return false;
@@ -701,39 +731,12 @@ AxrResult axrEngineAssetCreateShader_UIBorderFrag(const AxrGraphicsApiEnum graph
 }
 
 // ----------------------------------------- //
-// Buffer Engine Assets
+// Uniform Buffer Engine Assets
 // ----------------------------------------- //
 
 bool axrEngineAssetIsUniformBuffer(const AxrEngineAssetEnum engineAssetEnum) {
     return engineAssetEnum >= AXR_ENGINE_ASSET_UNIFORM_BUFFER_START &&
         engineAssetEnum <= AXR_ENGINE_ASSET_UNIFORM_BUFFER_END;
-}
-
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-bool axrEngineAssetIsPushConstantBuffer(const AxrEngineAssetEnum engineAssetEnum) {
-    return engineAssetEnum >= AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_START &&
-        engineAssetEnum <= AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_END;
-}
-#endif
-
-const char* axrEngineAssetGetBufferName(const AxrEngineAssetEnum engineAssetEnum) {
-    if (!(
-        axrEngineAssetIsUniformBuffer(engineAssetEnum)
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-        || axrEngineAssetIsPushConstantBuffer(engineAssetEnum)
-#endif
-    )) {
-        axrLogErrorLocation("Engine asset is not a buffer.");
-        return "";
-    }
-
-    const auto foundEngineAssetIt = EngineAssetBufferNames.find(engineAssetEnum);
-    if (foundEngineAssetIt == EngineAssetBufferNames.end()) {
-        axrLogError("Failed to find name for engine asset: {0}.", static_cast<int>(engineAssetEnum));
-        return "";
-    }
-
-    return foundEngineAssetIt->second;
 }
 
 const char* axrEngineAssetGetUniformBufferName(const AxrEngineAssetEnum engineAssetEnum) {
@@ -742,51 +745,26 @@ const char* axrEngineAssetGetUniformBufferName(const AxrEngineAssetEnum engineAs
         return "";
     }
 
-    return axrEngineAssetGetBufferName(engineAssetEnum);
-}
-
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-const char* axrEngineAssetGetPushConstantBufferName(const AxrEngineAssetEnum engineAssetEnum) {
-    if (!axrEngineAssetIsPushConstantBuffer(engineAssetEnum)) {
-        axrLogErrorLocation("Engine asset isn't a push constant buffer.");
+    const auto foundEngineAssetIt = EngineAssetUniformBufferNames.find(engineAssetEnum);
+    if (foundEngineAssetIt == EngineAssetUniformBufferNames.end()) {
+        axrLogError("Failed to find name for uniform buffer engine asset: {0}.", static_cast<int>(engineAssetEnum));
         return "";
     }
 
-    return axrEngineAssetGetBufferName(engineAssetEnum);
-}
-#endif
-
-bool axrEngineAssetIsBufferNameReserved(const char* name) {
-    for (const auto& bufferName : EngineAssetBufferNames | std::views::values) {
-        if (std::strcmp(bufferName, name) == 0) {
-            return true;
-        }
-    }
-
-    return false;
+    return foundEngineAssetIt->second;
 }
 
 bool axrEngineAssetIsUniformBufferNameReserved(const char* name) {
-    for (const auto& [engineAsset, bufferName] : EngineAssetBufferNames) {
-        if (axrEngineAssetIsUniformBuffer(engineAsset) && std::strcmp(bufferName, name) == 0) {
-            return true;
-        }
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX,
+        strlen(AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX)
+    ) == 0) {
+        return true;
     }
 
     return false;
 }
-
-#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-bool axrEngineAssetIsPushConstantBufferNameReserved(const char* name) {
-    for (const auto& [engineAsset, bufferName] : EngineAssetBufferNames) {
-        if (axrEngineAssetIsPushConstantBuffer(engineAsset) && std::strcmp(bufferName, name) == 0) {
-            return true;
-        }
-    }
-
-    return false;
-}
-#endif
 
 AxrResult axrEngineAssetCreateUniformBuffer(const AxrEngineAssetEnum engineAssetEnum, AxrUniformBuffer& uniformBuffer) {
     if (!axrEngineAssetIsUniformBuffer(engineAssetEnum)) {
@@ -891,6 +869,47 @@ AxrResult axrEngineAssetCreateUniformBuffer_UIElements(AxrUniformBuffer& uniform
     return AXR_SUCCESS;
 }
 
+#ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
+// ----------------------------------------- //
+// Push Constant Buffer Engine Assets
+// ----------------------------------------- //
+
+bool axrEngineAssetIsPushConstantBuffer(const AxrEngineAssetEnum engineAssetEnum) {
+    return engineAssetEnum >= AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_START &&
+        engineAssetEnum <= AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_END;
+}
+
+const char* axrEngineAssetGetPushConstantBufferName(const AxrEngineAssetEnum engineAssetEnum) {
+    if (!axrEngineAssetIsPushConstantBuffer(engineAssetEnum)) {
+        axrLogErrorLocation("Engine asset isn't a push constant buffer.");
+        return "";
+    }
+
+    const auto foundEngineAssetIt = EngineAssetPushConstantBufferNames.find(engineAssetEnum);
+    if (foundEngineAssetIt == EngineAssetPushConstantBufferNames.end()) {
+        axrLogError(
+            "Failed to find name for push constant buffer engine asset: {0}.",
+            static_cast<int>(engineAssetEnum)
+        );
+        return "";
+    }
+
+    return foundEngineAssetIt->second;
+}
+
+bool axrEngineAssetIsPushConstantBufferNameReserved(const char* name) {
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_PREFIX,
+        strlen(AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_PREFIX)
+    ) == 0) {
+        return true;
+    }
+
+    return false;
+}
+#endif
+
 // ----------------------------------------- //
 // Material Engine Assets
 // ----------------------------------------- //
@@ -908,7 +927,7 @@ const char* axrEngineAssetGetMaterialName(const AxrEngineAssetEnum engineAssetEn
 
     const auto foundEngineAssetIt = EngineAssetMaterialNames.find(engineAssetEnum);
     if (foundEngineAssetIt == EngineAssetMaterialNames.end()) {
-        axrLogError("Failed to find name for engine asset: {0}.", static_cast<int>(engineAssetEnum));
+        axrLogError("Failed to find name for material engine asset: {0}.", static_cast<int>(engineAssetEnum));
         return "";
     }
 
@@ -916,10 +935,12 @@ const char* axrEngineAssetGetMaterialName(const AxrEngineAssetEnum engineAssetEn
 }
 
 bool axrEngineAssetIsMaterialNameReserved(const char* name) {
-    for (const auto& engineAssetName : EngineAssetMaterialNames | std::views::values) {
-        if (std::strcmp(engineAssetName, name) == 0) {
-            return true;
-        }
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_MATERIAL_PREFIX,
+        strlen(AXR_ENGINE_ASSET_MATERIAL_PREFIX)
+    ) == 0) {
+        return true;
     }
 
     return false;
@@ -1025,19 +1046,19 @@ AxrResult axrEngineAssetCreateMaterial_UIRectangle(
         AXR_MAX_ASSET_NAME_SIZE
     );
 
-    AxrShaderUniformBufferLink cameraDataBufferLink{
+    AxrShaderUniformBufferLink uiCanvasDataBufferLink{
         .Binding = 1,
         .BufferName = {},
     };
     strncpy_s(
-        cameraDataBufferLink.BufferName,
+        uiCanvasDataBufferLink.BufferName,
         axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
         AXR_MAX_ASSET_NAME_SIZE
     );
 
     std::array vertexBufferLinks{
         reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
-        reinterpret_cast<AxrShaderBufferLink_T>(&cameraDataBufferLink),
+        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
     };
 
     AxrShaderValues vertexShaderValues{
@@ -1056,6 +1077,7 @@ AxrResult axrEngineAssetCreateMaterial_UIRectangle(
     );
 
     std::array fragmentBufferLinks{
+        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&dynamicUniformBufferLink),
     };
 
@@ -1116,19 +1138,19 @@ AxrResult axrEngineAssetCreateMaterial_UIBorder(
         AXR_MAX_ASSET_NAME_SIZE
     );
 
-    AxrShaderUniformBufferLink cameraDataBufferLink{
+    AxrShaderUniformBufferLink uiCanvasDataBufferLink{
         .Binding = 1,
         .BufferName = {},
     };
     strncpy_s(
-        cameraDataBufferLink.BufferName,
+        uiCanvasDataBufferLink.BufferName,
         axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
         AXR_MAX_ASSET_NAME_SIZE
     );
 
     std::array vertexBufferLinks{
         reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
-        reinterpret_cast<AxrShaderBufferLink_T>(&cameraDataBufferLink),
+        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
     };
 
     AxrShaderValues vertexShaderValues{
@@ -1147,6 +1169,7 @@ AxrResult axrEngineAssetCreateMaterial_UIBorder(
     );
 
     std::array fragmentBufferLinks{
+        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&dynamicUniformBufferLink),
     };
 
@@ -1210,7 +1233,7 @@ const char* axrEngineAssetGetModelName(const AxrEngineAssetEnum engineAssetEnum)
 
     const auto foundEngineAssetIt = EngineAssetModelNames.find(engineAssetEnum);
     if (foundEngineAssetIt == EngineAssetModelNames.end()) {
-        axrLogError("Failed to find name for engine asset: {0}.", static_cast<int>(engineAssetEnum));
+        axrLogError("Failed to find name for model engine asset: {0}.", static_cast<int>(engineAssetEnum));
         return "";
     }
 
@@ -1218,10 +1241,12 @@ const char* axrEngineAssetGetModelName(const AxrEngineAssetEnum engineAssetEnum)
 }
 
 bool axrEngineAssetIsModelNameReserved(const char* name) {
-    for (const auto& engineAssetName : EngineAssetModelNames | std::views::values) {
-        if (std::strcmp(engineAssetName, name) == 0) {
-            return true;
-        }
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_MODEL_PREFIX,
+        strlen(AXR_ENGINE_ASSET_MODEL_PREFIX)
+    ) == 0) {
+        return true;
     }
 
     return false;
@@ -1629,7 +1654,7 @@ const char* axrEngineAssetGetImageSamplerName(const AxrEngineAssetEnum engineAss
 
     const auto foundEngineAssetIt = EngineAssetImageSamplerNames.find(engineAssetEnum);
     if (foundEngineAssetIt == EngineAssetImageSamplerNames.end()) {
-        axrLogError("Failed to find name for engine asset: {0}.", static_cast<int>(engineAssetEnum));
+        axrLogError("Failed to find name for image sampler engine asset: {0}.", static_cast<int>(engineAssetEnum));
         return "";
     }
 
@@ -1637,10 +1662,12 @@ const char* axrEngineAssetGetImageSamplerName(const AxrEngineAssetEnum engineAss
 }
 
 bool axrEngineAssetIsImageSamplerNameReserved(const char* name) {
-    for (const auto& engineAssetName : EngineAssetImageSamplerNames | std::views::values) {
-        if (std::strcmp(engineAssetName, name) == 0) {
-            return true;
-        }
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_IMAGE_SAMPLER_PREFIX,
+        strlen(AXR_ENGINE_ASSET_IMAGE_SAMPLER_PREFIX)
+    ) == 0) {
+        return true;
     }
 
     return false;
@@ -1727,7 +1754,7 @@ const char* axrEngineAssetGetImageName(const AxrEngineAssetEnum engineAssetEnum)
 
     const auto foundEngineAssetIt = EngineAssetImageNames.find(engineAssetEnum);
     if (foundEngineAssetIt == EngineAssetImageNames.end()) {
-        axrLogError("Failed to find name for engine asset: {0}.", static_cast<int>(engineAssetEnum));
+        axrLogError("Failed to find name for image engine asset: {0}.", static_cast<int>(engineAssetEnum));
         return "";
     }
 
@@ -1735,10 +1762,12 @@ const char* axrEngineAssetGetImageName(const AxrEngineAssetEnum engineAssetEnum)
 }
 
 bool axrEngineAssetIsImageNameReserved(const char* name) {
-    for (const auto& engineAssetName : EngineAssetImageNames | std::views::values) {
-        if (std::strcmp(engineAssetName, name) == 0) {
-            return true;
-        }
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_IMAGE_PREFIX,
+        strlen(AXR_ENGINE_ASSET_IMAGE_PREFIX)
+    ) == 0) {
+        return true;
     }
 
     return false;
