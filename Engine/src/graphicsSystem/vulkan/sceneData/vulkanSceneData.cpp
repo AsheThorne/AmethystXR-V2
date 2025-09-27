@@ -1568,6 +1568,28 @@ AxrVulkanMaterialData* AxrVulkanSceneData::createMaterialData(
         return nullptr;
     }
 
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
+        axrResult = writeDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, 1, insertData->second);
+
+        if (AXR_FAILED(axrResult)) {
+            resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, insertData->second);
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
+        axrResult = writeDescriptorSets(
+            AXR_PLATFORM_TYPE_XR_DEVICE,
+            m_LoadXrSessionDataConfig.ViewCount,
+            insertData->second
+        );
+
+        if (AXR_FAILED(axrResult)) {
+            resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, insertData->second);
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
     return &insertData->second;
 }
 
@@ -1797,28 +1819,6 @@ void AxrVulkanSceneData::onMaterialCreatedCallback(const AxrMaterialConst_T mate
     AxrVulkanMaterialData* materialData = createMaterialData(*material);
     if (materialData == nullptr) {
         return;
-    }
-
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
-        axrResult = writeDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, 1, *materialData);
-
-        if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, *materialData);
-            // Don't return. One platform may error but the other might still be ok.
-        }
-    }
-
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
-        axrResult = writeDescriptorSets(
-            AXR_PLATFORM_TYPE_XR_DEVICE,
-            m_LoadXrSessionDataConfig.ViewCount,
-            *materialData
-        );
-
-        if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, *materialData);
-            // Don't return. One platform may error but the other might still be ok.
-        }
     }
 }
 
