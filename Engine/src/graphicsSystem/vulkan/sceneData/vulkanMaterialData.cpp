@@ -41,11 +41,15 @@ AxrVulkanMaterialData::AxrVulkanMaterialData(const Config& config):
     m_WindowPipeline(VK_NULL_HANDLE),
     m_XrSessionDescriptorPool(VK_NULL_HANDLE),
     m_XrSessionPipeline(VK_NULL_HANDLE) {
+    if (config.MaterialHandle != nullptr) {
+        m_Name = config.MaterialHandle->getName() + config.MaterialNameSuffix;
+    }
 }
 
 AxrVulkanMaterialData::AxrVulkanMaterialData(AxrVulkanMaterialData&& src) noexcept {
     m_WindowDescriptorSets = std::move(src.m_WindowDescriptorSets);
     m_XrSessionDescriptorSets = std::move(src.m_XrSessionDescriptorSets);
+    m_Name = std::move(src.m_Name);
 
     m_MaterialHandle = src.m_MaterialHandle;
     m_MaterialLayoutData = src.m_MaterialLayoutData;
@@ -77,6 +81,7 @@ AxrVulkanMaterialData& AxrVulkanMaterialData::operator=(AxrVulkanMaterialData&& 
         cleanup();
         m_WindowDescriptorSets = std::move(src.m_WindowDescriptorSets);
         m_XrSessionDescriptorSets = std::move(src.m_XrSessionDescriptorSets);
+        m_Name = std::move(src.m_Name);
 
         m_MaterialHandle = src.m_MaterialHandle;
         m_MaterialLayoutData = src.m_MaterialLayoutData;
@@ -105,11 +110,7 @@ AxrVulkanMaterialData& AxrVulkanMaterialData::operator=(AxrVulkanMaterialData&& 
 // ---- Public Functions ----
 
 const std::string& AxrVulkanMaterialData::getName() const {
-    if (m_MaterialHandle == nullptr) {
-        return m_DummyName;
-    }
-
-    return m_MaterialHandle->getName();
+    return m_Name;
 }
 
 const AxrVulkanMaterialLayoutData* AxrVulkanMaterialData::getMaterialLayoutData() const {
@@ -312,6 +313,7 @@ void AxrVulkanMaterialData::cleanup() {
     m_MaxFramesInFlight = 0;
     m_Device = VK_NULL_HANDLE;
     m_DispatchHandle = nullptr;
+    m_Name.clear();
 }
 
 AxrResult AxrVulkanMaterialData::createDescriptorPool(

@@ -219,6 +219,7 @@ set(AXR_ASSET_FILES
     ${AXR_SHADERS_DIR}/ui/element.vert
     ${AXR_SHADERS_DIR}/ui/rectangle.frag
     ${AXR_SHADERS_DIR}/ui/border.frag
+    ${AXR_SHADERS_DIR}/ui/image.frag
 )
 
 # ---------------------------------------------

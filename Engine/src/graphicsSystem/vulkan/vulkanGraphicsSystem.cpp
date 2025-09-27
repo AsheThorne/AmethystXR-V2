@@ -1383,10 +1383,13 @@ AxrResult AxrVulkanGraphicsSystem::renderCurrentFrame(
     if (AXR_FAILED(axrResult)) return axrResult;
 
     for (uint32_t viewIndex = 0; viewIndex < renderCommands.getViewCount(); ++viewIndex) {
-        axrResult = renderCommands.updateUniformBuffers(viewIndex, sceneData, uiCanvasConfig);
+        axrResult = renderCommands.waitForFrameFence(viewIndex);
         if (AXR_FAILED(axrResult)) return axrResult;
 
-        axrResult = renderCommands.waitForFrameFence(viewIndex);
+        axrResult = renderCommands.updateUniformBuffers(viewIndex, sceneData);
+        if (AXR_FAILED(axrResult)) return axrResult;
+
+        axrResult = renderCommands.updateUIData(viewIndex, sceneData, uiCanvasConfig);
         if (AXR_FAILED(axrResult)) return axrResult;
 
         axrResult = renderCommands.acquireNextSwapchainImage(viewIndex);
@@ -1595,6 +1598,7 @@ void AxrVulkanGraphicsSystem::renderClayUI(
         .Orientation = cameraInfo.Orientation,
     };
 
+    uint32_t imageIndex = 0;
     for (int32_t renderCommandIndex = 0;
          renderCommandIndex < uiCanvasConfig.ClayRenderCommands.length;
          ++renderCommandIndex
@@ -1604,29 +1608,37 @@ void AxrVulkanGraphicsSystem::renderClayUI(
             uiCanvasConfig.ClayRenderCommands.internalArray[renderCommandIndex];
 
         switch (clayRenderCommand.commandType) {
-            case CLAY_RENDER_COMMAND_TYPE_NONE:
+            case CLAY_RENDER_COMMAND_TYPE_NONE: {
                 continue;
-            case CLAY_RENDER_COMMAND_TYPE_RECTANGLE:
+            }
+            case CLAY_RENDER_COMMAND_TYPE_RECTANGLE: {
                 materialForRendering = sceneData->getUIRectangleMaterialForRendering();
                 break;
-            case CLAY_RENDER_COMMAND_TYPE_BORDER:
+            }
+            case CLAY_RENDER_COMMAND_TYPE_BORDER: {
                 materialForRendering = sceneData->getUIBorderMaterialForRendering();
                 break;
-            case CLAY_RENDER_COMMAND_TYPE_TEXT:
+            }
+            case CLAY_RENDER_COMMAND_TYPE_TEXT: {
                 axrLogErrorLocation("`Text` clay render command not supported.");
                 break;
-            case CLAY_RENDER_COMMAND_TYPE_IMAGE:
-                axrLogErrorLocation("`Image` clay render command not supported.");
+            }
+            case CLAY_RENDER_COMMAND_TYPE_IMAGE: {
+                materialForRendering = sceneData->getUIImageMaterialForRendering(imageIndex++);
                 break;
-            case CLAY_RENDER_COMMAND_TYPE_SCISSOR_START:
+            }
+            case CLAY_RENDER_COMMAND_TYPE_SCISSOR_START: {
                 axrLogErrorLocation("`Scissor Start` clay render command not supported.");
                 break;
-            case CLAY_RENDER_COMMAND_TYPE_SCISSOR_END:
+            }
+            case CLAY_RENDER_COMMAND_TYPE_SCISSOR_END: {
                 axrLogErrorLocation("`Scissor End` clay render command not supported.");
                 break;
-            case CLAY_RENDER_COMMAND_TYPE_CUSTOM:
+            }
+            case CLAY_RENDER_COMMAND_TYPE_CUSTOM: {
                 axrLogErrorLocation("`Custom` clay render command not supported.");
                 break;
+            }
             default: {
                 axrLogErrorLocation("Unknown clay render command.");
                 continue;

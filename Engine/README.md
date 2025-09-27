@@ -47,16 +47,21 @@ by another asset that the application wants to use and that asset doesn't alread
 | AXR_ENGINE_ASSET_SHADER_DEFAULT_FRAG_MASK          |         Yes         |   Constructable   |    Only If Necessary    |
 | AXR_ENGINE_ASSET_SHADER_UI_ELEMENT_VERT            |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG          |         Yes         |   Constructable   |           Yes           |
+| AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG             |         Yes         |   Constructable   |           Yes           |
+| AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG              |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA         |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA        |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS          |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS        |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX |         Yes         |     ReadOnly      |           Yes           |
+| AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX   |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE             |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_IMAGE_UV_TESTER                   |         No          |   Constructable   |           No            |
 | AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT      |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_IMAGE_SAMPLER_LINEAR_REPEAT       |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE             |         Yes         |     ReadOnly      |           Yes           |
+| AXR_ENGINE_ASSET_MATERIAL_UI_BORDER                |         Yes         |     ReadOnly      |           Yes           |
+| AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE                 |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_MODEL_TRIANGLE                    |         No          |   Constructable   |           No            |
 | AXR_ENGINE_ASSET_MODEL_SQUARE                      |         No          |   Constructable   |           No            |
 | AXR_ENGINE_ASSET_MODEL_CUBE                        |         No          |   Constructable   |           No            |

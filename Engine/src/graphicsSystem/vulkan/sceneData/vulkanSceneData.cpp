@@ -37,7 +37,9 @@ AxrVulkanSceneData::AxrVulkanSceneData(const Config& config):
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS,
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         }
-    ) {
+    ),
+    // TODO: Make this value configurable
+    m_MaxUIImageCount(16) {
 }
 
 AxrVulkanSceneData::~AxrVulkanSceneData() {
@@ -283,8 +285,8 @@ const std::vector<AxrVulkanMaterialForRendering>& AxrVulkanSceneData::getMateria
 }
 
 const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUIRectangleMaterialForRendering() const {
-    if (m_UIMaterialsForRendering.empty() ||
-        m_UIRectangleMaterialForRenderingIndex < 0) {
+    if (m_UIRectangleMaterialForRenderingIndex < 0 ||
+        m_UIMaterialsForRendering.size() - 1 < m_UIRectangleMaterialForRenderingIndex) {
         return nullptr;
     }
 
@@ -292,12 +294,23 @@ const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUIRectangleMaterialF
 }
 
 const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUIBorderMaterialForRendering() const {
-    if (m_UIMaterialsForRendering.empty() ||
-        m_UIBorderMaterialForRenderingIndex < 0) {
+    if (m_UIBorderMaterialForRenderingIndex < 0 ||
+        m_UIMaterialsForRendering.size() - 1 < m_UIBorderMaterialForRenderingIndex) {
         return nullptr;
     }
 
     return &m_UIMaterialsForRendering[m_UIBorderMaterialForRenderingIndex];
+}
+
+const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUIImageMaterialForRendering(
+    const uint32_t imageIndex
+) const {
+    if (m_UIImageMaterialForRenderingIndices.size() - 1 < imageIndex ||
+        m_UIMaterialsForRendering.size() - 1 < m_UIImageMaterialForRenderingIndices[imageIndex]) {
+        return nullptr;
+    }
+
+    return &m_UIMaterialsForRendering[m_UIImageMaterialForRenderingIndices[imageIndex]];
 }
 
 AxrResult AxrVulkanSceneData::setUniformBufferData(
@@ -331,6 +344,42 @@ AxrResult AxrVulkanSceneData::setUniformBufferData(
     }
 
     return AXR_SUCCESS;
+}
+
+AxrResult AxrVulkanSceneData::setUIImageData(
+    const AxrPlatformType platformType,
+    const uint32_t frameIndex,
+    const std::vector<AxrUIImageData*>& uiImageData
+) {
+    if (uiImageData.size() > m_MaxUIImageCount) {
+        const AxrResult axrResult = createAdditionalUIImageMaterials(uiImageData.size());
+        if (AXR_FAILED(axrResult)) {
+            axrLogErrorLocation(
+                "Failed to create additional ui image materials to fit: {0} images.",
+                uiImageData.size()
+            );
+            return axrResult;
+        }
+    }
+
+    uint32_t viewCount = 0;
+    switch (platformType) {
+        case AXR_PLATFORM_TYPE_WINDOW: {
+            viewCount = 1;
+            break;
+        }
+        case AXR_PLATFORM_TYPE_XR_DEVICE: {
+            viewCount = m_LoadXrSessionDataConfig.ViewCount;
+            break;
+        }
+        case AXR_PLATFORM_TYPE_UNDEFINED:
+        default: {
+            axrLogErrorLocation("Unknown platform type: {0}.", static_cast<uint32_t>(platformType));
+            break;
+        }
+    }
+
+    return writeUIImageDescriptorSets(platformType, frameIndex, viewCount, uiImageData);
 }
 
 const AxrPushConstantBuffer* AxrVulkanSceneData::findPushConstantBuffer_shared(const std::string& name) const {
@@ -1315,19 +1364,26 @@ AxrResult AxrVulkanSceneData::createAllMaterialLayoutData() {
     };
 
     if (isThisGlobalSceneData()) {
+        std::vector<AxrEngineAssetEnum> materialShaders;
+
         // ---- Rectangle UI ----
         AxrMaterial uiRectangleMaterial;
-        std::vector<AxrEngineAssetEnum> uiRectangleShaders;
-        axrEngineAssetCreateMaterial_UIRectangle(uiRectangleMaterial, uiRectangleShaders);
+        axrEngineAssetCreateMaterial_UIRectangle(uiRectangleMaterial, materialShaders);
         m_LocalMaterials.push_back(std::move(uiRectangleMaterial));
 
         createMaterialLayout(m_LocalMaterials.back());
 
         // ---- Border UI ----
         AxrMaterial uiBorderMaterial;
-        std::vector<AxrEngineAssetEnum> uiBorderShaders;
-        axrEngineAssetCreateMaterial_UIBorder(uiBorderMaterial, uiBorderShaders);
+        axrEngineAssetCreateMaterial_UIBorder(uiBorderMaterial, materialShaders);
         m_LocalMaterials.push_back(std::move(uiBorderMaterial));
+
+        createMaterialLayout(m_LocalMaterials.back());
+
+        // ---- Image UI ----
+        AxrMaterial uiImageMaterial;
+        axrEngineAssetCreateMaterial_UIImage(uiImageMaterial, materialShaders);
+        m_LocalMaterials.push_back(std::move(uiImageMaterial));
 
         createMaterialLayout(m_LocalMaterials.back());
     }
@@ -1383,13 +1439,21 @@ AxrResult AxrVulkanSceneData::initializeMaterialLayoutData(
     return AXR_SUCCESS;
 }
 
-const AxrVulkanMaterialLayoutData* AxrVulkanSceneData::findMaterialLayoutData(const std::string& name) const {
-    const auto foundMaterialLayoutData = m_MaterialLayoutData.find(name);
-    if (foundMaterialLayoutData == m_MaterialLayoutData.end()) {
-        return nullptr;
+const AxrVulkanMaterialLayoutData* AxrVulkanSceneData::findMaterialLayoutData_shared(const std::string& name) const {
+    const auto foundMaterialLayoutDataIt = m_MaterialLayoutData.find(name);
+    if (foundMaterialLayoutDataIt != m_MaterialLayoutData.end()) {
+        return &foundMaterialLayoutDataIt->second;
     }
 
-    return &foundMaterialLayoutData->second;
+    if (m_GlobalSceneData != nullptr) {
+        const auto foundMaterialLayoutData = m_GlobalSceneData->findMaterialLayoutData_shared(name);
+
+        if (foundMaterialLayoutData != nullptr) {
+            return foundMaterialLayoutData;
+        }
+    }
+
+    return nullptr;
 }
 
 AxrResult AxrVulkanSceneData::createAllMaterialData() {
@@ -1411,40 +1475,23 @@ AxrResult AxrVulkanSceneData::createAllMaterialData() {
     // Process
     // ----------------------------------------- //
 
-    auto createMaterial = [this](const AxrMaterial& material) -> void {
-        AxrResult axrResult = AXR_SUCCESS;
-
-        AxrVulkanMaterialData materialData;
-        axrResult = initializeMaterialData(material, materialData);
-        if (AXR_FAILED(axrResult)) {
-            return;
+    // Don't create ui material data in the global scene data. They're scene specific.
+    if (m_GlobalSceneData != nullptr) {
+        // The UI materials are always stored in the global scene data.
+        // We just need the material data to be in the scene specific data
+        for (const AxrMaterial& material : m_GlobalSceneData->m_LocalMaterials) {
+            if (material.getName() == axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)) {
+                for (int i = 0; i < m_MaxUIImageCount; ++i) {
+                    createMaterialData(material, std::to_string(i));
+                }
+            } else {
+                createMaterialData(material);
+            }
         }
-
-        if (m_MaterialData.contains(materialData.getName())) {
-            return;
-        }
-
-        axrResult = materialData.createData();
-        if (AXR_FAILED(axrResult)) {
-            return;
-        }
-
-        auto [insertData, insertSucceeded] = m_MaterialData.insert(
-            std::pair(materialData.getName(), std::move(materialData))
-        );
-
-        if (!insertSucceeded) {
-            insertData->second.destroyData();
-            return;
-        }
-    };
-
-    for (const AxrMaterial& material : m_LocalMaterials) {
-        createMaterial(material);
     }
 
     for (const auto& material : m_AssetCollection->getMaterials() | std::views::values) {
-        createMaterial(material);
+        createMaterialData(material);
     }
 
     return AXR_SUCCESS;
@@ -1457,11 +1504,80 @@ void AxrVulkanSceneData::destroyAllMaterialData() {
     m_MaterialData.clear();
 }
 
+AxrVulkanMaterialData* AxrVulkanSceneData::createMaterialData(
+    const AxrMaterial& material,
+    const std::string& nameSuffix
+) {
+    AxrResult axrResult = AXR_SUCCESS;
+
+    AxrVulkanMaterialData materialData;
+    axrResult = initializeMaterialData(material, materialData, nameSuffix);
+    if (AXR_FAILED(axrResult)) {
+        return nullptr;
+    }
+
+    if (m_MaterialData.contains(materialData.getName())) {
+        axrLogErrorLocation(
+            "Material data named: {0} already exists.",
+            (material.getName() + nameSuffix).c_str()
+        );
+        return nullptr;
+    }
+
+    axrResult = materialData.createData();
+    if (AXR_FAILED(axrResult)) {
+        return nullptr;
+    }
+
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
+        axrResult = materialData.createWindowData(
+            m_LoadWindowDataConfig.RenderPass,
+            m_LoadWindowDataConfig.MsaaSampleCount
+        );
+
+        if (AXR_FAILED(axrResult)) {
+            materialData.destroyWindowData();
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
+        axrResult = materialData.createXrSessionData(
+            m_LoadXrSessionDataConfig.RenderPass,
+            m_LoadXrSessionDataConfig.MsaaSampleCount,
+            m_LoadXrSessionDataConfig.ViewCount
+        );
+
+        if (AXR_FAILED(axrResult)) {
+            materialData.destroyXrSessionData();
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
+    auto [insertData, insertSucceeded] = m_MaterialData.insert(
+        std::pair(materialData.getName(), std::move(materialData))
+    );
+
+    if (!insertSucceeded) {
+        insertData->second.destroyXrSessionData();
+        insertData->second.destroyWindowData();
+        insertData->second.destroyData();
+        axrLogErrorLocation(
+            "Failed to insert material data for material named: {0}",
+            (material.getName() + nameSuffix).c_str()
+        );
+        return nullptr;
+    }
+
+    return &insertData->second;
+}
+
 AxrResult AxrVulkanSceneData::initializeMaterialData(
     const AxrMaterial& material,
-    AxrVulkanMaterialData& materialData
+    AxrVulkanMaterialData& materialData,
+    const std::string& nameSuffix
 ) const {
-    const AxrVulkanMaterialLayoutData* foundMaterialLayoutData = findMaterialLayoutData(
+    const AxrVulkanMaterialLayoutData* foundMaterialLayoutData = findMaterialLayoutData_shared(
         material.getMaterialLayoutName()
     );
     if (foundMaterialLayoutData == nullptr) {
@@ -1474,6 +1590,7 @@ AxrResult AxrVulkanSceneData::initializeMaterialData(
 
     const AxrVulkanMaterialData::Config materialDataConfig{
         .MaterialHandle = &material,
+        .MaterialNameSuffix = nameSuffix,
         .MaterialLayoutData = foundMaterialLayoutData,
         .MaxFramesInFlight = m_MaxFramesInFlight,
         .Device = m_Device,
@@ -1481,6 +1598,60 @@ AxrResult AxrVulkanSceneData::initializeMaterialData(
     };
 
     materialData = AxrVulkanMaterialData(materialDataConfig);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult AxrVulkanSceneData::createAdditionalUIImageMaterials(const uint32_t minImageCount) {
+    const AxrVulkanModelData* foundModelData = findModelData_shared(
+        axrEngineAssetGetModelName(AXR_ENGINE_ASSET_MODEL_UI_RECTANGLE)
+    );
+    if (foundModelData == nullptr) {
+        axrLogErrorLocation("Failed to find UI Rectangle model asset.");
+        return AXR_ERROR;
+    }
+
+    // ---- Get number of materials to create ----
+
+    /// How many image materials to create when we exceed the current m_MaxUIImageCount  
+    constexpr vk::DeviceSize uiImageIncrementCount = 16;
+
+    /// The total number of image materials we need to accommidate the given `minImageCount` while still being a
+    /// multiple of `uiImageIncrementCount`
+    const uint32_t newUIImageMaterialCount = (uiImageIncrementCount + minImageCount - 1) & ~(minImageCount - 1);
+    /// How many new materials we're gonna create
+    const uint32_t uiImageMaterialCreateCount = newUIImageMaterialCount - m_MaxUIImageCount;
+
+    // ---- Create material data ----
+
+    const AxrMaterial* uiImageMaterial = findLocalMaterial_shared(
+        axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)
+    );
+
+    if (uiImageMaterial == nullptr) {
+        axrLogErrorLocation("Failed to find ui image material.");
+        return AXR_ERROR;
+    }
+
+    for (int i = 0; i < uiImageMaterialCreateCount; ++i) {
+        const AxrVulkanMaterialData* materialData = createMaterialData(
+            *uiImageMaterial,
+            std::to_string(m_MaxUIImageCount + i)
+        );
+        if (materialData == nullptr) {
+            axrLogErrorLocation("Failed to create UI Image material data.");
+            continue;
+        }
+
+        AxrVulkanMaterialForRendering materialForRendering;
+        const AxrResult axrResult = buildUIMaterialForRendering(materialData, foundModelData, materialForRendering);
+        if (AXR_SUCCEEDED(axrResult)) {
+            m_UIImageMaterialForRenderingIndices.push_back(static_cast<int32_t>(m_UIMaterialsForRendering.size()));
+            m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+        }
+    }
+
+    m_MaxUIImageCount = newUIImageMaterialCount;
 
     return AXR_SUCCESS;
 }
@@ -1576,6 +1747,24 @@ const AxrVulkanMaterialData* AxrVulkanSceneData::findMaterialData_shared(const s
     return nullptr;
 }
 
+const AxrMaterial* AxrVulkanSceneData::findLocalMaterial_shared(const std::string& name) const {
+    for (const auto& material : m_LocalMaterials) {
+        if (material.getName() == name) {
+            return &material;
+        }
+    }
+
+    if (m_GlobalSceneData != nullptr) {
+        const auto foundMaterial = m_GlobalSceneData->findLocalMaterial_shared(name);
+
+        if (foundMaterial != nullptr) {
+            return foundMaterial;
+        }
+    }
+
+    return nullptr;
+}
+
 void AxrVulkanSceneData::onMaterialCreatedCallback(const AxrMaterialConst_T material) {
     if (material == nullptr) {
         axrLogErrorLocation("Material is null.");
@@ -1606,62 +1795,16 @@ void AxrVulkanSceneData::onMaterialCreatedCallback(const AxrMaterialConst_T mate
         }
     }
 
-    AxrVulkanMaterialData materialData;
-    axrResult = initializeMaterialData(*material, materialData);
-    if (AXR_FAILED(axrResult)) {
-        return;
-    }
-
-    if (m_MaterialData.contains(materialData.getName())) {
-        return;
-    }
-
-    axrResult = materialData.createData();
-    if (AXR_FAILED(axrResult)) {
+    AxrVulkanMaterialData* materialData = createMaterialData(*material);
+    if (materialData == nullptr) {
         return;
     }
 
     if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
-        axrResult = materialData.createWindowData(
-            m_LoadWindowDataConfig.RenderPass,
-            m_LoadWindowDataConfig.MsaaSampleCount
-        );
+        axrResult = writeDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, 1, *materialData);
 
         if (AXR_FAILED(axrResult)) {
-            materialData.destroyWindowData();
-            // Don't return. One platform may error but the other might still be ok.
-        }
-    }
-
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
-        axrResult = materialData.createXrSessionData(
-            m_LoadXrSessionDataConfig.RenderPass,
-            m_LoadXrSessionDataConfig.MsaaSampleCount,
-            m_LoadXrSessionDataConfig.ViewCount
-        );
-
-        if (AXR_FAILED(axrResult)) {
-            materialData.destroyXrSessionData();
-            // Don't return. One platform may error but the other might still be ok.
-        }
-    }
-
-    auto [insertData, insertSucceeded] = m_MaterialData.insert(
-        std::pair(materialData.getName(), std::move(materialData))
-    );
-
-    if (!insertSucceeded) {
-        insertData->second.destroyXrSessionData();
-        insertData->second.destroyWindowData();
-        insertData->second.destroyData();
-        return;
-    }
-
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
-        axrResult = writeDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, 1, insertData->second);
-
-        if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, insertData->second);
+            resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, *materialData);
             // Don't return. One platform may error but the other might still be ok.
         }
     }
@@ -1670,11 +1813,11 @@ void AxrVulkanSceneData::onMaterialCreatedCallback(const AxrMaterialConst_T mate
         axrResult = writeDescriptorSets(
             AXR_PLATFORM_TYPE_XR_DEVICE,
             m_LoadXrSessionDataConfig.ViewCount,
-            insertData->second
+            *materialData
         );
 
         if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, insertData->second);
+            resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, *materialData);
             // Don't return. One platform may error but the other might still be ok.
         }
     }
@@ -1895,6 +2038,170 @@ void AxrVulkanSceneData::resetDescriptorSets(
     materialData.resetDescriptorSets(platformType);
 }
 
+AxrResult AxrVulkanSceneData::writeUIImageDescriptorSets(
+    const AxrPlatformType platformType,
+    const uint32_t frameIndex,
+    const uint32_t viewCount,
+    const std::vector<AxrUIImageData*>& uiImageData
+) const {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (!isPlatformLoaded(platformType)) {
+        // The platform hasn't loaded so nothing to do
+        return AXR_SUCCESS;
+    }
+
+    if (m_Device == VK_NULL_HANDLE) {
+        axrLogErrorLocation("Device is null.");
+        return AXR_ERROR;
+    }
+
+    if (m_DispatchHandle == nullptr) {
+        axrLogErrorLocation("Dispatch Handle is null.");
+        return AXR_ERROR;
+    }
+
+    if (frameIndex > m_MaxFramesInFlight - 1) {
+        axrLogErrorLocation("Frame index out of bounds.");
+        return AXR_ERROR;
+    }
+
+    if (uiImageData.empty()) {
+        return AXR_SUCCESS;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    std::vector<vk::WriteDescriptorSet> descriptorWrites;
+    std::vector<vk::DescriptorImageInfo> descriptorImageInfos;
+    const size_t maxWrites =
+        uiImageData.size() *
+        m_MaxFramesInFlight *
+        viewCount;
+
+    descriptorWrites.reserve(maxWrites);
+    descriptorImageInfos.reserve(maxWrites);
+    int32_t binding = -1;
+
+    for (size_t imageIndex = 0; imageIndex < uiImageData.size(); ++imageIndex) {
+        if (uiImageData[imageIndex] == nullptr) continue;
+
+        std::string materialName = axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE) + std::to_string(
+            imageIndex
+        );
+        const AxrVulkanMaterialData* materialData = findMaterialData_shared(materialName);
+        if (materialData == nullptr) {
+            axrLogErrorLocation("Failed to find ui image material data named: {0}.", materialName.c_str());
+            continue;
+        }
+
+        // We only need to get the binding once. it'll be the same for all images
+        if (binding < 0) {
+            const AxrMaterial* material = materialData->getMaterial();
+            if (material == nullptr) {
+                axrLogErrorLocation(
+                    "Failed to get material from material data for material named: {0}.",
+                    materialName.c_str()
+                );
+                continue;
+            }
+
+            const std::vector<AxrShaderImageSamplerBufferLinkConst_T> imageSamplerBufferLinks =
+                material->getImageSamplerBufferLinks();
+            if (imageSamplerBufferLinks.empty() || imageSamplerBufferLinks[0] == nullptr) {
+                axrLogErrorLocation(
+                    "Failed to get image shader binding for material named: {0}.",
+                    materialName.c_str()
+                );
+                continue;
+            }
+
+            binding = static_cast<int32_t>(imageSamplerBufferLinks[0]->Binding);
+        }
+
+        const std::vector<vk::DescriptorSet>& descriptorSets = materialData->getDescriptorSets(platformType);
+        if (descriptorSets.empty()) {
+            axrLogErrorLocation("Descriptor sets are empty for material data named: {0}.", materialName.c_str());
+            continue;
+        }
+
+        if (m_MaxFramesInFlight * viewCount != descriptorSets.size()) {
+            axrLogErrorLocation("View count doesn't match what was used for descriptor set creation.");
+            continue;
+        }
+
+        const AxrVulkanImageSamplerData* foundImageSamplerData = findImageSamplerData_shared(
+            uiImageData[imageIndex]->ImageSamplerName
+        );
+
+        if (foundImageSamplerData == nullptr) {
+            axrLogErrorLocation("Failed to find image sampler named: {0}.", uiImageData[imageIndex]->ImageSamplerName);
+            continue;
+        }
+
+        const AxrVulkanImageData* foundImageData = findImageData_shared(uiImageData[imageIndex]->ImageName);
+        if (foundImageData == nullptr) {
+            // If image data wasn't found, use the "Missing Texture" image
+            foundImageData = findImageData_shared(
+                axrEngineAssetGetImageName(AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE)
+            );
+
+            if (foundImageData == nullptr) {
+                axrLogErrorLocation("Failed to find image named: {0}.", uiImageData[imageIndex]->ImageName);
+                continue;
+            }
+
+            // When we use the 'missing texture', try to use the image sampler options NEAREST and REPEAT. otherwise it looks weird
+            const AxrVulkanImageSamplerData* missingTextureImageSamplerData = findImageSamplerData_shared(
+                axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT)
+            );
+
+            if (missingTextureImageSamplerData != nullptr) {
+                foundImageSamplerData = missingTextureImageSamplerData;
+            }
+        }
+
+        descriptorImageInfos.emplace_back(
+            foundImageSamplerData->getSampler(foundImageData->getImageFormat()),
+            foundImageData->getImageView(),
+            vk::ImageLayout::eShaderReadOnlyOptimal
+        );
+
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex) {
+            const uint32_t viewIndexOffset = m_MaxFramesInFlight * viewIndex;
+
+            descriptorWrites.emplace_back(
+                descriptorSets[viewIndexOffset + frameIndex],
+                binding,
+                0,
+                1,
+                vk::DescriptorType::eCombinedImageSampler,
+                &descriptorImageInfos.back(),
+                nullptr,
+                nullptr
+            );
+        }
+    }
+
+    if (descriptorWrites.empty()) {
+        return AXR_SUCCESS;
+    }
+
+    m_Device.updateDescriptorSets(
+        static_cast<uint32_t>(descriptorWrites.size()),
+        descriptorWrites.data(),
+        0,
+        nullptr,
+        *m_DispatchHandle
+    );
+
+    return AXR_SUCCESS;
+}
+
 AxrResult AxrVulkanSceneData::createAllMaterialsForRendering() {
     // ----------------------------------------- //
     // Validation
@@ -1964,6 +2271,8 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
         return AXR_ERROR;
     }
 
+    // ---- Rectangle UI ----
+
     const AxrVulkanMaterialData* foundMaterialData = findMaterialData_shared(
         axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE)
     );
@@ -1973,10 +2282,12 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
         AxrVulkanMaterialForRendering materialForRendering;
         axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
         if (AXR_SUCCEEDED(axrResult)) {
-            m_UIRectangleMaterialForRenderingIndex = static_cast<uint32_t>(m_UIMaterialsForRendering.size());
+            m_UIRectangleMaterialForRenderingIndex = static_cast<int32_t>(m_UIMaterialsForRendering.size());
             m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
         }
     }
+
+    // ---- Border UI ----
 
     foundMaterialData = findMaterialData_shared(
         axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_BORDER)
@@ -1987,8 +2298,26 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
         AxrVulkanMaterialForRendering materialForRendering;
         axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
         if (AXR_SUCCEEDED(axrResult)) {
-            m_UIBorderMaterialForRenderingIndex = static_cast<uint32_t>(m_UIMaterialsForRendering.size());
+            m_UIBorderMaterialForRenderingIndex = static_cast<int32_t>(m_UIMaterialsForRendering.size());
             m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+        }
+    }
+
+    // ---- Image UI ----
+
+    for (int i = 0; i < m_MaxUIImageCount; ++i) {
+        foundMaterialData = findMaterialData_shared(
+            std::string(axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)) + std::to_string(i)
+        );
+        if (foundMaterialData == nullptr) {
+            axrLogErrorLocation("Failed to find UI Image material asset.");
+        } else {
+            AxrVulkanMaterialForRendering materialForRendering;
+            axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
+            if (AXR_SUCCEEDED(axrResult)) {
+                m_UIImageMaterialForRenderingIndices.push_back(static_cast<int32_t>(m_UIMaterialsForRendering.size()));
+                m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+            }
         }
     }
 
@@ -2000,6 +2329,7 @@ void AxrVulkanSceneData::destroyUIMaterialsForRendering() {
 
     m_UIRectangleMaterialForRenderingIndex = -1;
     m_UIBorderMaterialForRenderingIndex = -1;
+    m_UIImageMaterialForRenderingIndices.clear();
 }
 
 AxrResult AxrVulkanSceneData::addMaterialForRendering(

@@ -27,6 +27,7 @@ public:
     /// Material data config
     struct Config {
         const AxrMaterial* MaterialHandle;
+        std::string MaterialNameSuffix;
         const AxrVulkanMaterialLayoutData* MaterialLayoutData;
         uint32_t MaxFramesInFlight;
         vk::Device Device;
@@ -150,8 +151,7 @@ private:
     // ---- Data ----
     /// These should never be used for anything other than returning a reference to descriptor sets when there's no other option.
     std::vector<vk::DescriptorSet> m_DummyDescriptorSets;
-    /// These should never be used for anything other than returning a reference to the name if no name can be found.
-    std::string m_DummyName;
+    std::string m_Name;
 
     // ---- Window Data ----
     vk::DescriptorPool m_WindowDescriptorPool;

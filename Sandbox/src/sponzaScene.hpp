@@ -42,7 +42,7 @@ public:
 
     void update();
 
-    axr::UICanvasConfig uiCallback(axr::PlatformType platformType, Clay_Context* context) const;
+    axr::UICanvasConfig uiCallback(axr::PlatformType platformType, Clay_Context* context);
 
 private:
     // ----------------------------------------- //
@@ -56,4 +56,6 @@ private:
     axr::Entity_T m_CameraEntity;
     axr::Entity_T m_XrHeadEntity;
     axr::Entity_T m_XrHandEntity;
+
+    axr::UIImageData m_UIImageData;
 };

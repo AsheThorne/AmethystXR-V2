@@ -2283,8 +2283,7 @@ namespace axr {
         // ---- Constructors ----
 
         /// Default Constructor
-        ImageConfig() {
-        }
+        ImageConfig() = default;
 
         /// Constructor
         /// @param name Name of the image
@@ -2402,6 +2401,126 @@ namespace axr {
 
     static_assert(
         sizeof(AxrImageConfig) == sizeof(axr::ImageConfig),
+        "Original type and wrapper have different size!"
+    );
+
+    /// UI Image Data
+    struct UIImageData {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        char ImageName[AXR_MAX_ASSET_NAME_SIZE]{};
+        char ImageSamplerName[AXR_MAX_ASSET_NAME_SIZE]{};
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default Constructor
+        UIImageData() = default;
+
+        /// Constructor
+        /// @param imageName Name of the image
+        /// @param imageSamplerName Name of the image sampler
+        UIImageData(
+            const char* imageName,
+            const char* imageSamplerName
+        ) {
+            if (imageName != nullptr) {
+                strncpy_s(ImageName, imageName, AXR_MAX_ASSET_NAME_SIZE);
+            }
+            if (imageSamplerName != nullptr) {
+                strncpy_s(ImageSamplerName, imageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
+            }
+        }
+
+        /// Copy Constructor
+        /// @param src Source UIImageData to copy from
+        UIImageData(const UIImageData& src) {
+            strncpy_s(ImageName, src.ImageName, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(ImageSamplerName, src.ImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
+        }
+
+        /// Move Constructor
+        /// @param src Source UIImageData to move from
+        UIImageData(UIImageData&& src) noexcept {
+            strncpy_s(ImageName, src.ImageName, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(ImageSamplerName, src.ImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
+
+            memset(src.ImageName, 0, sizeof(src.ImageName));
+            memset(src.ImageSamplerName, 0, sizeof(src.ImageSamplerName));
+        }
+
+        // ---- Destructor ----
+
+        /// Destructor
+        ~UIImageData() {
+            cleanup();
+        }
+
+        // ---- Operator Overloads ----
+
+        /// Copy Assignment Operator
+        /// @param src Source UIImageData to copy from
+        UIImageData& operator=(const UIImageData& src) {
+            if (this != &src) {
+                cleanup();
+
+                strncpy_s(ImageName, src.ImageName, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(ImageSamplerName, src.ImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
+            }
+
+            return *this;
+        }
+
+        /// Move Assignment Operator
+        /// @param src Source UIImageData to move from
+        UIImageData& operator=(UIImageData&& src) noexcept {
+            if (this != &src) {
+                cleanup();
+
+                strncpy_s(ImageName, src.ImageName, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(ImageSamplerName, src.ImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
+
+                memset(src.ImageName, 0, sizeof(src.ImageName));
+                memset(src.ImageSamplerName, 0, sizeof(src.ImageSamplerName));
+            }
+
+            return *this;
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the UIImageData as an AxrUIImageData
+        /// @returns This as an AxrUIImageData
+        const AxrUIImageData* toRaw() const {
+            return reinterpret_cast<const AxrUIImageData*>(this);
+        }
+
+        /// Get a handle to the UIImageData as an AxrUIImageData
+        /// @returns This as an AxrUIImageData
+        AxrUIImageData* toRaw() {
+            return reinterpret_cast<AxrUIImageData*>(this);
+        }
+
+    private:
+        // ----------------------------------------- //
+        // Private Functions
+        // ----------------------------------------- //
+
+        /// Clean up this class
+        void cleanup() {
+            memset(ImageName, 0, sizeof(ImageName));
+            memset(ImageSamplerName, 0, sizeof(ImageSamplerName));
+        }
+    };
+
+    static_assert(
+        sizeof(AxrUIImageData) == sizeof(axr::UIImageData),
         "Original type and wrapper have different size!"
     );
 
@@ -2843,6 +2962,8 @@ namespace axr {
         ShaderDefaultFrag_Mask = AXR_ENGINE_ASSET_SHADER_DEFAULT_FRAG_MASK,
         ShaderUIElementVert = AXR_ENGINE_ASSET_SHADER_UI_ELEMENT_VERT,
         ShaderUIRectangleFrag = AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG,
+        ShaderUIBorderFrag = AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG,
+        ShaderUIImageFrag = AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG,
         ShaderEnd = AXR_ENGINE_ASSET_SHADER_END,
 
         // ---- Uniform Buffers ----
@@ -2874,6 +2995,8 @@ namespace axr {
         // ---- Materials ----
         MaterialStart = AXR_ENGINE_ASSET_MATERIAL_START,
         MaterialUIRectangle = AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE,
+        MaterialUIBorder = AXR_ENGINE_ASSET_MATERIAL_UI_BORDER,
+        MaterialUIImage = AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE,
         MaterialEnd = AXR_ENGINE_ASSET_MATERIAL_END,
 
         // ---- Models ----
@@ -3103,64 +3226,6 @@ namespace axr {
         "Original type and wrapper have different size!"
     );
 
-    /// Engine asset uniform buffer named 'UI Image' structure
-    struct alignas(16) EngineAssetUniformBuffer_UIImage {
-        // ----------------------------------------- //
-        // Public Variables
-        // ----------------------------------------- //
-        // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-        alignas(8) glm::vec2 Position = {};
-        alignas(8) glm::vec2 Size = {};
-        alignas(16) glm::vec4 BackgroundColor = {};
-        alignas(16) axr::UIRoundedCorners Corners = {};
-
-        // ----------------------------------------- //
-        // Special Functions
-        // ----------------------------------------- //
-
-        // ---- Constructors ----
-
-        /// Default Constructor
-        EngineAssetUniformBuffer_UIImage() = default;
-
-        /// Constructor
-        /// @param position The UI element position
-        /// @param size The UI element size
-        /// @param backgroundColor The background color
-        /// @param corners The rounded corners
-        EngineAssetUniformBuffer_UIImage(
-            const glm::vec2& position,
-            const glm::vec2& size,
-            const glm::vec4& backgroundColor,
-            const axr::UIRoundedCorners& corners
-        ): Position(position),
-            Size(size),
-            BackgroundColor(backgroundColor),
-            Corners(corners) {
-        }
-
-        // ----------------------------------------- //
-        // Public Functions
-        // ----------------------------------------- //
-
-        /// Get a handle to the EngineAssetUniformBuffer_UIImage as an AxrEngineAssetUniformBuffer_UIImage
-        /// @returns This as an AxrEngineAssetUniformBuffer_UIImage
-        const AxrEngineAssetUniformBuffer_UIImage* toRaw() const {
-            return reinterpret_cast<const AxrEngineAssetUniformBuffer_UIImage*>(this);
-        }
-
-        /// Get a handle to the EngineAssetUniformBuffer_UIImage as an AxrEngineAssetUniformBuffer_UIImage
-        /// @returns This as an AxrEngineAssetUniformBuffer_UIImage
-        AxrEngineAssetUniformBuffer_UIImage* toRaw() {
-            return reinterpret_cast<AxrEngineAssetUniformBuffer_UIImage*>(this);
-        }
-    };
-
-    static_assert(
-        sizeof(AxrEngineAssetUniformBuffer_UIImage) == sizeof(axr::EngineAssetUniformBuffer_UIImage),
-        "Original type and wrapper have different size!"
-    );
-
     /// Engine asset uniform buffer named 'UI Border' structure
     struct alignas(16) EngineAssetUniformBuffer_UIBorder {
         // ----------------------------------------- //
@@ -3220,6 +3285,64 @@ namespace axr {
 
     static_assert(
         sizeof(AxrEngineAssetUniformBuffer_UIBorder) == sizeof(axr::EngineAssetUniformBuffer_UIBorder),
+        "Original type and wrapper have different size!"
+    );
+
+    /// Engine asset uniform buffer named 'UI Image' structure
+    struct alignas(16) EngineAssetUniformBuffer_UIImage {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
+        alignas(8) glm::vec2 Position = {};
+        alignas(8) glm::vec2 Size = {};
+        alignas(16) glm::vec4 BackgroundColor = {};
+        alignas(16) axr::UIRoundedCorners Corners = {};
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default Constructor
+        EngineAssetUniformBuffer_UIImage() = default;
+
+        /// Constructor
+        /// @param position The UI element position
+        /// @param size The UI element size
+        /// @param backgroundColor The background color
+        /// @param corners The rounded corners
+        EngineAssetUniformBuffer_UIImage(
+            const glm::vec2& position,
+            const glm::vec2& size,
+            const glm::vec4& backgroundColor,
+            const axr::UIRoundedCorners& corners
+        ): Position(position),
+            Size(size),
+            BackgroundColor(backgroundColor),
+            Corners(corners) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the EngineAssetUniformBuffer_UIImage as an AxrEngineAssetUniformBuffer_UIImage
+        /// @returns This as an AxrEngineAssetUniformBuffer_UIImage
+        const AxrEngineAssetUniformBuffer_UIImage* toRaw() const {
+            return reinterpret_cast<const AxrEngineAssetUniformBuffer_UIImage*>(this);
+        }
+
+        /// Get a handle to the EngineAssetUniformBuffer_UIImage as an AxrEngineAssetUniformBuffer_UIImage
+        /// @returns This as an AxrEngineAssetUniformBuffer_UIImage
+        AxrEngineAssetUniformBuffer_UIImage* toRaw() {
+            return reinterpret_cast<AxrEngineAssetUniformBuffer_UIImage*>(this);
+        }
+    };
+
+    static_assert(
+        sizeof(AxrEngineAssetUniformBuffer_UIImage) == sizeof(axr::EngineAssetUniformBuffer_UIImage),
         "Original type and wrapper have different size!"
     );
 

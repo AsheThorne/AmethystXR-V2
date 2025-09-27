@@ -131,6 +131,10 @@ public:
     /// Get the `UI Border` material for rendering
     /// @returns The `UI Border` material for rendering. Or nullptr if it doesn't exist.
     [[nodiscard]] const AxrVulkanMaterialForRendering* getUIBorderMaterialForRendering() const;
+    /// Get the `UI Image` material for rendering
+    /// @param imageIndex Index of the image to use
+    /// @returns The `UI Image` material for rendering. Or nullptr if it doesn't exist.
+    [[nodiscard]] const AxrVulkanMaterialForRendering* getUIImageMaterialForRendering(uint32_t imageIndex) const;
 
     /// Set uniform buffer data.
     /// If `alignData` is true, `data` must contain whole instance objects without any padding between them.
@@ -153,6 +157,17 @@ public:
         vk::DeviceSize dataSize,
         const void* data
     ) const;
+
+    /// Set the UI Image data
+    /// @param platformType Platform to set ui image data for
+    /// @param frameIndex Frame index to use
+    /// @param uiImageData UI Image data to set
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult setUIImageData(
+        AxrPlatformType platformType,
+        uint32_t frameIndex,
+        const std::vector<AxrUIImageData*>& uiImageData
+    );
 
     // ---- Find Assets ----
 
@@ -208,8 +223,10 @@ private:
     std::vector<AxrVulkanMaterialForRendering> m_AlphaBlendMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_OITMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_UIMaterialsForRendering;
+    uint32_t m_MaxUIImageCount;
     int32_t m_UIRectangleMaterialForRenderingIndex = -1;
     int32_t m_UIBorderMaterialForRenderingIndex = -1;
+    std::vector<int32_t> m_UIImageMaterialForRenderingIndices;
 
     // ----------------------------------------- //
     // Private Functions
@@ -410,10 +427,10 @@ private:
         AxrVulkanMaterialLayoutData& materialLayoutData
     ) const;
 
-    /// Find the named material layout data
+    /// Find the named material layout data, including the global data in the search
     /// @param name The name of the material layout
     /// @returns A handle to the found material layout. Or nullptr if it wasn't found
-    [[nodiscard]] const AxrVulkanMaterialLayoutData* findMaterialLayoutData(const std::string& name) const;
+    [[nodiscard]] const AxrVulkanMaterialLayoutData* findMaterialLayoutData_shared(const std::string& name) const;
 
     // ---- Material ----
 
@@ -423,14 +440,27 @@ private:
     /// Destroy all material data
     void destroyAllMaterialData();
 
+    /// Create a single material data
+    /// @param material Material to use
+    /// @param nameSuffix Material name suffix
+    /// @results A handle to the created material data. Or nullptr if it failed.
+    AxrVulkanMaterialData* createMaterialData(const AxrMaterial& material, const std::string& nameSuffix = "");
+
     /// Initialize a single material data for the given material
     /// @param material Material to use
     /// @param materialData Output material data
+    /// @param nameSuffix Suffix to add to the material name
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult initializeMaterialData(
         const AxrMaterial& material,
-        AxrVulkanMaterialData& materialData
+        AxrVulkanMaterialData& materialData,
+        const std::string& nameSuffix = ""
     ) const;
+
+    /// Create more UI image materials to use
+    /// @param minImageCount Minimum number of images to allow for
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult createAdditionalUIImageMaterials(uint32_t minImageCount);
 
     /// Create all window specific material data
     /// @returns AXR_SUCCESS if the function succeeded
@@ -448,6 +478,10 @@ private:
     /// @param name The name of the material
     /// @returns A handle to the found material. Or nullptr if it wasn't found
     [[nodiscard]] const AxrVulkanMaterialData* findMaterialData_shared(const std::string& name) const;
+    /// Find the named local material, including the global data in the search
+    /// @param name The name of the material
+    /// @returns A handle to the found material. Or nullptr if it wasn't found
+    [[nodiscard]] const AxrMaterial* findLocalMaterial_shared(const std::string& name) const;
 
     /// 'On material created' callback for the asset collection
     /// @param material Newly created material
@@ -478,6 +512,19 @@ private:
     /// @param platformType The platform type to use
     /// @param materialData The material data
     void resetDescriptorSets(AxrPlatformType platformType, AxrVulkanMaterialData& materialData) const;
+
+    /// Write to the UI Image descriptor sets
+    /// @param platformType Platform type to use
+    /// @param frameIndex Frame index to use
+    /// @param viewCount View count
+    /// @param uiImageData UI Image data to use
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult writeUIImageDescriptorSets(
+        AxrPlatformType platformType,
+        uint32_t frameIndex,
+        uint32_t viewCount,
+        const std::vector<AxrUIImageData*>& uiImageData
+    ) const;
 
     // ---- Materials For Rendering ----
 

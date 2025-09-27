@@ -323,6 +323,11 @@ axr::Result SponzaScene::setup() {
 
     // ---- UI ----
 
+    m_UIImageData = axr::UIImageData(
+        testCubeImageName,
+        axr::engineAssetGetName(axr::EngineAssetEnum::ImageSamplerLinearRepeat)
+    );
+
     m_Scene.setBuildUICanvasCallback(
         this,
         [](
@@ -349,7 +354,7 @@ axr::Result SponzaScene::setAsActiveScene() const {
 void SponzaScene::update() {
 }
 
-axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType, Clay_Context* context) const {
+axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType, Clay_Context* context) {
     // Only handle UI for the window
     if (platformType != axr::PlatformType::Window) return {};
 
@@ -371,10 +376,10 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
         0.0f,
         0.8f},
         .cornerRadius = Clay_CornerRadius{
-        .topLeft = 100,
-        .topRight = 100,
-        .bottomLeft = 100,
-        .bottomRight = 100,
+        .topLeft = 25,
+        .topRight = 25,
+        .bottomLeft = 25,
+        .bottomRight = 25,
         },
         }
     ) {
@@ -387,6 +392,10 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
             .height = CLAY_SIZING_GROW(0) },
             .padding = CLAY_PADDING_ALL(16),
             .childGap = 16,
+            .childAlignment = Clay_ChildAlignment {
+            .x = CLAY_ALIGN_X_LEFT,
+            .y = CLAY_ALIGN_Y_CENTER,
+            },
             .layoutDirection = CLAY_TOP_TO_BOTTOM,
             },
             .backgroundColor = Clay_Color{0.2f,
@@ -395,9 +404,9 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
             0.5f},
             .cornerRadius = Clay_CornerRadius{
             .topLeft = 25,
-            .topRight = 50,
-            .bottomLeft = 70,
-            .bottomRight = 0,
+            .topRight = 25,
+            .bottomLeft = 25,
+            .bottomRight = 25,
             },
             .border = Clay_BorderElementConfig {
             .color = Clay_Color{0.3f,
@@ -405,45 +414,69 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
             0.6f,
             1.0f},
             .width = Clay_BorderWidth{
-            .left = 20,
-            .right = 20,
-            .top = 20,
-            .bottom = 20,
+            .left = 10,
+            .right = 10,
+            .top = 10,
+            .bottom = 10,
             .betweenChildren = 0,
             }
             },
             }
         ) {
+            for (int i = 0; i < 3; ++i) {
+                std::string outer_id = std::string("ProfilePictureOuter") + std::to_string(i);
+                CLAY(
+                    {
+                    .id = CLAY_SID(Clay_String(false, outer_id.size(), outer_id.c_str())),
+                    .layout = { .sizing = { .width = CLAY_SIZING_GROW(0) },
+                    .padding = CLAY_PADDING_ALL(16),
+                    .childGap = 16,
+                    },
+                    }
+                ) {
+                    std::string inner_id = std::string("ProfilePicture") + std::to_string(i);
+                    CLAY(
+                        {
+                        .id = CLAY_SID(Clay_String(false, inner_id.size(), inner_id.c_str())),
+                        .layout = { .sizing = { .width = CLAY_SIZING_FIXED(60),
+                        .height = CLAY_SIZING_FIXED(60) }},
+                        .backgroundColor = Clay_Color{1.0f,
+                        1.0f,
+                        1.0f,
+                        1.0f},
+                        .cornerRadius = Clay_CornerRadius{
+                        .topLeft = 10,
+                        .topRight = 10,
+                        .bottomLeft = 10,
+                        .bottomRight = 10,
+                        },
+                        .image = Clay_ImageElementConfig{
+                        .imageData = &m_UIImageData,
+                        },
+                        }
+                    ) {
+                    }
+                    // CLAY_TEXT(
+                    //     CLAY_STRING("Clay - UI Library"),
+                    //     CLAY_TEXT_CONFIG({ .textColor = {255, 255, 255, 255}, .fontSize = 24 })
+                    // );
+                }
+            }
         }
-        //     CLAY(
-        //         { .id = CLAY_ID("ProfilePictureOuter"),
-        //         .layout = { .sizing = { .width = CLAY_SIZING_GROW(0) },
-        //         .padding = CLAY_PADDING_ALL(16),
-        //         .childGap = 16,
-        //         .childAlignment = { .y = CLAY_ALIGN_Y_CENTER } } }
-        //     ) {
-        //         CLAY(
-        //             { .id = CLAY_ID("ProfilePicture"),
-        //             .layout = { .sizing = { .width = CLAY_SIZING_FIXED(60),
-        //             .height = CLAY_SIZING_FIXED(60) }} }
-        //         ) {
-        //         }
-        //         CLAY_TEXT(
-        //             CLAY_STRING("Clay - UI Library"),
-        //             CLAY_TEXT_CONFIG({ .textColor = {255, 255, 255, 255}, .fontSize = 24 })
-        //         );
-        //     }
-        //
-        //     CLAY(
-        //         { .id = CLAY_ID("MainContent"),
-        //         .layout = { .sizing = { .width = CLAY_SIZING_GROW(0),
-        //         .height = CLAY_SIZING_GROW(0) } } }
-        //     ) {
-        //     }
-        // }
+        CLAY(
+            {
+            .id = CLAY_ID("MainContent"),
+            .layout = { .sizing = { .width = CLAY_SIZING_GROW(0),
+            .height = CLAY_SIZING_GROW(0) } },
+            .backgroundColor = Clay_Color{1.0f,
+            1.0f,
+            1.0f,
+            0.5f},
+            }
+        ) {
+        }
     }
 
     const Clay_RenderCommandArray renderCommands = Clay_EndLayout();
-
     return axr::UICanvasConfig(true, renderCommands);
 }

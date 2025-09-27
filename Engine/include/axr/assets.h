@@ -664,6 +664,7 @@ enum AxrImageSamplerWrapEnum {
 // Structs
 // ----------------------------------------- //
 
+/// Image Sampler Config
 struct AxrImageSamplerConfig {
     char Name[AXR_MAX_ASSET_NAME_SIZE];
     AxrImageSamplerFilterEnum MinFilter;
@@ -717,6 +718,12 @@ enum AxrImageColorChannelsEnum {
 struct AxrImageConfig {
     char Name[AXR_MAX_ASSET_NAME_SIZE];
     char FilePath[AXR_MAX_FILE_PATH_SIZE];
+};
+
+/// UI Image Data
+struct AxrUIImageData {
+    char ImageName[AXR_MAX_ASSET_NAME_SIZE];
+    char ImageSamplerName[AXR_MAX_ASSET_NAME_SIZE];
 };
 
 // ----------------------------------------- //
@@ -844,6 +851,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_SHADER_UI_ELEMENT_VERT = 4,
     AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG = 5,
     AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG = 6,
+    AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG = 7,
     AXR_ENGINE_ASSET_SHADER_END = 64,
 
     // ---- Uniform Buffers - Max of 32 ----
@@ -878,6 +886,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_MATERIAL_START = 201,
     AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE = 201,
     AXR_ENGINE_ASSET_MATERIAL_UI_BORDER = 202,
+    AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE = 203,
     AXR_ENGINE_ASSET_MATERIAL_END = 264,
 
     // ---- Models - Max of 64 ----
@@ -924,15 +933,6 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIRectangle {
     alignas(16) AxrUIRoundedCorners Corners;
 };
 
-/// Engine asset uniform buffer named 'UI Image' structure
-struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
-    // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-    alignas(8) glm::vec2 Position;
-    alignas(8) glm::vec2 Size;
-    alignas(16) glm::vec4 BackgroundColor;
-    alignas(16) AxrUIRoundedCorners Corners;
-};
-
 /// Engine asset uniform buffer named 'UI Border' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIBorder {
     // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
@@ -941,6 +941,15 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIBorder {
     alignas(16) glm::vec4 Color;
     alignas(16) AxrUIRoundedCorners Corners;
     alignas(16) AxrUIBorders Borders;
+};
+
+/// Engine asset uniform buffer named 'UI Image' structure
+struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
+    // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
+    alignas(8) glm::vec2 Position;
+    alignas(8) glm::vec2 Size;
+    alignas(16) glm::vec4 BackgroundColor;
+    alignas(16) AxrUIRoundedCorners Corners;
 };
 
 /// Engine asset uniform buffer for a general UI element.

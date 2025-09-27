@@ -105,15 +105,13 @@ public:
         return m_RenderTarget.getUIRegion();
     }
 
-    /// Update all necessary uniform buffers for the current frame
+    /// Update all uniform buffers for the current frame
     /// @param viewIndex The view index
     /// @param sceneData The active scene
-    /// @param uiCanvasConfig The scene ui canvas config
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult updateUniformBuffers(
         const uint32_t viewIndex,
-        const AxrVulkanSceneData* sceneData,
-        const AxrUICanvasConfig& uiCanvasConfig
+        const AxrVulkanSceneData* sceneData
     ) const {
         AxrResult axrResult = AXR_SUCCESS;
         const uint32_t currentFrame = m_RenderTarget.getCurrentRenderingFrame();
@@ -191,10 +189,26 @@ public:
             return axrResult;
         }
 
-        // ---- UI Elements Uniform Buffer ----
+        return AXR_SUCCESS;
+    }
+
+    /// Update all UI related data for the current frame
+    /// @param viewIndex The view index
+    /// @param sceneData The active scene
+    /// @param uiCanvasConfig The scene ui canvas config
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult updateUIData(
+        const uint32_t viewIndex,
+        AxrVulkanSceneData* sceneData,
+        const AxrUICanvasConfig& uiCanvasConfig
+    ) const {
+        AxrResult axrResult = AXR_SUCCESS;
+        const uint32_t currentFrame = m_RenderTarget.getCurrentRenderingFrame();
+        const AxrPlatformType platformType = m_RenderTarget.getPlatformType();
 
         if (uiCanvasConfig.Enabled) {
             std::vector<AxrEngineAssetUniformBuffer_UIElement> uiElements;
+            std::vector<AxrUIImageData*> uiImageData;
 
             for (int32_t renderCommandIndex = 0;
                  renderCommandIndex < uiCanvasConfig.ClayRenderCommands.length;
@@ -277,6 +291,9 @@ public:
                         break;
                     }
                     case CLAY_RENDER_COMMAND_TYPE_IMAGE: {
+                        uiImageData.push_back(
+                            static_cast<AxrUIImageData*>(clayRenderCommand.renderData.image.imageData)
+                        );
                         uiElements.emplace_back(
                             AxrEngineAssetUniformBuffer_UIElement{
                                 .Image = AxrEngineAssetUniformBuffer_UIImage{
@@ -330,6 +347,14 @@ public:
                 );
                 if (AXR_FAILED(axrResult)) {
                     axrLogErrorLocation("Failed to set engine asset uniform buffer UI elements.");
+                    return axrResult;
+                }
+            }
+
+            if (!uiImageData.empty()) {
+                axrResult = sceneData->setUIImageData(platformType, currentFrame, uiImageData);
+                if (AXR_FAILED(axrResult)) {
+                    axrLogErrorLocation("Failed to set engine asset ui image data.");
                     return axrResult;
                 }
             }
