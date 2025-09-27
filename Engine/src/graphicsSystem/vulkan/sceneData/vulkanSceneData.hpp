@@ -31,6 +31,7 @@ public:
     /// Vulkan scene data config
     struct Config {
         std::string SceneName;
+        uint32_t UIImagePreloadCount;
         AxrAssetCollection_T AssetCollection;
         entt::registry* EcsRegistryHandle;
         AxrVulkanSceneData* GlobalSceneData;

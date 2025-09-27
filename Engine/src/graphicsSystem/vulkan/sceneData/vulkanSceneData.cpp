@@ -38,8 +38,7 @@ AxrVulkanSceneData::AxrVulkanSceneData(const Config& config):
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         }
     ),
-    // TODO: Make this value configurable
-    m_MaxUIImageCount(16) {
+    m_MaxUIImageCount(config.UIImagePreloadCount) {
 }
 
 AxrVulkanSceneData::~AxrVulkanSceneData() {
@@ -1614,7 +1613,7 @@ AxrResult AxrVulkanSceneData::createAdditionalUIImageMaterials(const uint32_t mi
     // ---- Get number of materials to create ----
 
     /// How many image materials to create when we exceed the current m_MaxUIImageCount  
-    constexpr vk::DeviceSize uiImageIncrementCount = 16;
+    constexpr uint32_t uiImageIncrementCount = 16;
 
     /// The total number of image materials we need to accommidate the given `minImageCount` while still being a
     /// multiple of `uiImageIncrementCount`

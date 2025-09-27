@@ -174,6 +174,8 @@ AxrResult AxrVulkanLoadedScenesCollection::loadGlobalSceneData(const AxrAssetCol
 
     AxrVulkanSceneData* sceneData = createSceneData(
         m_GlobalSceneName,
+        // No ui images get stored in the global scene data
+        0,
         assetCollection,
         nullptr,
         globalSceneData
@@ -240,6 +242,7 @@ AxrResult AxrVulkanLoadedScenesCollection::loadScene(const AxrScene_T scene) {
 
     AxrVulkanSceneData* sceneData = createSceneData(
         sceneName,
+        scene->getUIImagePreloadCount(),
         assetCollection,
         ecsRegistryHandle,
         globalSceneData
@@ -424,6 +427,7 @@ AxrVulkanLoadedScenesCollection::findLoadedSceneIterator(
 
 AxrVulkanSceneData* AxrVulkanLoadedScenesCollection::createSceneData(
     const std::string& sceneName,
+    const uint32_t uiImagePreloadCount,
     const AxrAssetCollection_T assetCollection,
     entt::registry* ecsRegistryHandle,
     AxrVulkanSceneData* globalSceneData
@@ -431,6 +435,7 @@ AxrVulkanSceneData* AxrVulkanLoadedScenesCollection::createSceneData(
     return new AxrVulkanSceneData(
         AxrVulkanSceneData::Config{
             .SceneName = sceneName,
+            .UIImagePreloadCount = uiImagePreloadCount,
             .AssetCollection = assetCollection,
             .EcsRegistryHandle = ecsRegistryHandle,
             .GlobalSceneData = globalSceneData,

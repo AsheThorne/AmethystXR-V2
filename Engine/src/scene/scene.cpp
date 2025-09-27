@@ -53,6 +53,15 @@ void axrSceneSetMainCamera(const AxrScene_T scene, const AxrEntityConst_T entity
     return scene->setMainCamera(entity);
 }
 
+void axrSceneSetUIImagePreloadCount(const AxrScene_T scene, const uint32_t imageCount) {
+    if (scene == nullptr) {
+        axrLogErrorLocation("`scene` is null");
+        return;
+    }
+
+    return scene->setUIImagePreloadCount(imageCount);
+}
+
 AxrResult axrSceneSetBuildUICanvasCallback(
     const AxrScene_T scene,
     void* userData,
@@ -149,6 +158,10 @@ void AxrScene::setMainCamera(const AxrEntityConst_T entity) {
     m_MainCamera = entity;
 }
 
+void AxrScene::setUIImagePreloadCount(const uint32_t imageCount) {
+    m_UIImagePreloadCount = imageCount;
+}
+
 AxrResult AxrScene::setBuildUICanvasCallback(void* userData, const AxrBuildUICanvasCallback_T buildCanvasCallback) {
     if (buildCanvasCallback == nullptr) {
         return AXR_ERROR;
@@ -177,6 +190,10 @@ bool AxrScene::isMainCameraValid() const {
 
 AxrEntityConst_T AxrScene::getMainCamera() const {
     return m_MainCamera;
+}
+
+uint32_t AxrScene::getUIImagePreloadCount() const {
+    return m_UIImagePreloadCount;
 }
 
 const AxrScene::CallbackData& AxrScene::getUICanvasCallback() const {

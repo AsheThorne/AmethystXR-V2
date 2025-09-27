@@ -74,6 +74,9 @@ public:
     /// @param entity Entity with a camera component
     void setMainCamera(AxrEntityConst_T entity);
 
+    /// Set the number of ui images to preload when the scene gets loaded
+    /// @param imageCount Number of images to preload
+    void setUIImagePreloadCount(uint32_t imageCount);
     /// Set the `build ui canvas` callback function
     /// @param userData User data
     /// @param buildCanvasCallback Callback function
@@ -92,6 +95,9 @@ public:
     /// @returns The main camera
     [[nodiscard]] AxrEntityConst_T getMainCamera() const;
 
+    /// Get the UI image preload count
+    //// @returns The UI image preload count
+    [[nodiscard]] uint32_t getUIImagePreloadCount() const;
     /// Get the `Build UI canvas` callback data
     /// @returns The `Build UI canvas` callback data
     [[nodiscard]] const CallbackData& getUICanvasCallback() const;
@@ -104,6 +110,7 @@ private:
     AxrAssetCollection m_AssetCollection;
     entt::registry m_Registry;
     AxrEntityConst_T m_MainCamera;
+    uint32_t m_UIImagePreloadCount;
     CallbackData m_BuildUICanvasCallback;
 
     // ----------------------------------------- //

@@ -158,6 +158,12 @@ namespace axr {
             axrSceneSetMainCamera(m_Scene, entity);
         }
 
+        /// Set the number of ui images to preload when the scene gets loaded
+        /// @param imageCount Number of images to preload
+        void setUIImagePreloadCount(const uint32_t imageCount) const {
+            axrSceneSetUIImagePreloadCount(m_Scene, imageCount);
+        }
+
         /// Set the `build ui canvas` callback function
         /// @param userData User data
         /// @param buildCanvasCallback Callback function
