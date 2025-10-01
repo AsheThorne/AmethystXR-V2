@@ -2944,6 +2944,190 @@ namespace axr {
     };
 
     // ---------------------------------------------------------------------------------- //
+    //                                   Font Assets                                     //
+    // ---------------------------------------------------------------------------------- //
+
+    // ----------------------------------------- //
+    // Structs
+    // ----------------------------------------- //
+
+    /// Font Config
+    struct FontConfig {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        char Name[AXR_MAX_ASSET_NAME_SIZE]{};
+        char AtlasImageName[AXR_MAX_ASSET_NAME_SIZE]{};
+        /// Must be a .json file
+        char AtlasLayoutFilePath[AXR_MAX_FILE_PATH_SIZE]{};
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default Constructor
+        FontConfig() = default;
+
+        /// Constructor
+        /// @param name Name of the font
+        /// @param atlasImageName Name of the font atlas image
+        /// @param atlasLayoutFilePath Font atlas layout file path
+        FontConfig(
+            const char* name,
+            const char* atlasImageName,
+            const char* atlasLayoutFilePath
+        ) {
+            if (name != nullptr) {
+                strncpy_s(Name, name, AXR_MAX_ASSET_NAME_SIZE);
+            }
+            if (atlasImageName != nullptr) {
+                strncpy_s(AtlasImageName, atlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+            }
+            if (atlasLayoutFilePath != nullptr) {
+                strncpy_s(AtlasLayoutFilePath, atlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
+            }
+        }
+
+        /// Copy Constructor
+        /// @param src Source FontConfig to copy from
+        FontConfig(const FontConfig& src) {
+            strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
+        }
+
+        /// Move Constructor
+        /// @param src Source FontConfig to move from
+        FontConfig(FontConfig&& src) noexcept {
+            strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
+
+            memset(src.Name, 0, sizeof(src.Name));
+            memset(src.AtlasImageName, 0, sizeof(src.AtlasImageName));
+            memset(src.AtlasLayoutFilePath, 0, sizeof(src.AtlasLayoutFilePath));
+        }
+
+        // ---- Destructor ----
+
+        /// Destructor
+        ~FontConfig() {
+            cleanup();
+        }
+
+        // ---- Operator Overloads ----
+
+        /// Copy Assignment Operator
+        /// @param src Source FontConfig to copy from
+        FontConfig& operator=(const FontConfig& src) {
+            if (this != &src) {
+                cleanup();
+
+                strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
+            }
+
+            return *this;
+        }
+
+        /// Move Assignment Operator
+        /// @param src Source FontConfig to move from
+        FontConfig& operator=(FontConfig&& src) noexcept {
+            if (this != &src) {
+                cleanup();
+
+                strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
+
+                memset(src.Name, 0, sizeof(src.Name));
+                memset(src.AtlasImageName, 0, sizeof(src.AtlasImageName));
+                memset(src.AtlasLayoutFilePath, 0, sizeof(src.AtlasLayoutFilePath));
+            }
+
+            return *this;
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the FontConfig as an AxrFontConfig
+        /// @returns This as an AxrFontConfig
+        const AxrFontConfig* toRaw() const {
+            return reinterpret_cast<const AxrFontConfig*>(this);
+        }
+
+        /// Get a handle to the FontConfig as an AxrFontConfig
+        /// @returns This as an AxrFontConfig
+        AxrFontConfig* toRaw() {
+            return reinterpret_cast<AxrFontConfig*>(this);
+        }
+
+    private:
+        // ----------------------------------------- //
+        // Private Functions
+        // ----------------------------------------- //
+
+        /// Clean up this class
+        void cleanup() {
+            memset(Name, 0, sizeof(Name));
+            memset(AtlasImageName, 0, sizeof(AtlasImageName));
+            memset(AtlasLayoutFilePath, 0, sizeof(AtlasLayoutFilePath));
+        }
+    };
+
+    static_assert(
+        sizeof(AxrFontConfig) == sizeof(axr::FontConfig),
+        "Original type and wrapper have different size!"
+    );
+
+    // ----------------------------------------- //
+    // Font Definition
+    // ----------------------------------------- //
+
+    /// Font
+    class Font {
+    public:
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Constructor
+        /// @param font Font handle
+        explicit Font(const AxrFont_T font):
+            m_Font(font) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get the font's name
+        /// @returns The font's name
+        [[nodiscard]] const char* getName() const {
+            return axrFontGetName(m_Font);
+        }
+
+        /// Get the font's ID
+        /// @returns The font's ID
+        [[nodiscard]] uint16_t getID() const {
+            return axrFontGetID(m_Font);
+        }
+
+    private:
+        // ----------------------------------------- //
+        // Private Variables
+        // ----------------------------------------- //
+        AxrFont_T m_Font;
+    };
+
+    // ---------------------------------------------------------------------------------- //
     //                               Engine Defined Assets                                //
     // ---------------------------------------------------------------------------------- //
 
@@ -2984,6 +3168,7 @@ namespace axr {
         ImageStart = AXR_ENGINE_ASSET_IMAGE_START,
         ImageMissingTexture = AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE,
         ImageUvTester = AXR_ENGINE_ASSET_IMAGE_UV_TESTER,
+        ImageFontAtlasJetbrainsMono_Regular = AXR_ENGINE_ASSET_IMAGE_FONT_ATLAS_JETBRAINS_MONO_REGULAR,
         ImageEnd = AXR_ENGINE_ASSET_IMAGE_END,
 
         // ---- Image Samplers ----
@@ -3006,6 +3191,11 @@ namespace axr {
         ModelCube = AXR_ENGINE_ASSET_MODEL_CUBE,
         ModelUISquare = AXR_ENGINE_ASSET_MODEL_UI_RECTANGLE,
         ModelEnd = AXR_ENGINE_ASSET_MODEL_END,
+
+        // ---- Fonts ----
+        FontStart = AXR_ENGINE_ASSET_FONT_START,
+        FontJetbrainsMono_Regular = AXR_ENGINE_ASSET_FONT_JETBRAINS_MONO_REGULAR,
+        FontEnd = AXR_ENGINE_ASSET_FONT_END,
     };
 
     // ----------------------------------------- //
@@ -3760,6 +3950,32 @@ namespace axr {
             return static_cast<axr::Result>(axrAssetCollectionCreateImageSampler(
                 m_AssetCollection,
                 imageSamplerConfig.toRaw()
+            ));
+        }
+
+        // ---- Font ----
+
+        /// Create a new font
+        /// @param fontConfig Font config
+        /// @returns AXR_SUCCESS if the function succeeded
+        [[nodiscard]] axr::Result createFont(
+            const axr::FontConfig& fontConfig
+        ) const {
+            return static_cast<axr::Result>(axrAssetCollectionCreateFont(
+                m_AssetCollection,
+                fontConfig.toRaw()
+            ));
+        }
+
+        /// Create a new engine asset font
+        /// @param engineAssetEnum Font engine asset
+        /// @returns AXR_SUCCESS if the function succeeded
+        [[nodiscard]] axr::Result createFont(
+            axr::EngineAssetEnum engineAssetEnum
+        ) const {
+            return static_cast<axr::Result>(axrAssetCollectionCreateEngineAssetFont(
+                m_AssetCollection,
+                static_cast<AxrEngineAssetEnum>(engineAssetEnum)
             ));
         }
 

@@ -318,3 +318,50 @@ AxrResult axrEngineAssetCreateImage_MissingTexture(const std::string& imageName,
 /// @param image Output created image
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateImage_UvTester(const std::string& imageName, AxrImage& image);
+
+/// Create the 'FontAtlasJetbrainsMono_Regular' engine asset image
+/// @param imageName Image name
+/// @param image Output created image
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateImage_FontAtlasJetbrainsMono_Regular(const std::string& imageName, AxrImage& image);
+
+// ---------------------------------------------------------------------------------- //
+//                                Font Engine Assets                                 //
+// ---------------------------------------------------------------------------------- //
+
+/// Check if the given engine asset is a font
+/// @param engineAssetEnum Engine asset to check
+/// @returns True if the given engine asset is a font
+bool axrEngineAssetIsFont(AxrEngineAssetEnum engineAssetEnum);
+/// Get the name for the given font engine asset
+/// @param engineAssetEnum Engine asset to get the name of
+/// @returns The name of the given font engine asset
+const char* axrEngineAssetGetFontName(AxrEngineAssetEnum engineAssetEnum);
+/// Check if the given name is reserved for a font engine asset
+/// @param name Name to check
+/// @returns True if the given name is reserved for a font engine asset
+bool axrEngineAssetIsFontNameReserved(const char* name);
+
+/// Create an engine asset font
+/// @param id Font id
+/// @param engineAssetEnum Font engine asset
+/// @param font Output created font
+/// @param imageAtlas Output required image atlas for this font
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateFont(
+    uint16_t id,
+    AxrEngineAssetEnum engineAssetEnum,
+    AxrFont& font,
+    AxrEngineAssetEnum& imageAtlas
+);
+
+/// Create the 'JetbrainsMono_Regular' engine asset font
+/// @param id Font id
+/// @param font Output created font
+/// @param imageAtlas Output required image atlas for this font
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateFont_JetbrainsMono_Regular(
+    uint16_t id,
+    AxrFont& font,
+    AxrEngineAssetEnum& imageAtlas
+);

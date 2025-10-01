@@ -10,6 +10,7 @@
 #include "image.hpp"
 #include "imageSampler.hpp"
 #include "uniformBuffer.hpp"
+#include "font.hpp"
 
 // ----------------------------------------- //
 // C/C++ Headers
@@ -34,6 +35,7 @@
 #define AXR_ENGINE_ASSET_IMAGE_SAMPLER_PREFIX AXR_ENGINE_ASSET_PREFIX "ImageSampler_"
 #define AXR_ENGINE_ASSET_IMAGE_PREFIX AXR_ENGINE_ASSET_PREFIX "Image_"
 #define AXR_ENGINE_ASSET_MATERIAL_PREFIX AXR_ENGINE_ASSET_PREFIX "Material_"
+#define AXR_ENGINE_ASSET_FONT_PREFIX AXR_ENGINE_ASSET_PREFIX "Font_"
 
 // ---------------------------------------------------------------------------------- //
 //                                 Global Variables                                   //
@@ -153,6 +155,10 @@ const std::unordered_map EngineAssetImageNames{
         AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE,
         AXR_ENGINE_ASSET_IMAGE_PREFIX "MissingTexture"
     ),
+    std::pair(
+        AXR_ENGINE_ASSET_IMAGE_FONT_ATLAS_JETBRAINS_MONO_REGULAR,
+        AXR_ENGINE_ASSET_IMAGE_PREFIX "FontAtlasJetbrainsMono_Regular"
+    ),
 };
 
 // ----------------------------------------- //
@@ -172,6 +178,18 @@ const std::unordered_map EngineAssetMaterialNames{
     std::pair(
         AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE,
         AXR_ENGINE_ASSET_MATERIAL_PREFIX "UIImage"
+    ),
+};
+
+// ----------------------------------------- //
+// Font Engine Assets
+// ----------------------------------------- //
+
+/// Engine asset font names
+const std::unordered_map EngineAssetFontNames{
+    std::pair(
+        AXR_ENGINE_ASSET_FONT_JETBRAINS_MONO_REGULAR,
+        AXR_ENGINE_ASSET_FONT_PREFIX "JetbrainsMono_Regular"
     ),
 };
 
@@ -214,6 +232,9 @@ const char* axrEngineAssetGetName(const AxrEngineAssetEnum engineAssetEnum) {
     }
     if (axrEngineAssetIsMaterial(engineAssetEnum)) {
         return axrEngineAssetGetMaterialName(engineAssetEnum);
+    }
+    if (axrEngineAssetIsFont(engineAssetEnum)) {
+        return axrEngineAssetGetFontName(engineAssetEnum);
     }
 
     axrLogErrorLocation("Unknown engine asset enum.");
@@ -1962,6 +1983,9 @@ AxrResult axrEngineAssetCreateImage(
         case AXR_ENGINE_ASSET_IMAGE_UV_TESTER: {
             return axrEngineAssetCreateImage_UvTester(imageName, image);
         }
+        case AXR_ENGINE_ASSET_IMAGE_FONT_ATLAS_JETBRAINS_MONO_REGULAR: {
+            return axrEngineAssetCreateImage_FontAtlasJetbrainsMono_Regular(imageName, image);
+        }
         case AXR_ENGINE_ASSET_UNDEFINED:
         default: { // NOLINT(clang-diagnostic-covered-switch-default)
             axrLogErrorLocation("Unknown image engine asset.");
@@ -2016,6 +2040,120 @@ AxrResult axrEngineAssetCreateImage_UvTester(const std::string& imageName, AxrIm
     strncpy_s(imageConfig.FilePath, filePath.c_str(), AXR_MAX_FILE_PATH_SIZE);
 
     image = AxrImage(imageConfig);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult axrEngineAssetCreateImage_FontAtlasJetbrainsMono_Regular(const std::string& imageName, AxrImage& image) {
+    const std::string& filePath = axrGetEngineAssetsDirectoryPath()
+                                  .append("fonts/JetbrainsMono/JetbrainsMono-Regular-MTSDF-Atlas.png")
+                                  .generic_string();
+
+    AxrImageConfig imageConfig{
+        .Name = {},
+        .FilePath = {},
+    };
+    strncpy_s(imageConfig.Name, imageName.c_str(), AXR_MAX_ASSET_NAME_SIZE);
+    strncpy_s(imageConfig.FilePath, filePath.c_str(), AXR_MAX_FILE_PATH_SIZE);
+
+    image = AxrImage(imageConfig);
+
+    return AXR_SUCCESS;
+}
+
+// ----------------------------------------- //
+// Font Engine Assets
+// ----------------------------------------- //
+
+bool axrEngineAssetIsFont(const AxrEngineAssetEnum engineAssetEnum) {
+    return engineAssetEnum >= AXR_ENGINE_ASSET_FONT_START &&
+        engineAssetEnum <= AXR_ENGINE_ASSET_FONT_END;
+}
+
+const char* axrEngineAssetGetFontName(const AxrEngineAssetEnum engineAssetEnum) {
+    if (!axrEngineAssetIsFont(engineAssetEnum)) {
+        axrLogErrorLocation("Engine asset is not a font.");
+        return "";
+    }
+
+    const auto foundEngineAssetIt = EngineAssetFontNames.find(engineAssetEnum);
+    if (foundEngineAssetIt == EngineAssetFontNames.end()) {
+        axrLogError("Failed to find name for font engine asset: {0}.", static_cast<int>(engineAssetEnum));
+        return "";
+    }
+
+    return foundEngineAssetIt->second;
+}
+
+bool axrEngineAssetIsFontNameReserved(const char* name) {
+    if (std::strncmp(
+        name,
+        AXR_ENGINE_ASSET_FONT_PREFIX,
+        strlen(AXR_ENGINE_ASSET_FONT_PREFIX)
+    ) == 0) {
+        return true;
+    }
+
+    return false;
+}
+
+AxrResult axrEngineAssetCreateFont(
+    const uint16_t id,
+    const AxrEngineAssetEnum engineAssetEnum,
+    AxrFont& font,
+    AxrEngineAssetEnum& imageAtlas
+) {
+    if (!axrEngineAssetIsFont(engineAssetEnum)) {
+        axrLogErrorLocation("Engine asset is not a font.");
+        return AXR_ERROR;
+    }
+
+    switch (engineAssetEnum) {
+        case AXR_ENGINE_ASSET_FONT_JETBRAINS_MONO_REGULAR: {
+            return axrEngineAssetCreateFont_JetbrainsMono_Regular(id, font, imageAtlas);
+        }
+        case AXR_ENGINE_ASSET_UNDEFINED:
+        default: { // NOLINT(clang-diagnostic-covered-switch-default)
+            axrLogErrorLocation("Unknown font engine asset.");
+            return AXR_ERROR;
+        }
+    }
+}
+
+AxrResult axrEngineAssetCreateFont_JetbrainsMono_Regular(
+    const uint16_t id,
+    AxrFont& font,
+    AxrEngineAssetEnum& imageAtlas
+) {
+    const std::string& atlasLayoutFilePath = axrGetEngineAssetsDirectoryPath()
+                                             .append(
+                                                 "fonts/JetbrainsMono/JetbrainsMono-Regular-MTSDF-Atlas-Layout.json"
+                                             )
+                                             .generic_string();
+
+    AxrFontConfig fontConfig{
+        .Name = {},
+        .AtlasImageName = {},
+        .AtlasLayoutFilePath = {},
+    };
+    strncpy_s(
+        fontConfig.Name,
+        axrEngineAssetGetFontName(AXR_ENGINE_ASSET_FONT_JETBRAINS_MONO_REGULAR),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    strncpy_s(
+        fontConfig.AtlasImageName,
+        axrEngineAssetGetImageName(AXR_ENGINE_ASSET_IMAGE_FONT_ATLAS_JETBRAINS_MONO_REGULAR),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    strncpy_s(
+        fontConfig.AtlasLayoutFilePath,
+        atlasLayoutFilePath.c_str(),
+        AXR_MAX_FILE_PATH_SIZE
+    );
+
+    imageAtlas = AXR_ENGINE_ASSET_IMAGE_FONT_ATLAS_JETBRAINS_MONO_REGULAR;
+    font = AxrFont(fontConfig, id);
 
     return AXR_SUCCESS;
 }

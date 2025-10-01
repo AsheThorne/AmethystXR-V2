@@ -831,6 +831,46 @@ extern "C" {
     AXR_API const char* axrMaterialGetName(AxrMaterialConst_T material);
 }
 
+
+// ---------------------------------------------------------------------------------- //
+//                                    Font Assets                                     //
+// ---------------------------------------------------------------------------------- //
+
+// ----------------------------------------- //
+// Structs
+// ----------------------------------------- //
+
+/// Axr Font Config
+struct AxrFontConfig {
+    char Name[AXR_MAX_ASSET_NAME_SIZE];
+    char AtlasImageName[AXR_MAX_ASSET_NAME_SIZE];
+    /// Must be a .json file
+    char AtlasLayoutFilePath[AXR_MAX_FILE_PATH_SIZE];
+};
+
+// ----------------------------------------- //
+// Forward Declared Handles
+// ----------------------------------------- //
+
+/// AxrFont Handle
+typedef class AxrFont* AxrFont_T;
+/// const AxrFont Handle
+typedef const AxrFont* AxrFontConst_T;
+
+// ----------------------------------------- //
+// External Function Definitions
+// ----------------------------------------- //
+extern "C" {
+    /// Get the font's name
+    /// @param font Font to use
+    /// @returns The font's name
+    AXR_API const char* axrFontGetName(AxrFontConst_T font);
+    /// Get the font's ID
+    /// @param font Font to use
+    /// @returns The font's ID
+    AXR_API uint16_t axrFontGetID(AxrFontConst_T font);
+}
+
 // ---------------------------------------------------------------------------------- //
 //                               Engine Defined Assets                                //
 // ---------------------------------------------------------------------------------- //
@@ -874,6 +914,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_IMAGE_START = 129,
     AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE = 129,
     AXR_ENGINE_ASSET_IMAGE_UV_TESTER = 130,
+    AXR_ENGINE_ASSET_IMAGE_FONT_ATLAS_JETBRAINS_MONO_REGULAR = 131,
     AXR_ENGINE_ASSET_IMAGE_END = 192,
 
     // ---- Image Samplers - Max of 8 ----
@@ -896,6 +937,11 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_MODEL_CUBE = 267,
     AXR_ENGINE_ASSET_MODEL_UI_RECTANGLE = 268,
     AXR_ENGINE_ASSET_MODEL_END = 328,
+
+    // ---- Fonts - Max of 64 ----
+    AXR_ENGINE_ASSET_FONT_START = 329,
+    AXR_ENGINE_ASSET_FONT_JETBRAINS_MONO_REGULAR = 329,
+    AXR_ENGINE_ASSET_FONT_END = 392,
 };
 
 // ----------------------------------------- //
@@ -1160,6 +1206,26 @@ extern "C" {
     AXR_API AxrResult axrAssetCollectionCreateImageSampler(
         AxrAssetCollection_T assetCollection,
         const AxrImageSamplerConfig* imageSamplerConfig
+    );
+
+    // ---- Font ----
+
+    /// Create a new font
+    /// @param assetCollection Asset collection to use
+    /// @param fontConfig Font config
+    /// @returns AXR_SUCCESS if the function succeeded
+    AXR_API AxrResult axrAssetCollectionCreateFont(
+        AxrAssetCollection_T assetCollection,
+        const AxrFontConfig* fontConfig
+    );
+
+    /// Create a new engine asset font
+    /// @param assetCollection Asset collection to use
+    /// @param engineAssetEnum Font engine asset
+    /// @returns AXR_SUCCESS if the function succeeded
+    AXR_API AxrResult axrAssetCollectionCreateEngineAssetFont(
+        AxrAssetCollection_T assetCollection,
+        AxrEngineAssetEnum engineAssetEnum
     );
 }
 

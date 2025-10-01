@@ -2,6 +2,8 @@
   <dictionary name="project">
     <words>
       <w>blitting</w>
+      <w>msdf</w>
+      <w>mtsdf</w>
       <w>sponza</w>
       <w>swapchain</w>
       <w>swapchains</w>

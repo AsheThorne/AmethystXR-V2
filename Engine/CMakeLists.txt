@@ -119,6 +119,7 @@ set(AXR_HEADER_FILES
     ${AXR_SRC_DIR}/assets/pushConstantBuffer.hpp
     ${AXR_SRC_DIR}/assets/image.hpp
     ${AXR_SRC_DIR}/assets/imageSampler.hpp
+    ${AXR_SRC_DIR}/assets/font.hpp
     # ---- Scene ----
     ${AXR_SRC_DIR}/scene/scene.hpp
     ${AXR_SRC_DIR}/scene/sceneUtils.hpp
@@ -189,6 +190,7 @@ set(AXR_CPP_FILES
     ${AXR_SRC_DIR}/assets/pushConstantBuffer.cpp
     ${AXR_SRC_DIR}/assets/image.cpp
     ${AXR_SRC_DIR}/assets/imageSampler.cpp
+    ${AXR_SRC_DIR}/assets/font.cpp
     # ---- Scene ----
     ${AXR_SRC_DIR}/scene/scene.cpp
     ${AXR_SRC_DIR}/scene/sceneUtils.cpp
