@@ -212,12 +212,15 @@ AxrApplication::AxrApplication(const AxrApplicationConfig& config):
         }
     ),
     m_GlobalAssetCollection(config.GraphicsSystemConfig.GraphicsApi),
+    m_ClayContext(nullptr),
+    m_ClayArena(),
     m_DeltaTime(0) {
 }
 
 AxrApplication::~AxrApplication() {
     m_GraphicsSystem.resetSetup();
     m_ActionSystem.resetSetup();
+    resetSetupClay();
     m_WindowSystem.resetSetup();
     m_XrSystem.resetSetup();
     m_GlobalAssetCollection.cleanup();
@@ -240,6 +243,9 @@ AxrResult AxrApplication::setup() {
         axrResult = m_XrSystem.setup();
         if (AXR_FAILED(axrResult)) return axrResult;
     }
+
+    axrResult = setupClay();
+    if (AXR_FAILED(axrResult)) return axrResult;
 
     axrResult = m_ActionSystem.setup();
     if (AXR_FAILED(axrResult)) return axrResult;
@@ -389,4 +395,65 @@ AxrResult AxrApplication::setupGlobalAssetCollection() {
     if (AXR_FAILED(axrResult)) return axrResult;
 
     return AXR_SUCCESS;
+}
+
+AxrResult AxrApplication::setupClay() {
+    const uint64_t totalMemorySize = Clay_MinMemorySize();
+    m_ClayArena = Clay_CreateArenaWithCapacityAndMemory(totalMemorySize, malloc(totalMemorySize));
+
+    m_ClayContext = Clay_Initialize(
+        m_ClayArena,
+        Clay_Dimensions{
+            // These values will get set during rendering, depending on the platform that's being rendered
+            .width = 0, .height = 0
+        },
+        Clay_ErrorHandler{
+            // ReSharper disable once CppPassValueParameterByConstReference
+            .errorHandlerFunction = [](const Clay_ErrorData errorData) -> void {
+                const auto application = static_cast<AxrApplication*>(errorData.userData);
+                application->handleClayErrors(errorData);
+            },
+            .userData = this,
+        }
+    );
+
+    // We chose 256 since most vulkan gpus have a uniform buffer range of 65536 or more. And the worst possible offset
+    // alignment is 256. So as long as sizeof(AxrEngineAssetUniformBuffer_UIElement) is less than 256, then we can
+    // have a max of 65536 / 256 = 256 elements.
+    // NOTE: If we need more than we should use a dynamic storage buffer instead of a dynamic uniform buffer.
+    //  Or we just accept having a max of 128 elements instead (65536 / 512 = 128).
+    Clay_SetMaxElementCount(256);
+    static_assert(
+        sizeof(AxrEngineAssetUniformBuffer_UIElement) <= 256,
+        "UI Element size is larger than 256 bytes. Consider changing to a dynamic storage buffer instead."
+    );
+
+    return AXR_SUCCESS;
+}
+
+void AxrApplication::resetSetupClay() {
+    if (m_ClayContext == nullptr || m_ClayArena.memory == nullptr) return;
+
+    bool resetCurrentContext = false;
+    if (Clay_GetCurrentContext() == m_ClayContext) {
+        resetCurrentContext = true;
+    }
+
+    free(m_ClayArena.memory);
+    m_ClayArena = {};
+    m_ClayContext = nullptr;
+
+    if (resetCurrentContext) {
+        Clay_SetCurrentContext(nullptr);
+    }
+}
+
+void AxrApplication::handleClayErrors(const Clay_ErrorData& errorData) const {
+    const char* messageTypeString = axrToString(errorData.errorType);
+
+    axrLogError(
+        "[Clay | XR Graphics | {0}] : {1}",
+        messageTypeString,
+        errorData.errorText.chars
+    );
 }

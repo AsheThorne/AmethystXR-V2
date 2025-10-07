@@ -108,6 +108,8 @@ private:
     AxrActionSystem m_ActionSystem;
     AxrAssetCollection m_GlobalAssetCollection;
     std::unordered_map<std::string, AxrScene> m_Scenes;
+    Clay_Context* m_ClayContext;
+    Clay_Arena m_ClayArena;
     float m_DeltaTime;
 
     // ----------------------------------------- //
@@ -117,4 +119,15 @@ private:
     /// Set up the global asset collection
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult setupGlobalAssetCollection();
+
+    // ---- Clay ----
+
+    /// Set up the clay data
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult setupClay();
+    /// Reset setupClay()
+    void resetSetupClay();
+    /// Callback function to handle clay errors
+    /// @param errorData Clay error data
+    void handleClayErrors(const Clay_ErrorData& errorData) const;
 };

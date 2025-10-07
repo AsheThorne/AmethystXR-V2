@@ -70,7 +70,7 @@ public:
 
     /// Constructor
     /// @param config Vulkan graphics system config
-    AxrVulkanGraphicsSystem(const Config& config);
+    explicit AxrVulkanGraphicsSystem(const Config& config);
     /// Copy Constructor
     /// @param src Source AxrVulkanGraphicsSystem to copy from
     AxrVulkanGraphicsSystem(const AxrVulkanGraphicsSystem& src) = delete;
@@ -162,8 +162,6 @@ private:
     vk::CommandPool m_GraphicsCommandPool;
     vk::CommandPool m_TransferCommandPool;
     uint32_t m_MaxFramesInFlight;
-    Clay_Context* m_ClayContext;
-    Clay_Arena m_ClayArena;
 
     AxrVulkanLoadedScenesCollection m_LoadedScenes;
     AxrVulkanWindowGraphics* m_WindowGraphics;
@@ -426,17 +424,6 @@ private:
     /// @param materialIndex Material index
     /// @returns The sort key value
     [[nodiscard]] uint64_t createSortKey(uint32_t depth, uint32_t materialIndex) const;
-
-    // ---- Clay ----
-
-    /// Set up the clay data
-    /// @returns AXR_SUCCESS if the function succeeded
-    [[nodiscard]] AxrResult setupClay();
-    /// Reset setupClay()
-    void resetSetupClay();
-    /// Callback function to handle clay errors
-    /// @param errorData Clay error data
-    void handleClayErrors(const Clay_ErrorData& errorData) const;
 
     // ----------------------------------------- //
     // Private Static Functions

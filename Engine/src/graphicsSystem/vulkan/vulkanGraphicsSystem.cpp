@@ -45,8 +45,6 @@ AxrVulkanGraphicsSystem::AxrVulkanGraphicsSystem(const Config& config):
     m_GraphicsCommandPool(VK_NULL_HANDLE),
     m_TransferCommandPool(VK_NULL_HANDLE),
     m_MaxFramesInFlight(2),
-    m_ClayContext(nullptr),
-    m_ClayArena(),
     m_WindowGraphics(nullptr),
     m_XrGraphics(nullptr) {
     m_Dispatch.init();
@@ -112,12 +110,6 @@ AxrVulkanGraphicsSystem::~AxrVulkanGraphicsSystem() {
 
 AxrResult AxrVulkanGraphicsSystem::setup() {
     AxrResult axrResult = AXR_SUCCESS;
-
-    axrResult = setupClay();
-    if (AXR_FAILED(axrResult)) {
-        resetSetup();
-        return axrResult;
-    }
 
     axrResult = createInstance();
     if (AXR_FAILED(axrResult)) {
@@ -277,7 +269,6 @@ void AxrVulkanGraphicsSystem::resetSetup() {
     resetPhysicalDevice();
     destroyDebugUtils();
     destroyInstance();
-    resetSetupClay();
 }
 
 AxrResult AxrVulkanGraphicsSystem::createInstance() {
@@ -1814,67 +1805,6 @@ uint64_t AxrVulkanGraphicsSystem::createSortKey(
     const uint32_t materialIndex
 ) const {
     return (static_cast<int64_t>(depth) << 32) | static_cast<uint64_t>(materialIndex);
-}
-
-AxrResult AxrVulkanGraphicsSystem::setupClay() {
-    const uint64_t totalMemorySize = Clay_MinMemorySize();
-    m_ClayArena = Clay_CreateArenaWithCapacityAndMemory(totalMemorySize, malloc(totalMemorySize));
-
-    m_ClayContext = Clay_Initialize(
-        m_ClayArena,
-        Clay_Dimensions{
-            // These values will get set during rendering, depending on the platform that's being rendered
-            .width = 0, .height = 0
-        },
-        Clay_ErrorHandler{
-            // ReSharper disable once CppPassValueParameterByConstReference
-            .errorHandlerFunction = [](const Clay_ErrorData errorData) -> void {
-                const auto graphicsSystem = static_cast<AxrVulkanGraphicsSystem*>(errorData.userData);
-                graphicsSystem->handleClayErrors(errorData);
-            },
-            .userData = this,
-        }
-    );
-
-    // We chose 256 since most vulkan gpus have a uniform buffer range of 65536 or more. And the worst possible offset
-    // alignment is 256. So as long as sizeof(AxrEngineAssetUniformBuffer_UIElement) is less than 256, then we can
-    // have a max of 65536 / 256 = 256 elements.
-    // NOTE: If we need more than we should use a dynamic storage buffer instead of a dynamic uniform buffer.
-    //  Or we just accept having a max of 128 elements instead (65536 / 512 = 128).
-    Clay_SetMaxElementCount(256);
-    static_assert(
-        sizeof(AxrEngineAssetUniformBuffer_UIElement) <= 256,
-        "UI Element size is larger than 256 bytes. Consider changing to a dynamic storage buffer instead."
-    );
-
-    return AXR_SUCCESS;
-}
-
-void AxrVulkanGraphicsSystem::resetSetupClay() {
-    if (m_ClayContext == nullptr || m_ClayArena.memory == nullptr) return;
-
-    bool resetCurrentContext = false;
-    if (Clay_GetCurrentContext() == m_ClayContext) {
-        resetCurrentContext = true;
-    }
-
-    free(m_ClayArena.memory);
-    m_ClayArena = {};
-    m_ClayContext = nullptr;
-
-    if (resetCurrentContext) {
-        Clay_SetCurrentContext(nullptr);
-    }
-}
-
-void AxrVulkanGraphicsSystem::handleClayErrors(const Clay_ErrorData& errorData) const {
-    const char* messageTypeString = axrToString(errorData.errorType);
-
-    axrLogError(
-        "[Clay | XR Graphics | {0}] : {1}",
-        messageTypeString,
-        errorData.errorText.chars
-    );
 }
 
 // ---- Private Static Functions ----
