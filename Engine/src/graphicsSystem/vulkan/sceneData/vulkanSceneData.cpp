@@ -1480,7 +1480,7 @@ AxrResult AxrVulkanSceneData::createAllMaterialData() {
         // We just need the material data to be in the scene specific data
         for (const AxrMaterial& material : m_GlobalSceneData->m_LocalMaterials) {
             if (material.getName() == axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)) {
-                for (int i = 0; i < m_MaxUIImageCount; ++i) {
+                for (int i = 0; i < m_UIImageResourceCount; ++i) {
                     createMaterialData(material, std::to_string(i));
                 }
             } else {
@@ -2304,6 +2304,7 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
 
     // ---- Image UI ----
 
+    for (int i = 0; i < m_UIImageResourceCount; ++i) {
         foundMaterialData = findMaterialData_shared(
             std::string(axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)) + std::to_string(i)
         );
@@ -2314,7 +2315,6 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
             axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
             if (AXR_SUCCEEDED(axrResult)) {
                 m_UIImageMaterialForRenderingIndices.push_back(static_cast<int32_t>(m_UIMaterialsForRendering.size()));
-        for (int i = 0; i < m_UIImageResourceCount; ++i) {
                 m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
             }
         }
