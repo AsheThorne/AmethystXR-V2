@@ -23,6 +23,15 @@ const char* axrFontGetName(const AxrFontConst_T font) {
     return font->getName().c_str();
 }
 
+uint16_t axrFontGetID(const AxrFontConst_T font) {
+    if (font == nullptr) {
+        axrLogErrorLocation("`font` is null.");
+        return 0;
+    }
+
+    return font->getID();
+}
+
 // ----------------------------------------- //
 // Internal Functions
 // ----------------------------------------- //
@@ -135,6 +144,10 @@ AxrFont& AxrFont::operator=(AxrFont&& src) noexcept {
 
 const std::string& AxrFont::getName() const {
     return m_Name;
+}
+
+uint16_t AxrFont::getID() const {
+    return m_ID;
 }
 
 bool AxrFont::isLoaded() const {
