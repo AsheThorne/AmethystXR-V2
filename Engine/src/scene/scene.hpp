@@ -107,7 +107,7 @@ private:
     // Private Variables
     // ----------------------------------------- //
     std::string m_Name;
-    AxrAssetCollection m_AssetCollection;
+    AxrAssetCollection m_AssetCollection = AxrAssetCollection(false, AXR_GRAPHICS_API_UNDEFINED);
     entt::registry m_Registry;
     AxrEntityConst_T m_MainCamera = AxrEntityConst_T(m_Registry, entt::null);
     uint32_t m_UIImageResourcesPreloadCount = 0;

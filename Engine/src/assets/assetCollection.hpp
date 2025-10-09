@@ -16,6 +16,7 @@
 #include "image.hpp"
 #include "uniformBuffer.hpp"
 #include "imageSampler.hpp"
+#include "font.hpp"
 #include "axr/common/callback.h"
 #include "axr/graphicsSystem.h"
 
@@ -46,6 +47,9 @@ public:
     /// On image sampler created callback function type
     /// @param 1: Image sampler that was created
     using OnImageSamplerCreatedCallback_T = AxrCallback<void(AxrImageSamplerConst_T)>;
+    /// On font created callback function type
+    /// @param 1: Font that was created
+    using OnFontCreatedCallback_T = AxrCallback<void(AxrFontConst_T)>;
 
     // ----------------------------------------- //
     // Public Variables
@@ -65,6 +69,8 @@ public:
     OnImageCreatedCallback_T OnImageCreatedCallbackGraphics;
     /// On image sampler created for the graphics system
     OnImageSamplerCreatedCallback_T OnImageSamplerCreatedCallbackGraphics;
+    /// On font created for the graphics system
+    OnFontCreatedCallback_T OnFontCreatedCallbackGraphics;
 
     // ----------------------------------------- //
     // Special Functions
@@ -73,7 +79,9 @@ public:
     // ---- Constructors ----
 
     /// Constructor
-    explicit AxrAssetCollection(AxrGraphicsApiEnum graphicsApi);
+    /// @param isGlobalAssetCollection True if this asset collection is used as the global asset collection
+    /// @param graphicsApi Graphics API to use
+    explicit AxrAssetCollection(bool isGlobalAssetCollection, AxrGraphicsApiEnum graphicsApi);
     /// Copy Constructor
     /// @param src Source AxrAssetCollection to copy from
     AxrAssetCollection(const AxrAssetCollection& src) = delete;
@@ -176,6 +184,17 @@ public:
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult createImageSampler(const AxrImageSamplerConfig& imageSamplerConfig);
 
+    // ---- Font ----
+
+    /// Create a new font
+    /// @param fontConfig Font config
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult createFont(const AxrFontConfig& fontConfig);
+    /// Create a new engine asset font
+    /// @param engineAssetEnum Engine asset enum
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult createFont(AxrEngineAssetEnum engineAssetEnum);
+
     // ---- For Internal Use ----
     // These functions are only to be used internally in the AmethystXr engine.
     // They have not been given a publicly accessible function in the 'include headers' to be used by an application.
@@ -188,14 +207,14 @@ public:
     [[nodiscard]] AxrResult createModel(AxrEngineAssetEnum engineAssetEnum);
 
     // ---- Image ----
-    
+
     /// Create a new engine asset image
     /// @param engineAssetEnum Engine asset enum
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult createImage(AxrEngineAssetEnum engineAssetEnum);
 
     // ---- Image Sampler ----
-    
+
     /// Create a new engine asset image sampler
     /// @param engineAssetEnum Engine asset enum
     /// @returns AXR_SUCCESS if the function succeeded
@@ -249,15 +268,19 @@ public:
     /// Get the image samplers
     /// @returns A map of the image samplers
     [[nodiscard]] const std::unordered_map<std::string, AxrImageSampler>& getImageSamplers();
+    /// Get the fonts
+    /// @returns A map of the fonts
+    [[nodiscard]] const std::unordered_map<std::string, AxrFont>& getFonts();
 
 private:
     // ----------------------------------------- //
     // Private Variables
     // ----------------------------------------- //
-    
+
     // ---- Config Variables ----
+    bool m_IsGlobalAssetCollection;
     AxrGraphicsApiEnum m_GraphicsApi;
-    
+
     std::unordered_map<std::string, AxrShader> m_Shaders;
     std::unordered_map<std::string, AxrMaterial> m_Materials;
     std::unordered_map<std::string, AxrModel> m_Models;
@@ -267,4 +290,14 @@ private:
 #endif
     std::unordered_map<std::string, AxrImage> m_Images;
     std::unordered_map<std::string, AxrImageSampler> m_ImageSamplers;
+    std::unordered_map<std::string, AxrFont> m_Fonts;
+
+    // ----------------------------------------- //
+    // Private Functions
+    // ----------------------------------------- //
+
+    /// Generate the next font ID to use
+    /// @param id Output ID
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult generateFontID(uint16_t& id) const;
 };

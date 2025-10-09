@@ -211,7 +211,7 @@ AxrApplication::AxrApplication(const AxrApplicationConfig& config):
             .XrInteractionProfiles = config.ActionSystemConfig.XrInteractionProfiles
         }
     ),
-    m_GlobalAssetCollection(config.GraphicsSystemConfig.GraphicsApi),
+    m_GlobalAssetCollection(true, config.GraphicsSystemConfig.GraphicsApi),
     m_ClayContext(nullptr),
     m_ClayArena(),
     m_DeltaTime(0) {

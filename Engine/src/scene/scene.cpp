@@ -85,7 +85,7 @@ AxrScene::AxrScene() = default;
 
 AxrScene::AxrScene(const std::string& name, const AxrGraphicsApiEnum graphicsApi):
     m_Name(name),
-    m_AssetCollection(graphicsApi),
+    m_AssetCollection(false, graphicsApi),
     m_MainCamera(m_Registry, entt::null) {
 }
 

@@ -207,13 +207,44 @@ AxrResult axrAssetCollectionCreateImageSampler(
     return assetCollection->createImageSampler(*imageSamplerConfig);
 }
 
+AxrResult axrAssetCollectionCreateFont(
+    const AxrAssetCollection_T assetCollection,
+    const AxrFontConfig* fontConfig
+) {
+    if (assetCollection == nullptr) {
+        axrLogErrorLocation("`assetCollection` is null.");
+        return AXR_ERROR;
+    }
+
+    if (fontConfig == nullptr) {
+        axrLogErrorLocation("`fontConfig` is null.");
+        return AXR_ERROR;
+    }
+
+    return assetCollection->createFont(*fontConfig);
+}
+
+AxrResult axrAssetCollectionCreateEngineAssetFont(
+    const AxrAssetCollection_T assetCollection,
+    const AxrEngineAssetEnum engineAssetEnum
+) {
+    if (assetCollection == nullptr) {
+        axrLogErrorLocation("`assetCollection` is null.");
+        return AXR_ERROR;
+    }
+
+    return assetCollection->createFont(engineAssetEnum);
+}
+
 // ----------------------------------------- //
 // Internal Functions
 // ----------------------------------------- //
 
 // ---- Special Functions ----
 
-AxrAssetCollection::AxrAssetCollection(const AxrGraphicsApiEnum graphicsApi): m_GraphicsApi(graphicsApi) {
+AxrAssetCollection::AxrAssetCollection(const bool isGlobalAssetCollection, const AxrGraphicsApiEnum graphicsApi):
+    m_IsGlobalAssetCollection(isGlobalAssetCollection),
+    m_GraphicsApi(graphicsApi) {
 };
 
 AxrAssetCollection::AxrAssetCollection(AxrAssetCollection&& src) noexcept {
@@ -225,6 +256,7 @@ AxrAssetCollection::AxrAssetCollection(AxrAssetCollection&& src) noexcept {
 #endif
     OnImageCreatedCallbackGraphics = std::move(src.OnImageCreatedCallbackGraphics);
     OnImageSamplerCreatedCallbackGraphics = std::move(src.OnImageSamplerCreatedCallbackGraphics);
+    OnFontCreatedCallbackGraphics = std::move(src.OnFontCreatedCallbackGraphics);
 
     m_Shaders = std::move(src.m_Shaders);
     m_Materials = std::move(src.m_Materials);
@@ -234,9 +266,13 @@ AxrAssetCollection::AxrAssetCollection(AxrAssetCollection&& src) noexcept {
     m_PushConstantBuffers = std::move(src.m_PushConstantBuffers);
 #endif
     m_Images = std::move(src.m_Images);
+    m_ImageSamplers = std::move(src.m_ImageSamplers);
+    m_Fonts = std::move(src.m_Fonts);
 
+    m_IsGlobalAssetCollection = src.m_IsGlobalAssetCollection;
     m_GraphicsApi = src.m_GraphicsApi;
 
+    src.m_IsGlobalAssetCollection = false;
     src.m_GraphicsApi = AXR_GRAPHICS_API_UNDEFINED;
 }
 
@@ -256,6 +292,7 @@ AxrAssetCollection& AxrAssetCollection::operator=(AxrAssetCollection&& src) noex
 #endif
         OnImageCreatedCallbackGraphics = std::move(src.OnImageCreatedCallbackGraphics);
         OnImageSamplerCreatedCallbackGraphics = std::move(src.OnImageSamplerCreatedCallbackGraphics);
+        OnFontCreatedCallbackGraphics = std::move(src.OnFontCreatedCallbackGraphics);
 
         m_Shaders = std::move(src.m_Shaders);
         m_Materials = std::move(src.m_Materials);
@@ -265,9 +302,13 @@ AxrAssetCollection& AxrAssetCollection::operator=(AxrAssetCollection&& src) noex
         m_PushConstantBuffers = std::move(src.m_PushConstantBuffers);
 #endif
         m_Images = std::move(src.m_Images);
+        m_ImageSamplers = std::move(src.m_ImageSamplers);
+        m_Fonts = std::move(src.m_Fonts);
 
+        m_IsGlobalAssetCollection = src.m_IsGlobalAssetCollection;
         m_GraphicsApi = src.m_GraphicsApi;
 
+        src.m_IsGlobalAssetCollection = false;
         src.m_GraphicsApi = AXR_GRAPHICS_API_UNDEFINED;
     }
 
@@ -728,6 +769,100 @@ AxrResult AxrAssetCollection::createImageSampler(const AxrImageSamplerConfig& im
     return AXR_SUCCESS;
 }
 
+AxrResult AxrAssetCollection::createFont(const AxrFontConfig& fontConfig) {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (axrEngineAssetIsFontNameReserved(fontConfig.Name)) {
+        axrLogError("Unable to create font. The font name: {0} is reserved by the engine.", fontConfig.Name);
+        return AXR_ERROR;
+    }
+
+    if (m_Fonts.contains(fontConfig.Name)) {
+        axrLogError("Unable to create font. A font named: {0} already exists.", fontConfig.Name);
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    uint16_t id;
+    if (AXR_FAILED(generateFontID(id))) {
+        axrLogErrorLocation("Font ID isn't valid.");
+        return AXR_ERROR;
+    }
+
+    const auto insertResult = m_Fonts.insert(std::pair(fontConfig.Name, AxrFont(fontConfig, id)));
+    if (!insertResult.second) {
+        axrLogErrorLocation("Failed to insert font.");
+        return AXR_ERROR;
+    }
+
+    OnFontCreatedCallbackGraphics(&insertResult.first->second);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult AxrAssetCollection::createFont(const AxrEngineAssetEnum engineAssetEnum) {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (!axrEngineAssetIsFont(engineAssetEnum)) {
+        axrLogError("Unable to create font. Engine asset is not an font.");
+        return AXR_ERROR;
+    }
+
+    const std::string& fontName = axrEngineAssetGetName(engineAssetEnum);
+    if (fontName.empty()) {
+        axrLogError("Unable to create font. Unknown font engine asset name.");
+        return AXR_ERROR;
+    }
+
+    if (m_Fonts.contains(fontName)) {
+        axrLogError("Unable to create font. An font named: {0} already exists.", fontName.c_str());
+        return AXR_ERROR;
+    }
+
+    uint16_t id;
+    if (AXR_FAILED(generateFontID(id))) {
+        axrLogErrorLocation("Font ID isn't valid.");
+        return AXR_ERROR;
+    }
+
+    AxrEngineAssetEnum fontImageAtlas = AXR_ENGINE_ASSET_UNDEFINED;
+    AxrFont font;
+    AxrResult axrResult = axrEngineAssetCreateFont(id, engineAssetEnum, font, fontImageAtlas);
+    if (AXR_FAILED(axrResult)) {
+        axrLogErrorLocation("Failed to create font engine asset.");
+        return axrResult;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    if (!m_Images.contains(axrEngineAssetGetImageName(fontImageAtlas))) {
+        axrResult = createImage(fontImageAtlas);
+        if (AXR_FAILED(axrResult)) {
+            axrLogErrorLocation("Failed to create image atlas for font named: {0}.", font.getName().c_str());
+            return axrResult;
+        }
+    }
+
+    const auto insertResult = m_Fonts.insert(std::pair(fontName, std::move(font)));
+    if (!insertResult.second) {
+        axrLogErrorLocation("Failed to insert font.");
+        return AXR_ERROR;
+    }
+
+    OnFontCreatedCallbackGraphics(&insertResult.first->second);
+
+    return AXR_SUCCESS;
+}
+
 AxrResult AxrAssetCollection::createModel(const AxrEngineAssetEnum engineAssetEnum) {
     // ----------------------------------------- //
     // Validation
@@ -740,7 +875,7 @@ AxrResult AxrAssetCollection::createModel(const AxrEngineAssetEnum engineAssetEn
 
     const std::string& modelName = axrEngineAssetGetName(engineAssetEnum);
     if (modelName.empty()) {
-        axrLogError("Unable to create model. Unknown image engine asset name.");
+        axrLogError("Unable to create model. Unknown model engine asset name.");
         return AXR_ERROR;
     }
 
@@ -880,6 +1015,11 @@ void AxrAssetCollection::cleanup() {
     m_PushConstantBuffers.clear();
 #endif
     m_Images.clear();
+    m_ImageSamplers.clear();
+    m_Fonts.clear();
+
+    m_IsGlobalAssetCollection = false;
+    m_GraphicsApi = AXR_GRAPHICS_API_UNDEFINED;
 }
 
 bool AxrAssetCollection::isLoaded() {
@@ -897,6 +1037,12 @@ bool AxrAssetCollection::isLoaded() {
 
     for (auto& [imageName, image] : m_Images) {
         if (!image.isLoaded()) {
+            return false;
+        }
+    }
+
+    for (auto& [fontName, font] : m_Fonts) {
+        if (!font.isLoaded()) {
             return false;
         }
     }
@@ -926,6 +1072,13 @@ AxrResult AxrAssetCollection::loadAssets() {
         }
     }
 
+    for (auto& [fontName, font] : m_Fonts) {
+        const AxrResult axrResult = font.loadFile();
+        if (AXR_FAILED(axrResult)) {
+            continue;
+        }
+    }
+
     return AXR_SUCCESS;
 }
 
@@ -940,6 +1093,10 @@ void AxrAssetCollection::unloadAssets() {
 
     for (auto& [imageName, image] : m_Images) {
         image.unloadFile();
+    }
+
+    for (auto& [fontName, font] : m_Fonts) {
+        font.unloadFile();
     }
 }
 
@@ -991,4 +1148,32 @@ const std::unordered_map<std::string, AxrImage>& AxrAssetCollection::getImages()
 
 const std::unordered_map<std::string, AxrImageSampler>& AxrAssetCollection::getImageSamplers() {
     return m_ImageSamplers;
+}
+
+const std::unordered_map<std::string, AxrFont>& AxrAssetCollection::getFonts() {
+    return m_Fonts;
+}
+
+// ---- Private Functions ----
+
+AxrResult AxrAssetCollection::generateFontID(uint16_t& id) const {
+    // If the font is part of the global asset collection, the final bit is 0.
+    // IDs range from 0 to 32,767 (32,768 Possible IDs)
+    // If the font is NOT part of the global asset collection, the final bit is 1.
+    // IDs range from 32,768 to 65,535 (32,768 Possible IDs)
+
+    auto tempId = static_cast<uint16_t>(m_Fonts.size());
+    // If the final bit is already set, we've reached the max number of fonts
+    if (tempId & 1 << 15) {
+        axrLogErrorLocation("This asset collection has reached the maximum number of fonts. No more can be added.");
+        return AXR_ERROR;
+    }
+
+    if (!m_IsGlobalAssetCollection) {
+        // Set the final bit to indicate it's not a global font
+        tempId |= 1 << 15;
+    }
+
+    id = tempId;
+    return AXR_SUCCESS;
 }
