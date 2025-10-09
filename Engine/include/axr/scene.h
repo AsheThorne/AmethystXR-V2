@@ -162,10 +162,10 @@ extern "C" {
     /// @param entity Entity with a camera component
     AXR_API void axrSceneSetMainCamera(AxrScene_T scene, AxrEntityConst_T entity);
 
-    /// Set the number of ui images to preload when the scene gets loaded
+    /// Set the number of ui image resources to preload when the scene gets loaded
     /// @param scene The scene to use
-    /// @param imageCount Number of images to preload
-    AXR_API void axrSceneSetUIImagePreloadCount(AxrScene_T scene, uint32_t imageCount);
+    /// @param imageCount Number of image resources to preload
+    AXR_API void axrSceneSetUIImageResourcesPreloadCount(AxrScene_T scene, uint32_t imageCount);
 
     /// Set the `build ui canvas` callback function
     /// @param scene The scene to use

@@ -31,7 +31,7 @@ public:
     /// Vulkan scene data config
     struct Config {
         std::string SceneName;
-        uint32_t UIImagePreloadCount;
+        uint32_t UIImageResourcesPreloadCount;
         AxrAssetCollection_T AssetCollection;
         entt::registry* EcsRegistryHandle;
         AxrVulkanSceneData* GlobalSceneData;
@@ -224,7 +224,7 @@ private:
     std::vector<AxrVulkanMaterialForRendering> m_AlphaBlendMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_OITMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_UIMaterialsForRendering;
-    uint32_t m_MaxUIImageCount;
+    uint32_t m_UIImageResourceCount;
     int32_t m_UIRectangleMaterialForRenderingIndex = -1;
     int32_t m_UIBorderMaterialForRenderingIndex = -1;
     std::vector<int32_t> m_UIImageMaterialForRenderingIndices;

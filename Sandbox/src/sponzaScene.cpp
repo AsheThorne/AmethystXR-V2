@@ -328,7 +328,7 @@ axr::Result SponzaScene::setup() {
         axr::engineAssetGetName(axr::EngineAssetEnum::ImageSamplerLinearRepeat)
     );
 
-    m_Scene.setUIImagePreloadCount(16);
+    m_Scene.setUIImageResourcesPreloadCount(16);
     m_Scene.setBuildUICanvasCallback(
         this,
         [](

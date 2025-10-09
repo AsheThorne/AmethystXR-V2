@@ -53,13 +53,13 @@ void axrSceneSetMainCamera(const AxrScene_T scene, const AxrEntityConst_T entity
     return scene->setMainCamera(entity);
 }
 
-void axrSceneSetUIImagePreloadCount(const AxrScene_T scene, const uint32_t imageCount) {
+void axrSceneSetUIImageResourcesPreloadCount(const AxrScene_T scene, const uint32_t imageCount) {
     if (scene == nullptr) {
         axrLogErrorLocation("`scene` is null");
         return;
     }
 
-    return scene->setUIImagePreloadCount(imageCount);
+    return scene->setUIImageResourcesPreloadCount(imageCount);
 }
 
 AxrResult axrSceneSetBuildUICanvasCallback(
@@ -81,10 +81,7 @@ AxrResult axrSceneSetBuildUICanvasCallback(
 
 // ---- Special Functions ----
 
-AxrScene::AxrScene():
-    m_AssetCollection(AXR_GRAPHICS_API_UNDEFINED),
-    m_MainCamera({m_Registry, entt::null}) {
-}
+AxrScene::AxrScene() = default;
 
 AxrScene::AxrScene(const std::string& name, const AxrGraphicsApiEnum graphicsApi):
     m_Name(name),
@@ -92,16 +89,18 @@ AxrScene::AxrScene(const std::string& name, const AxrGraphicsApiEnum graphicsApi
     m_MainCamera(m_Registry, entt::null) {
 }
 
-AxrScene::AxrScene(AxrScene&& src) noexcept:
-    m_AssetCollection(AXR_GRAPHICS_API_UNDEFINED) {
+AxrScene::AxrScene(AxrScene&& src) noexcept {
+    m_Name = std::move(src.m_Name);
     m_AssetCollection = std::move(src.m_AssetCollection);
     m_Registry = std::move(src.m_Registry);
 
-    m_Name = src.m_Name;
     m_MainCamera = src.m_MainCamera;
+    m_UIImageResourcesPreloadCount = src.m_UIImageResourcesPreloadCount;
+    m_BuildUICanvasCallback = src.m_BuildUICanvasCallback;
 
-    src.m_Name = "";
     src.m_MainCamera = AxrEntity_T{m_Registry, entt::null};
+    src.m_UIImageResourcesPreloadCount = 0;
+    src.m_BuildUICanvasCallback = {};
 }
 
 AxrScene::~AxrScene() {
@@ -112,14 +111,17 @@ AxrScene& AxrScene::operator=(AxrScene&& src) noexcept {
     if (this != &src) {
         cleanup();
 
+        m_Name = std::move(src.m_Name);
         m_AssetCollection = std::move(src.m_AssetCollection);
         m_Registry = std::move(src.m_Registry);
 
-        m_Name = src.m_Name;
         m_MainCamera = src.m_MainCamera;
+        m_UIImageResourcesPreloadCount = src.m_UIImageResourcesPreloadCount;
+        m_BuildUICanvasCallback = src.m_BuildUICanvasCallback;
 
-        src.m_Name = "";
         src.m_MainCamera = AxrEntity_T{m_Registry, entt::null};
+        src.m_UIImageResourcesPreloadCount = 0;
+        src.m_BuildUICanvasCallback = {};
     }
 
     return *this;
@@ -158,8 +160,8 @@ void AxrScene::setMainCamera(const AxrEntityConst_T entity) {
     m_MainCamera = entity;
 }
 
-void AxrScene::setUIImagePreloadCount(const uint32_t imageCount) {
-    m_UIImagePreloadCount = imageCount;
+void AxrScene::setUIImageResourcesPreloadCount(const uint32_t imageCount) {
+    m_UIImageResourcesPreloadCount = imageCount;
 }
 
 AxrResult AxrScene::setBuildUICanvasCallback(void* userData, const AxrBuildUICanvasCallback_T buildCanvasCallback) {
@@ -192,8 +194,8 @@ AxrEntityConst_T AxrScene::getMainCamera() const {
     return m_MainCamera;
 }
 
-uint32_t AxrScene::getUIImagePreloadCount() const {
-    return m_UIImagePreloadCount;
+uint32_t AxrScene::getUIImageResourcesPreloadCount() const {
+    return m_UIImageResourcesPreloadCount;
 }
 
 const AxrScene::CallbackData& AxrScene::getUICanvasCallback() const {
@@ -203,8 +205,10 @@ const AxrScene::CallbackData& AxrScene::getUICanvasCallback() const {
 // ---- Private Functions ----
 
 void AxrScene::cleanup() {
+    m_Name.clear();
     m_Registry.clear();
     m_AssetCollection.cleanup();
-    m_Name = "";
     m_MainCamera = {m_Registry, entt::null};
+    m_UIImageResourcesPreloadCount = 0;
+    m_BuildUICanvasCallback = {};
 }

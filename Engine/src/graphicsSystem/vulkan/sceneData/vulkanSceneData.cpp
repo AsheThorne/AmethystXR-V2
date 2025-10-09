@@ -38,7 +38,7 @@ AxrVulkanSceneData::AxrVulkanSceneData(const Config& config):
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         }
     ),
-    m_MaxUIImageCount(config.UIImagePreloadCount) {
+    m_UIImageResourceCount(config.UIImageResourcesPreloadCount) {
 }
 
 AxrVulkanSceneData::~AxrVulkanSceneData() {
@@ -350,7 +350,7 @@ AxrResult AxrVulkanSceneData::setUIImageData(
     const uint32_t frameIndex,
     const std::vector<AxrUIImageData*>& uiImageData
 ) {
-    if (uiImageData.size() > m_MaxUIImageCount) {
+    if (uiImageData.size() > m_UIImageResourceCount) {
         const AxrResult axrResult = createAdditionalUIImageMaterials(uiImageData.size());
         if (AXR_FAILED(axrResult)) {
             axrLogErrorLocation(
@@ -1634,14 +1634,14 @@ AxrResult AxrVulkanSceneData::createAdditionalUIImageMaterials(const uint32_t mi
 
     // ---- Get number of materials to create ----
 
-    /// How many image materials to create when we exceed the current m_MaxUIImageCount  
+    /// How many image materials to create when we exceed the current m_UIImageResourceCount  
     constexpr uint32_t uiImageIncrementCount = 16;
 
     /// The total number of image materials we need to accommidate the given `minImageCount` while still being a
     /// multiple of `uiImageIncrementCount`
     const uint32_t newUIImageMaterialCount = (uiImageIncrementCount + minImageCount - 1) & ~(minImageCount - 1);
     /// How many new materials we're gonna create
-    const uint32_t uiImageMaterialCreateCount = newUIImageMaterialCount - m_MaxUIImageCount;
+    const uint32_t uiImageMaterialCreateCount = newUIImageMaterialCount - m_UIImageResourceCount;
 
     // ---- Create material data ----
 
@@ -1657,7 +1657,7 @@ AxrResult AxrVulkanSceneData::createAdditionalUIImageMaterials(const uint32_t mi
     for (int i = 0; i < uiImageMaterialCreateCount; ++i) {
         const AxrVulkanMaterialData* materialData = createMaterialData(
             *uiImageMaterial,
-            std::to_string(m_MaxUIImageCount + i)
+            std::to_string(m_UIImageResourceCount + i)
         );
         if (materialData == nullptr) {
             axrLogErrorLocation("Failed to create UI Image material data.");
@@ -1672,7 +1672,7 @@ AxrResult AxrVulkanSceneData::createAdditionalUIImageMaterials(const uint32_t mi
         }
     }
 
-    m_MaxUIImageCount = newUIImageMaterialCount;
+    m_UIImageResourceCount = newUIImageMaterialCount;
 
     return AXR_SUCCESS;
 }
@@ -2304,7 +2304,6 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
 
     // ---- Image UI ----
 
-    for (int i = 0; i < m_MaxUIImageCount; ++i) {
         foundMaterialData = findMaterialData_shared(
             std::string(axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)) + std::to_string(i)
         );
@@ -2315,6 +2314,7 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
             axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
             if (AXR_SUCCEEDED(axrResult)) {
                 m_UIImageMaterialForRenderingIndices.push_back(static_cast<int32_t>(m_UIMaterialsForRendering.size()));
+        for (int i = 0; i < m_UIImageResourceCount; ++i) {
                 m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
             }
         }

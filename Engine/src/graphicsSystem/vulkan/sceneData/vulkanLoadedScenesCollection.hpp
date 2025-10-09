@@ -169,14 +169,14 @@ private:
 
     /// Create vulkan scene data
     /// @param sceneName Name of the scene
-    /// @param uiImagePreloadCount Number of ui images to preload
+    /// @param uiImageResourcesPreloadCount Number of ui image resources to preload
     /// @param assetCollection Asset collection to use
     /// @param ecsRegistryHandle ECS registry to use
     /// @param globalSceneData Global scene data
     /// @returns A handle to the created vulkan scene data
     [[nodiscard]] AxrVulkanSceneData* createSceneData(
         const std::string& sceneName,
-        uint32_t uiImagePreloadCount,
+        uint32_t uiImageResourcesPreloadCount,
         AxrAssetCollection_T assetCollection,
         entt::registry* ecsRegistryHandle,
         AxrVulkanSceneData* globalSceneData
