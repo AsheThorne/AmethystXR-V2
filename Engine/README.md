@@ -68,6 +68,7 @@ by another asset that the application wants to use and that asset doesn't alread
 | AXR_ENGINE_ASSET_MODEL_SQUARE                      |         No          |   Constructable   |           No            |
 | AXR_ENGINE_ASSET_MODEL_CUBE                        |         No          |   Constructable   |           No            |
 | AXR_ENGINE_ASSET_MODEL_UI_RECTANGLE                |         Yes         |   Constructable   |           Yes           |
+| AXR_ENGINE_ASSET_FONT_JETBRAINS_MONO_REGULAR       |         Yes         |   Constructable   |           No            |
 
 If an asset has `App Accessibility` set to `Constructable` and `Engine Creates Defaults` set to `Yes`,
 then it gets added to the `GlobalAssetCollection` as part of the `AxrApplication`.
