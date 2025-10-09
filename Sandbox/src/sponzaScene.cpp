@@ -363,121 +363,149 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
     Clay_SetMeasureTextFunction(axrApplicationHandleClayMeasureText, m_Application.toRaw());
     Clay_BeginLayout();
 
-    CLAY(
-        Clay_ElementDeclaration {
-        .id = CLAY_ID("OuterContainer"),
-        .layout = Clay_LayoutConfig {
-        .sizing = Clay_Sizing {
-        .width = CLAY_SIZING_GROW(0),
-        .height = CLAY_SIZING_GROW(0)},
-        .padding = CLAY_PADDING_ALL(16),
-        .childGap = 16,
-        },
-        .backgroundColor = Clay_Color{0.0f,
-        0.0f,
-        0.0f,
-        0.8f},
-        .cornerRadius = Clay_CornerRadius{
-        .topLeft = 25,
-        .topRight = 25,
-        .bottomLeft = 25,
-        .bottomRight = 25,
-        },
-        }
-    ) {
-        CLAY(
-            {
-            .id = CLAY_ID("SideBar"),
-            .layout = Clay_LayoutConfig {
-            .sizing = Clay_Sizing {
-            .width = CLAY_SIZING_FIXED(300),
-            .height = CLAY_SIZING_GROW(0) },
-            .padding = CLAY_PADDING_ALL(16),
-            .childGap = 16,
-            .childAlignment = Clay_ChildAlignment {
-            .x = CLAY_ALIGN_X_LEFT,
-            .y = CLAY_ALIGN_Y_CENTER,
-            },
-            .layoutDirection = CLAY_TOP_TO_BOTTOM,
-            },
-            .backgroundColor = Clay_Color{0.2f,
-            0.7f,
-            0.1f,
-            0.5f},
-            .cornerRadius = Clay_CornerRadius{
-            .topLeft = 25,
-            .topRight = 25,
-            .bottomLeft = 25,
-            .bottomRight = 25,
-            },
-            .border = Clay_BorderElementConfig {
-            .color = Clay_Color{0.3f,
-            0.02f,
-            0.6f,
-            1.0f},
-            .width = Clay_BorderWidth{
-            .left = 10,
-            .right = 10,
-            .top = 10,
-            .bottom = 10,
-            .betweenChildren = 0,
-            }
-            },
-            }
-        ) {
     // TODO: Maybe make axr versions of all these functions. that way we won't need to set the context and the measure text function here
-            for (int i = 0; i < 3; ++i) {
-                std::string outer_id = std::string("ProfilePictureOuter") + std::to_string(i);
-                CLAY(
-                    {
-                    .id = CLAY_SID(Clay_String(false, outer_id.size(), outer_id.c_str())),
-                    .layout = { .sizing = { .width = CLAY_SIZING_GROW(0) },
+    { // ---- Outer Container ----
+        Clay__OpenElement();
+        Clay__ConfigureOpenElement(
+            Clay_ElementDeclaration{
+                .id = CLAY_ID("OuterContainer"),
+                .layout = Clay_LayoutConfig{
+                    .sizing = Clay_Sizing{
+                        .width = CLAY_SIZING_GROW(0),
+                        .height = CLAY_SIZING_GROW(0)
+                    },
                     .padding = CLAY_PADDING_ALL(16),
                     .childGap = 16,
+                },
+            }
+        );
+        { // ---- Sidebar ----
+            Clay__OpenElement();
+            Clay__ConfigureOpenElement(
+                Clay_ElementDeclaration{
+                    .id = CLAY_ID("SideBar"),
+                    .layout = Clay_LayoutConfig{
+                        .sizing = Clay_Sizing{
+                            .width = CLAY_SIZING_FIXED(300),
+                            .height = CLAY_SIZING_GROW(0)
+                        },
+                        .padding = CLAY_PADDING_ALL(16),
+                        .childGap = 16,
+                        .childAlignment = Clay_ChildAlignment{
+                            .x = CLAY_ALIGN_X_LEFT,
+                            .y = CLAY_ALIGN_Y_TOP,
+                        },
+                        .layoutDirection = CLAY_TOP_TO_BOTTOM,
                     },
-                    }
-                ) {
-                    std::string inner_id = std::string("ProfilePicture") + std::to_string(i);
-                    CLAY(
-                        {
-                        .id = CLAY_SID(Clay_String(false, inner_id.size(), inner_id.c_str())),
-                        .layout = { .sizing = { .width = CLAY_SIZING_FIXED(60),
-                        .height = CLAY_SIZING_FIXED(60) }},
-                        .backgroundColor = Clay_Color{1.0f,
-                        1.0f,
-                        1.0f,
-                        1.0f},
-                        .cornerRadius = Clay_CornerRadius{
-                        .topLeft = 10,
-                        .topRight = 10,
-                        .bottomLeft = 10,
-                        .bottomRight = 10,
+                    .backgroundColor = Clay_Color{
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.8f
+                    },
+                    .cornerRadius = Clay_CornerRadius{
+                        .topLeft = 25,
+                        .topRight = 25,
+                        .bottomLeft = 25,
+                        .bottomRight = 25,
+                    },
+                    .border = Clay_BorderElementConfig{
+                        .color = Clay_Color{
+                            .r = 0.01,
+                            .g = 0.01,
+                            .b = 0.01,
+                            .a = 1.0f
                         },
-                        .image = Clay_ImageElementConfig{
-                        .imageData = &m_UIImageData,
-                        },
+                        .width = Clay_BorderWidth{
+                            .left = 2,
+                            .right = 2,
+                            .top = 2,
+                            .bottom = 2,
+                            .betweenChildren = 0,
                         }
-                    ) {
+                    },
+                }
+            );
+            for (int i = 0; i < 3; ++i) {
+                { // ---- Profile Picture Outer ----
+                    std::string outer_id = std::string("ProfilePictureOuter") + std::to_string(i);
+                    Clay__OpenElement();
+                    Clay__ConfigureOpenElement(
+                        Clay_ElementDeclaration{
+                            .id = CLAY_SID(Clay_String(false, outer_id.size(), outer_id.c_str())),
+                            .layout = {
+                                .sizing = {.width = CLAY_SIZING_GROW(0)},
+                                .padding = Clay_Padding{
+                                    5, 5, 5, 5
+                                },
+                                .childGap = 16,
+                            },
+                            .backgroundColor = Clay_Color{
+                                0.1, 0.0, 0.2, 0.5
+                            },
+                            .cornerRadius = Clay_CornerRadius{
+                                .topLeft = 10,
+                                .topRight = 10,
+                                .bottomLeft = 10,
+                                .bottomRight = 10,
+                            },
+                        }
+                    );
+                    { // ---- Profile Picture ----
+                        std::string inner_id = std::string("ProfilePicture") + std::to_string(i);
+
+                        Clay__OpenElement();
+                        Clay__ConfigureOpenElement(
+                            Clay_ElementDeclaration{
+                                .id = CLAY_SID(Clay_String(false, inner_id.size(), inner_id.c_str())),
+                                .layout = {
+                                    .sizing = {
+                                        .width = CLAY_SIZING_FIXED(60),
+                                        .height = CLAY_SIZING_FIXED(60)
+                                    }
+                                },
+                                .backgroundColor = Clay_Color{
+                                    1.0f,
+                                    1.0f,
+                                    1.0f,
+                                    1.0f
+                                },
+                                .cornerRadius = Clay_CornerRadius{
+                                    .topLeft = 10,
+                                    .topRight = 10,
+                                    .bottomLeft = 10,
+                                    .bottomRight = 10,
+                                },
+                                .image = Clay_ImageElementConfig{
+                                    .imageData = &m_UIImageData,
+                                },
+                            }
+                        );
+                        Clay__CloseElement();
                     }
-                    // CLAY_TEXT(
-                    //     CLAY_STRING("Clay - UI Library"),
-                    //     CLAY_TEXT_CONFIG({ .textColor = {255, 255, 255, 255}, .fontSize = 24 })
-                    // );
+                    { // ---- Profile Text ----
+                        Clay_TextElementConfig* textElementConfig = Clay__StoreTextElementConfig(
+                            Clay_TextElementConfig{
+                                .textColor = {
+                                    1.0f,
+                                    1.0f,
+                                    1.0f,
+                                    1.0f
+                                },
+                                .fontSize = 16
+                            }
+                        );
+                        Clay__OpenTextElement(
+                            CLAY_STRING("Clay - UI Library"),
+                            textElementConfig
+                        );
+                    }
+                    Clay__CloseElement();
                 }
             }
+            Clay__CloseElement();
         }
-        CLAY(
-            {
-            .id = CLAY_ID("MainContent"),
-            .layout = { .sizing = { .width = CLAY_SIZING_GROW(0),
-            .height = CLAY_SIZING_GROW(0) } },
-            .backgroundColor = Clay_Color{1.0f,
-            1.0f,
-            1.0f,
-            0.5f},
-            }
-        ) {
-        }
+        Clay__CloseElement();
     }
 
     const Clay_RenderCommandArray renderCommands = Clay_EndLayout();
