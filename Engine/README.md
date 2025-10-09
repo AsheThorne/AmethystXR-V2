@@ -49,6 +49,7 @@ by another asset that the application wants to use and that asset doesn't alread
 | AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG          |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG             |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG              |         Yes         |   Constructable   |           Yes           |
+| AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG               |         Yes         |   Constructable   |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA         |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA        |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS          |         Yes         |     ReadOnly      |           Yes           |
@@ -62,6 +63,7 @@ by another asset that the application wants to use and that asset doesn't alread
 | AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE             |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_MATERIAL_UI_BORDER                |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE                 |         Yes         |     ReadOnly      |           Yes           |
+| AXR_ENGINE_ASSET_MATERIAL_UI_TEXT                  |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_MODEL_TRIANGLE                    |         No          |   Constructable   |           No            |
 | AXR_ENGINE_ASSET_MODEL_SQUARE                      |         No          |   Constructable   |           No            |
 | AXR_ENGINE_ASSET_MODEL_CUBE                        |         No          |   Constructable   |           No            |
