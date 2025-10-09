@@ -3148,6 +3148,7 @@ namespace axr {
         ShaderUIRectangleFrag = AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG,
         ShaderUIBorderFrag = AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG,
         ShaderUIImageFrag = AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG,
+        ShaderUITextFrag = AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG,
         ShaderEnd = AXR_ENGINE_ASSET_SHADER_END,
 
         // ---- Uniform Buffers ----
@@ -3182,6 +3183,7 @@ namespace axr {
         MaterialUIRectangle = AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE,
         MaterialUIBorder = AXR_ENGINE_ASSET_MATERIAL_UI_BORDER,
         MaterialUIImage = AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE,
+        MaterialUIText = AXR_ENGINE_ASSET_MATERIAL_UI_TEXT,
         MaterialEnd = AXR_ENGINE_ASSET_MATERIAL_END,
 
         // ---- Models ----
@@ -3533,6 +3535,60 @@ namespace axr {
 
     static_assert(
         sizeof(AxrEngineAssetUniformBuffer_UIImage) == sizeof(axr::EngineAssetUniformBuffer_UIImage),
+        "Original type and wrapper have different size!"
+    );
+
+    /// Engine asset uniform buffer named 'UI Text' structure
+    struct alignas(16) EngineAssetUniformBuffer_UIText {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
+        alignas(8) glm::vec2 Position = {};
+        alignas(8) glm::vec2 Size = {};
+        alignas(16) glm::vec4 TextColor = {};
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default Constructor
+        EngineAssetUniformBuffer_UIText() = default;
+
+        /// Constructor
+        /// @param position The UI element position
+        /// @param size The UI element size
+        /// @param textColor The text color
+        EngineAssetUniformBuffer_UIText(
+            const glm::vec2& position,
+            const glm::vec2& size,
+            const glm::vec4& textColor
+        ): Position(position),
+            Size(size),
+            TextColor(textColor) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the EngineAssetUniformBuffer_UIText as an AxrEngineAssetUniformBuffer_UIText
+        /// @returns This as an AxrEngineAssetUniformBuffer_UIText
+        const AxrEngineAssetUniformBuffer_UIText* toRaw() const {
+            return reinterpret_cast<const AxrEngineAssetUniformBuffer_UIText*>(this);
+        }
+
+        /// Get a handle to the EngineAssetUniformBuffer_UIText as an AxrEngineAssetUniformBuffer_UIText
+        /// @returns This as an AxrEngineAssetUniformBuffer_UIText
+        AxrEngineAssetUniformBuffer_UIText* toRaw() {
+            return reinterpret_cast<AxrEngineAssetUniformBuffer_UIText*>(this);
+        }
+    };
+
+    static_assert(
+        sizeof(AxrEngineAssetUniformBuffer_UIText) == sizeof(axr::EngineAssetUniformBuffer_UIText),
         "Original type and wrapper have different size!"
     );
 

@@ -287,7 +287,26 @@ public:
                         break;
                     }
                     case CLAY_RENDER_COMMAND_TYPE_TEXT: {
-                        axrLogErrorLocation("UI text isn't supported yet.");
+                        uiElements.emplace_back(
+                            AxrEngineAssetUniformBuffer_UIElement{
+                                .Text = AxrEngineAssetUniformBuffer_UIText{
+                                    .Position = glm::vec2(
+                                        clayRenderCommand.boundingBox.x,
+                                        clayRenderCommand.boundingBox.y
+                                    ),
+                                    .Size = glm::vec2(
+                                        clayRenderCommand.boundingBox.width,
+                                        clayRenderCommand.boundingBox.height
+                                    ),
+                                    .TextColor = glm::vec4(
+                                        clayRenderCommand.renderData.text.textColor.r,
+                                        clayRenderCommand.renderData.text.textColor.g,
+                                        clayRenderCommand.renderData.text.textColor.b,
+                                        clayRenderCommand.renderData.text.textColor.a
+                                    ),
+                                }
+                            }
+                        );
                         break;
                     }
                     case CLAY_RENDER_COMMAND_TYPE_IMAGE: {

@@ -76,6 +76,11 @@ AxrResult axrEngineAssetCreateShader_UIBorderFrag(AxrGraphicsApiEnum graphicsApi
 /// @param shader Output created shader
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateShader_UIImageFrag(AxrGraphicsApiEnum graphicsApi, AxrShader& shader);
+/// Create the 'UI Text Frag' engine asset shader
+/// @param graphicsApi The graphics api to use this shader with
+/// @param shader Output created shader
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateShader_UITextFrag(AxrGraphicsApiEnum graphicsApi, AxrShader& shader);
 
 // ---------------------------------------------------------------------------------- //
 //                           Uniform Buffer Engine Assets                             //
@@ -191,6 +196,14 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
     AxrMaterial& material,
     std::vector<AxrEngineAssetEnum>& materialShaders
 );
+/// Create the 'UI Text' engine asset material
+/// @param material Output created material
+/// @param materialShaders Output required shaders for this material
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateMaterial_UIText(
+    AxrMaterial& material,
+    std::vector<AxrEngineAssetEnum>& materialShaders
+);
 
 // ---------------------------------------------------------------------------------- //
 //                                Model Engine Assets                                 //
@@ -259,6 +272,7 @@ bool axrEngineAssetIsImageSamplerNameReserved(const char* name);
 /// @param engineAssetEnum Image sampler engine asset
 /// @param imageSampler Output created image sampler
 /// @returns AXR_SUCCESS if the function succeeded
+// TODO: I don't think engine asset image sampler's need the name parameter
 AxrResult axrEngineAssetCreateImageSampler(
     const std::string& imageSamplerName,
     AxrEngineAssetEnum engineAssetEnum,

@@ -892,6 +892,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_SHADER_UI_RECTANGLE_FRAG = 5,
     AXR_ENGINE_ASSET_SHADER_UI_BORDER_FRAG = 6,
     AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG = 7,
+    AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG = 8,
     AXR_ENGINE_ASSET_SHADER_END = 64,
 
     // ---- Uniform Buffers - Max of 32 ----
@@ -928,6 +929,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE = 201,
     AXR_ENGINE_ASSET_MATERIAL_UI_BORDER = 202,
     AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE = 203,
+    AXR_ENGINE_ASSET_MATERIAL_UI_TEXT = 204,
     AXR_ENGINE_ASSET_MATERIAL_END = 264,
 
     // ---- Models - Max of 64 ----
@@ -998,11 +1000,20 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
     alignas(16) AxrUIRoundedCorners Corners;
 };
 
+/// Engine asset uniform buffer named 'UI Text' structure
+struct alignas(16) AxrEngineAssetUniformBuffer_UIText {
+    // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
+    alignas(8) glm::vec2 Position;
+    alignas(8) glm::vec2 Size;
+    alignas(16) glm::vec4 TextColor;
+};
+
 /// Engine asset uniform buffer for a general UI element.
 union AxrEngineAssetUniformBuffer_UIElement {
     AxrEngineAssetUniformBuffer_UIRectangle Rectangle;
-    AxrEngineAssetUniformBuffer_UIImage Image;
     AxrEngineAssetUniformBuffer_UIBorder Border;
+    AxrEngineAssetUniformBuffer_UIImage Image;
+    AxrEngineAssetUniformBuffer_UIText Text;
 };
 
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN

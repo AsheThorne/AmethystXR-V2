@@ -75,6 +75,10 @@ const std::unordered_map EngineAssetShaderNames{
         AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG,
         AXR_ENGINE_ASSET_SHADER_PREFIX "UIImageFrag"
     ),
+    std::pair(
+        AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG,
+        AXR_ENGINE_ASSET_SHADER_PREFIX "UITextFrag"
+    ),
 };
 
 // ----------------------------------------- //
@@ -178,6 +182,10 @@ const std::unordered_map EngineAssetMaterialNames{
     std::pair(
         AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE,
         AXR_ENGINE_ASSET_MATERIAL_PREFIX "UIImage"
+    ),
+    std::pair(
+        AXR_ENGINE_ASSET_MATERIAL_UI_TEXT,
+        AXR_ENGINE_ASSET_MATERIAL_PREFIX "UIText"
     ),
 };
 
@@ -421,6 +429,9 @@ AxrResult axrEngineAssetCreateShader(
         }
         case AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG: {
             return axrEngineAssetCreateShader_UIImageFrag(graphicsApi, shader);
+        }
+        case AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG: {
+            return axrEngineAssetCreateShader_UITextFrag(graphicsApi, shader);
         }
         case AXR_ENGINE_ASSET_UNDEFINED:
         default: { // NOLINT(clang-diagnostic-covered-switch-default)
@@ -781,6 +792,54 @@ AxrResult axrEngineAssetCreateShader_UIImageFrag(const AxrGraphicsApiEnum graphi
     strncpy_s(
         shaderConfig.Name,
         axrEngineAssetGetShaderName(AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    strncpy_s(shaderConfig.FilePath, shaderPath.c_str(), AXR_MAX_FILE_PATH_SIZE);
+
+    if (!axrShaderConfigIsValid(&shaderConfig)) {
+        return AXR_ERROR;
+    }
+
+    shader = AxrShader(shaderConfig);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult axrEngineAssetCreateShader_UITextFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
+    AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
+        .Binding = 2,
+        .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
+    };
+
+    AxrShaderImageSamplerBufferLayout imageSamplerBufferLayout{
+        .Binding = 3,
+    };
+
+    std::array bufferLayouts{
+        reinterpret_cast<AxrShaderBufferLayout_T>(&dynamicUniformBufferLayout),
+        reinterpret_cast<AxrShaderBufferLayout_T>(&imageSamplerBufferLayout),
+    };
+
+    AxrFragmentShaderProperties shaderProperties{
+        .BufferLayoutCount = static_cast<uint32_t>(bufferLayouts.size()),
+        .BufferLayouts = bufferLayouts.data(),
+    };
+
+    std::string shaderPath;
+    if (graphicsApi == AXR_GRAPHICS_API_VULKAN) {
+        shaderPath = axrGetEngineAssetsDirectoryPath().append("shaders/ui/text.frag.spv").generic_string();
+    } else {
+        shaderPath = axrGetEngineAssetsDirectoryPath().append("shaders/ui/text.frag").generic_string();
+    }
+
+    AxrShaderConfig shaderConfig{
+        .Name = {},
+        .FilePath = {},
+        .Properties = reinterpret_cast<AxrShaderProperties_T>(&shaderProperties)
+    };
+    strncpy_s(
+        shaderConfig.Name,
+        axrEngineAssetGetShaderName(AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG),
         AXR_MAX_ASSET_NAME_SIZE
     );
     strncpy_s(shaderConfig.FilePath, shaderPath.c_str(), AXR_MAX_FILE_PATH_SIZE);
@@ -1381,6 +1440,115 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
         AXR_MAX_ASSET_NAME_SIZE
     );
     materialShaders.push_back(AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG);
+
+    if (!axrMaterialConfigIsValid(&materialConfig)) {
+        return AXR_ERROR;
+    }
+
+    material = AxrMaterial(materialConfig);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult axrEngineAssetCreateMaterial_UIText(
+    AxrMaterial& material,
+    std::vector<AxrEngineAssetEnum>& materialShaders
+) {
+    AxrShaderUniformBufferLink sceneDataBufferLink{
+        .Binding = 0,
+        .BufferName = {},
+    };
+    strncpy_s(
+        sceneDataBufferLink.BufferName,
+        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+
+    AxrShaderUniformBufferLink uiCanvasBufferLink{
+        .Binding = 1,
+        .BufferName = {},
+    };
+    strncpy_s(
+        uiCanvasBufferLink.BufferName,
+        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+
+    std::array vertexBufferLinks{
+        reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
+        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasBufferLink),
+    };
+
+    AxrShaderValues vertexShaderValues{
+        .BufferLinkCount = static_cast<uint32_t>(vertexBufferLinks.size()),
+        .BufferLinks = vertexBufferLinks.data(),
+    };
+
+    AxrShaderUniformBufferLink dynamicUniformBufferLink{
+        .Binding = 2,
+        .BufferName = {},
+    };
+    strncpy_s(
+        dynamicUniformBufferLink.BufferName,
+        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+
+    AxrShaderImageSamplerBufferLink imageSamplerBufferLink{
+        .Binding = 3,
+        .ImageName = {},
+        .ImageSamplerName = {},
+    };
+    strncpy_s(
+        imageSamplerBufferLink.ImageName,
+        axrEngineAssetGetImageName(AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    strncpy_s(
+        imageSamplerBufferLink.ImageSamplerName,
+        axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+
+    std::array fragmentBufferLinks{
+        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasBufferLink),
+        reinterpret_cast<AxrShaderBufferLink_T>(&dynamicUniformBufferLink),
+        reinterpret_cast<AxrShaderBufferLink_T>(&imageSamplerBufferLink),
+    };
+
+    AxrShaderValues fragmentShaderValues{
+        .BufferLinkCount = static_cast<uint32_t>(fragmentBufferLinks.size()),
+        .BufferLinks = fragmentBufferLinks.data()
+    };
+
+    AxrMaterialConfig materialConfig{
+        .Name = {},
+        .VertexShaderName = {},
+        .FragmentShaderName = {},
+        .VertexShaderValues = &vertexShaderValues,
+        .FragmentShaderValues = &fragmentShaderValues,
+        .BackfaceCullMode = AXR_MATERIAL_BACKFACE_CULL_MODE_BACK,
+        .AlphaRenderMode = AXR_MATERIAL_ALPHA_RENDER_MODE_ALPHA_BLEND,
+        .EnableDepthTest = false,
+        .EnableDepthWrite = false,
+    };
+    strncpy_s(
+        materialConfig.Name,
+        axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_TEXT),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    strncpy_s(
+        materialConfig.VertexShaderName,
+        axrEngineAssetGetShaderName(AXR_ENGINE_ASSET_SHADER_UI_ELEMENT_VERT),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    materialShaders.push_back(AXR_ENGINE_ASSET_SHADER_UI_ELEMENT_VERT);
+    strncpy_s(
+        materialConfig.FragmentShaderName,
+        axrEngineAssetGetShaderName(AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    materialShaders.push_back(AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG);
 
     if (!axrMaterialConfigIsValid(&materialConfig)) {
         return AXR_ERROR;
