@@ -10,10 +10,6 @@ struct RoundedCorners {
 layout (location = 0) in vec2 fragPixelCoord;
 layout (location = 1) in vec2 fragTexCoord;
 
-layout (std140, binding = 1) uniform UICanvas {
-    vec2 size;
-} uiCanvas;
-
 layout (std140, binding = 2) uniform UIElement {
     vec2 position;
     vec2 size;

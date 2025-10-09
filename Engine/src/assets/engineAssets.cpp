@@ -661,18 +661,12 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
 }
 
 AxrResult axrEngineAssetCreateShader_UIRectangleFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
-    AxrShaderUniformBufferLayout uiCanvasBufferLayout{
-        .Binding = 1,
-        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS)
-    };
-
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
         .Binding = 2,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
     std::array bufferLayouts{
-        reinterpret_cast<AxrShaderBufferLayout_T>(&uiCanvasBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&dynamicUniformBufferLayout),
     };
 
@@ -710,18 +704,12 @@ AxrResult axrEngineAssetCreateShader_UIRectangleFrag(const AxrGraphicsApiEnum gr
 }
 
 AxrResult axrEngineAssetCreateShader_UIBorderFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
-    AxrShaderUniformBufferLayout uiCanvasBufferLayout{
-        .Binding = 1,
-        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS)
-    };
-
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
         .Binding = 2,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
     std::array bufferLayouts{
-        reinterpret_cast<AxrShaderBufferLayout_T>(&uiCanvasBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&dynamicUniformBufferLayout),
     };
 
@@ -759,11 +747,6 @@ AxrResult axrEngineAssetCreateShader_UIBorderFrag(const AxrGraphicsApiEnum graph
 }
 
 AxrResult axrEngineAssetCreateShader_UIImageFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
-    AxrShaderUniformBufferLayout uiCanvasBufferLayout{
-        .Binding = 1,
-        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS)
-    };
-
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
         .Binding = 2,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
@@ -774,7 +757,6 @@ AxrResult axrEngineAssetCreateShader_UIImageFrag(const AxrGraphicsApiEnum graphi
     };
 
     std::array bufferLayouts{
-        reinterpret_cast<AxrShaderBufferLayout_T>(&uiCanvasBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&dynamicUniformBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&imageSamplerBufferLayout),
     };
