@@ -147,6 +147,20 @@ AxrResult axrApplicationSetActiveScene(const AxrApplication_T app, const char* s
     return app->setActiveScene(sceneName);
 }
 
+Clay_Dimensions axrApplicationHandleClayMeasureText(
+    Clay_StringSlice text,
+    Clay_TextElementConfig* config,
+    void* app
+) {
+    auto appCast = static_cast<AxrApplication_T>(app);
+    if (appCast == nullptr) {
+        axrLogErrorLocation("`app` is null.");
+        return {};
+    }
+
+    return appCast->measureClayText(text, config);
+}
+
 // ----------------------------------------- //
 // Internal Functions
 // ----------------------------------------- //
@@ -363,6 +377,14 @@ AxrResult AxrApplication::setActiveScene(const std::string& sceneName) {
     return m_GraphicsSystem.setActiveScene(sceneName);
 }
 
+Clay_Dimensions AxrApplication::measureClayText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
+    // TODO: Do this properly
+    return Clay_Dimensions{
+        .width = static_cast<float>(text.length * config->fontSize),
+        .height = static_cast<float>(config->fontSize)
+    };
+}
+
 // ---- Private Functions ----
 
 AxrResult AxrApplication::setupGlobalAssetCollection() {
@@ -416,6 +438,8 @@ AxrResult AxrApplication::setupClay() {
             .userData = this,
         }
     );
+
+    Clay_SetMeasureTextFunction(axrApplicationHandleClayMeasureText, this);
 
     // We chose 256 since most vulkan gpus have a uniform buffer range of 65536 or more. And the worst possible offset
     // alignment is 256. So as long as sizeof(AxrEngineAssetUniformBuffer_UIElement) is less than 256, then we can

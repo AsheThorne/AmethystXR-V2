@@ -35,7 +35,7 @@ namespace axr {
         // ---- Constructors ----
 
         /// Default Constructor
-        ApplicationConfig() :
+        ApplicationConfig():
             ApplicationVersion(0),
             GraphicsSystemConfig({}),
             ActionSystemConfig({}),
@@ -57,7 +57,7 @@ namespace axr {
             const axr::ActionSystemConfig& actionSystemConfig,
             const axr::WindowSystemConfig* windowSystemConfig,
             const axr::XrSystemConfig* xrSystemConfig
-        ) : ApplicationVersion(applicationVersion),
+        ): ApplicationVersion(applicationVersion),
             GraphicsSystemConfig(graphicsSystemConfig),
             ActionSystemConfig(actionSystemConfig),
             WindowSystemConfig(windowSystemConfig),
@@ -135,6 +135,18 @@ namespace axr {
         // Public Functions
         // ----------------------------------------- //
 
+        /// Get the raw AxrApplication_T
+        /// @returns The raw AxrApplication_T
+        [[nodiscard]] AxrApplication_T toRaw() {
+            return m_Application;
+        }
+
+        /// Get the raw AxrApplication_T
+        /// @returns The raw AxrApplication_T
+        [[nodiscard]] AxrApplicationConst_T toRaw() const {
+            return m_Application;
+        }
+
         /// Set up the application
         [[nodiscard]] axr::Result setup() {
             return static_cast<axr::Result>(axrApplicationSetup(m_Application));
@@ -190,7 +202,7 @@ namespace axr {
         /// Create a new scene
         /// @param sceneName Name of the scene
         /// @returns AXR_SUCCESS if the function succeeded
-        [[nodiscard]] axr::Result createScene(const char* sceneName) {
+        [[nodiscard]] axr::Result createScene(const char* sceneName) const {
             char sceneNameBuffer[AXR_MAX_SCENE_NAME_SIZE]{};
             strncpy_s(sceneNameBuffer, sceneName, AXR_MAX_SCENE_NAME_SIZE);
             return static_cast<axr::Result>(axrApplicationCreateScene(m_Application, sceneNameBuffer));
@@ -199,21 +211,21 @@ namespace axr {
         /// Find the named scene
         /// @param sceneName Name of the scene
         /// @returns A handle to the scene
-        [[nodiscard]] axr::Scene findScene(const char* sceneName) {
+        [[nodiscard]] axr::Scene findScene(const char* sceneName) const {
             return axrApplicationFindScene(m_Application, sceneName);
         }
 
         /// Load the named scene
         /// @param sceneName Name of the scene
         /// @returns AXR_SUCCESS if the function succeeded
-        [[nodiscard]] axr::Result loadScene(const char* sceneName) {
+        [[nodiscard]] axr::Result loadScene(const char* sceneName) const {
             return static_cast<axr::Result>(axrApplicationLoadScene(m_Application, sceneName));
         }
 
         /// Set the active scene to the named scene
         /// @param sceneName Name of the scene
         /// @returns AXR_SUCCESS if the function succeeded
-        [[nodiscard]] axr::Result setActiveScene(const char* sceneName) {
+        [[nodiscard]] axr::Result setActiveScene(const char* sceneName) const {
             return static_cast<axr::Result>(axrApplicationSetActiveScene(m_Application, sceneName));
         }
 

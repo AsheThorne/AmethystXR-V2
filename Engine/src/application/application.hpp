@@ -93,6 +93,12 @@ public:
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult setActiveScene(const std::string& sceneName);
 
+    /// Measure the clay text
+    /// @param text Text to measure
+    /// @param config Text element config
+    /// @returns The dimensions of the text
+    [[nodiscard]] Clay_Dimensions measureClayText(Clay_StringSlice text, Clay_TextElementConfig* config) const;
+
 private:
     // ----------------------------------------- //
     // Private Variables

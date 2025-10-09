@@ -360,6 +360,7 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
     if (platformType != axr::PlatformType::Window) return {};
 
     Clay_SetCurrentContext(context);
+    Clay_SetMeasureTextFunction(axrApplicationHandleClayMeasureText, m_Application.toRaw());
     Clay_BeginLayout();
 
     CLAY(
@@ -424,6 +425,7 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
             },
             }
         ) {
+    // TODO: Maybe make axr versions of all these functions. that way we won't need to set the context and the measure text function here
             for (int i = 0; i < 3; ++i) {
                 std::string outer_id = std::string("ProfilePictureOuter") + std::to_string(i);
                 CLAY(

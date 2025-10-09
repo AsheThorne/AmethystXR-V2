@@ -102,6 +102,17 @@ extern "C" {
     /// Set the active scene to the named scene
     /// @param app The AxrApplication to use
     /// @param sceneName Name of the scene
-        /// @returns AXR_SUCCESS if the function succeeded
+    /// @returns AXR_SUCCESS if the function succeeded
     AXR_API AxrResult axrApplicationSetActiveScene(AxrApplication_T app, const char* sceneName);
+
+    /// Callback function to handle measuring clay text
+    /// @param text Text to measure
+    /// @param config Text element config
+    /// @param app The AxrApplication to use
+    /// @returns The dimensions of the text
+    AXR_API Clay_Dimensions axrApplicationHandleClayMeasureText(
+        Clay_StringSlice text,
+        Clay_TextElementConfig* config,
+        void* app
+    );
 }
