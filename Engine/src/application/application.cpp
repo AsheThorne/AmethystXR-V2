@@ -413,6 +413,9 @@ AxrResult AxrApplication::setupGlobalAssetCollection() {
     axrResult = m_GlobalAssetCollection.createShader(AXR_ENGINE_ASSET_SHADER_UI_IMAGE_FRAG);
     if (AXR_FAILED(axrResult)) return axrResult;
 
+    axrResult = m_GlobalAssetCollection.createShader(AXR_ENGINE_ASSET_SHADER_UI_TEXT_FRAG);
+    if (AXR_FAILED(axrResult)) return axrResult;
+
     axrResult = m_GlobalAssetCollection.createModel(AXR_ENGINE_ASSET_MODEL_UI_RECTANGLE);
     if (AXR_FAILED(axrResult)) return axrResult;
 
