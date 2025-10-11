@@ -112,6 +112,9 @@ public:
     /// @returns True if this material is valid
     [[nodiscard]] bool isValid() const;
 
+    /// Clean up this class
+    void cleanup();
+
 private:
     // ----------------------------------------- //
     // Private Variables
@@ -132,7 +135,4 @@ private:
     // ----------------------------------------- //
     // Private Functions
     // ----------------------------------------- //
-
-    /// Clean up this class
-    void cleanup();
 };

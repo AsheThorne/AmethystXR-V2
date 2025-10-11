@@ -277,3 +277,5 @@ void AxrMaterial::cleanup() {
     m_EnableDepthTest = false;
     m_EnableDepthWrite = false;
 }
+
+// ---- Private Functions ----

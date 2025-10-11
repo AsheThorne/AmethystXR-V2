@@ -4,6 +4,7 @@
 // AXR Headers
 // ----------------------------------------- //
 #include "axr/assets.h"
+#include "material.hpp"
 
 // ----------------------------------------- //
 // C/C++ Headers
@@ -89,10 +90,12 @@ public:
     /// Get the font name
     /// @returns The name of the font
     [[nodiscard]] const std::string& getName() const;
-
     /// Get the font's ID
     /// @returns The font's ID
     [[nodiscard]] uint16_t getID() const;
+    /// Get the font's material
+    /// @returns The font's material
+    [[nodiscard]] const AxrMaterial& getMaterial() const;
 
     // ---- For Internal Use ----
     // These functions are only to be used internally in the AmethystXr engine.
@@ -120,6 +123,7 @@ private:
     uint16_t m_ID = 0;
 
     // ---- Data ----
+    AxrMaterial m_Material;
     mutable Type m_Type = Type::Undefined;
     mutable uint32_t m_AtlasWidth = 0;
     mutable uint32_t m_AtlasHeight = 0;

@@ -4,6 +4,7 @@
 #include "font.hpp"
 #include "assetsUtils.hpp"
 #include "axr/logger.h"
+#include "engineAssets.hpp"
 
 // ----------------------------------------- //
 // C/C++ Headers
@@ -49,6 +50,22 @@ AxrFont::AxrFont(const AxrFontConfig& config, const uint16_t id):
     if (!m_AtlasLayoutFilePath.empty() && !axrFileExists(m_AtlasLayoutFilePath)) {
         axrLogErrorLocation("File path is invalid.");
     }
+
+    AxrMaterial material;
+    std::vector<AxrEngineAssetEnum> requiredShaders;
+    if (AXR_FAILED(
+        axrEngineAssetCreateMaterial_UIText(
+            m_AtlasImageName,
+            m_AtlasImageSamplerName,
+            m_ID,
+            material,
+            requiredShaders
+        )
+    )) {
+        axrLogErrorLocation("Font material is invalid.");
+    } else {
+        m_Material = std::move(material);
+    }
 }
 
 AxrFont::AxrFont(const AxrFont& src) {
@@ -57,6 +74,7 @@ AxrFont::AxrFont(const AxrFont& src) {
     m_AtlasImageSamplerName = src.m_AtlasImageSamplerName;
     m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
     m_ID = src.m_ID;
+    m_Material = src.m_Material;
     m_Type = src.m_Type;
     m_AtlasWidth = src.m_AtlasWidth;
     m_AtlasHeight = src.m_AtlasHeight;
@@ -71,6 +89,7 @@ AxrFont::AxrFont(AxrFont&& src) noexcept {
     m_AtlasImageName = std::move(src.m_AtlasImageName);
     m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
     m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
+    m_Material = std::move(src.m_Material);
     m_Glyphs = std::move(src.m_Glyphs);
 
     m_ID = src.m_ID;
@@ -103,6 +122,7 @@ AxrFont& AxrFont::operator=(const AxrFont& src) {
         m_AtlasImageSamplerName = src.m_AtlasImageSamplerName;
         m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
         m_ID = src.m_ID;
+        m_Material = src.m_Material;
         m_Type = src.m_Type;
         m_AtlasWidth = src.m_AtlasWidth;
         m_AtlasHeight = src.m_AtlasHeight;
@@ -123,6 +143,7 @@ AxrFont& AxrFont::operator=(AxrFont&& src) noexcept {
         m_AtlasImageName = std::move(src.m_AtlasImageName);
         m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
         m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
+        m_Material = std::move(src.m_Material);
         m_Glyphs = std::move(src.m_Glyphs);
 
         m_ID = src.m_ID;
@@ -153,6 +174,10 @@ const std::string& AxrFont::getName() const {
 
 uint16_t AxrFont::getID() const {
     return m_ID;
+}
+
+const AxrMaterial& AxrFont::getMaterial() const {
+    return m_Material;
 }
 
 bool AxrFont::isLoaded() const {
@@ -299,4 +324,5 @@ void AxrFont::cleanup() {
     m_AtlasImageSamplerName.clear();
     m_AtlasLayoutFilePath.clear();
     m_ID = 0;
+    m_Material.cleanup();
 }
