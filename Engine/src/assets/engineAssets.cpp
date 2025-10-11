@@ -1451,6 +1451,9 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
 }
 
 AxrResult axrEngineAssetCreateMaterial_UIText(
+    const std::string& imageName,
+    const std::string& imageSamplerName,
+    const uint16_t fontID,
     AxrMaterial& material,
     std::vector<AxrEngineAssetEnum>& materialShaders
 ) {
@@ -1501,12 +1504,12 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
     };
     strncpy_s(
         imageSamplerBufferLink.ImageName,
-        axrEngineAssetGetImageName(AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE),
+        imageName.c_str(),
         AXR_MAX_ASSET_NAME_SIZE
     );
     strncpy_s(
         imageSamplerBufferLink.ImageSamplerName,
-        axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT),
+        imageSamplerName.c_str(),
         AXR_MAX_ASSET_NAME_SIZE
     );
 
@@ -1534,7 +1537,7 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
     };
     strncpy_s(
         materialConfig.Name,
-        axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_TEXT),
+        (axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_TEXT) + std::to_string(fontID)).c_str(),
         AXR_MAX_ASSET_NAME_SIZE
     );
     strncpy_s(
@@ -2284,6 +2287,7 @@ AxrResult axrEngineAssetCreateFont_JetbrainsMono_Regular(
     AxrFontConfig fontConfig{
         .Name = {},
         .AtlasImageName = {},
+        .AtlasImageSamplerName = {},
         .AtlasLayoutFilePath = {},
     };
     strncpy_s(
@@ -2294,6 +2298,11 @@ AxrResult axrEngineAssetCreateFont_JetbrainsMono_Regular(
     strncpy_s(
         fontConfig.AtlasImageName,
         axrEngineAssetGetImageName(AXR_ENGINE_ASSET_IMAGE_FONT_ATLAS_JETBRAINS_MONO_REGULAR),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+    strncpy_s(
+        fontConfig.AtlasImageSamplerName,
+        axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT),
         AXR_MAX_ASSET_NAME_SIZE
     );
     strncpy_s(

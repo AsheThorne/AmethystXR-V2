@@ -197,10 +197,16 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
     std::vector<AxrEngineAssetEnum>& materialShaders
 );
 /// Create the 'UI Text' engine asset material
+/// @param imageName The named image atlas to use
+/// @param imageSamplerName The named image sampler to use
+/// @param fontID Font ID using this material
 /// @param material Output created material
 /// @param materialShaders Output required shaders for this material
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateMaterial_UIText(
+    const std::string& imageName,
+    const std::string& imageSamplerName,
+    uint16_t fontID,
     AxrMaterial& material,
     std::vector<AxrEngineAssetEnum>& materialShaders
 );

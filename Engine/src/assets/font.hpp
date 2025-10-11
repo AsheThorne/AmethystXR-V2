@@ -115,6 +115,7 @@ private:
     // ---- Config Variables ----
     std::string m_Name;
     std::string m_AtlasImageName;
+    std::string m_AtlasImageSamplerName;
     std::string m_AtlasLayoutFilePath;
     uint16_t m_ID = 0;
 

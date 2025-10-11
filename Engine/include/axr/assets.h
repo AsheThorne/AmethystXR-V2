@@ -844,6 +844,7 @@ extern "C" {
 struct AxrFontConfig {
     char Name[AXR_MAX_ASSET_NAME_SIZE];
     char AtlasImageName[AXR_MAX_ASSET_NAME_SIZE];
+    char AtlasImageSamplerName[AXR_MAX_ASSET_NAME_SIZE];
     /// Must be a .json file
     char AtlasLayoutFilePath[AXR_MAX_FILE_PATH_SIZE];
 };

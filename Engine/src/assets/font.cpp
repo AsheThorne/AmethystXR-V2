@@ -43,6 +43,7 @@ AxrFont::AxrFont() = default;
 AxrFont::AxrFont(const AxrFontConfig& config, const uint16_t id):
     m_Name(config.Name),
     m_AtlasImageName(config.AtlasImageName),
+    m_AtlasImageSamplerName(config.AtlasImageSamplerName),
     m_AtlasLayoutFilePath(config.AtlasLayoutFilePath),
     m_ID(id) {
     if (!m_AtlasLayoutFilePath.empty() && !axrFileExists(m_AtlasLayoutFilePath)) {
@@ -53,6 +54,7 @@ AxrFont::AxrFont(const AxrFontConfig& config, const uint16_t id):
 AxrFont::AxrFont(const AxrFont& src) {
     m_Name = src.m_Name;
     m_AtlasImageName = src.m_AtlasImageName;
+    m_AtlasImageSamplerName = src.m_AtlasImageSamplerName;
     m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
     m_ID = src.m_ID;
     m_Type = src.m_Type;
@@ -67,6 +69,7 @@ AxrFont::AxrFont(const AxrFont& src) {
 AxrFont::AxrFont(AxrFont&& src) noexcept {
     m_Name = std::move(src.m_Name);
     m_AtlasImageName = std::move(src.m_AtlasImageName);
+    m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
     m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
     m_Glyphs = std::move(src.m_Glyphs);
 
@@ -97,6 +100,7 @@ AxrFont& AxrFont::operator=(const AxrFont& src) {
 
         m_Name = src.m_Name;
         m_AtlasImageName = src.m_AtlasImageName;
+        m_AtlasImageSamplerName = src.m_AtlasImageSamplerName;
         m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
         m_ID = src.m_ID;
         m_Type = src.m_Type;
@@ -117,6 +121,7 @@ AxrFont& AxrFont::operator=(AxrFont&& src) noexcept {
 
         m_Name = std::move(src.m_Name);
         m_AtlasImageName = std::move(src.m_AtlasImageName);
+        m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
         m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
         m_Glyphs = std::move(src.m_Glyphs);
 
@@ -291,6 +296,7 @@ void AxrFont::cleanup() {
 
     m_Name.clear();
     m_AtlasImageName.clear();
+    m_AtlasImageSamplerName.clear();
     m_AtlasLayoutFilePath.clear();
     m_ID = 0;
 }

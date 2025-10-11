@@ -2958,6 +2958,7 @@ namespace axr {
         // ----------------------------------------- //
         char Name[AXR_MAX_ASSET_NAME_SIZE]{};
         char AtlasImageName[AXR_MAX_ASSET_NAME_SIZE]{};
+        char AtlasImageSamplerName[AXR_MAX_ASSET_NAME_SIZE]{};
         /// Must be a .json file
         char AtlasLayoutFilePath[AXR_MAX_FILE_PATH_SIZE]{};
 
@@ -2973,10 +2974,12 @@ namespace axr {
         /// Constructor
         /// @param name Name of the font
         /// @param atlasImageName Name of the font atlas image
+        /// @param atlasImageSamplerName Name of the font atlas image sampler
         /// @param atlasLayoutFilePath Font atlas layout file path
         FontConfig(
             const char* name,
             const char* atlasImageName,
+            const char* atlasImageSamplerName,
             const char* atlasLayoutFilePath
         ) {
             if (name != nullptr) {
@@ -2984,6 +2987,9 @@ namespace axr {
             }
             if (atlasImageName != nullptr) {
                 strncpy_s(AtlasImageName, atlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+            }
+            if (atlasImageSamplerName != nullptr) {
+                strncpy_s(AtlasImageSamplerName, atlasImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
             }
             if (atlasLayoutFilePath != nullptr) {
                 strncpy_s(AtlasLayoutFilePath, atlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
@@ -2995,6 +3001,7 @@ namespace axr {
         FontConfig(const FontConfig& src) {
             strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
             strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(AtlasImageSamplerName, src.AtlasImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
             strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
         }
 
@@ -3003,10 +3010,12 @@ namespace axr {
         FontConfig(FontConfig&& src) noexcept {
             strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
             strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(AtlasImageSamplerName, src.AtlasImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
             strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
 
             memset(src.Name, 0, sizeof(src.Name));
             memset(src.AtlasImageName, 0, sizeof(src.AtlasImageName));
+            memset(src.AtlasImageSamplerName, 0, sizeof(src.AtlasImageSamplerName));
             memset(src.AtlasLayoutFilePath, 0, sizeof(src.AtlasLayoutFilePath));
         }
 
@@ -3027,6 +3036,7 @@ namespace axr {
 
                 strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
                 strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(AtlasImageSamplerName, src.AtlasImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
                 strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
             }
 
@@ -3041,10 +3051,12 @@ namespace axr {
 
                 strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
                 strncpy_s(AtlasImageName, src.AtlasImageName, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(AtlasImageSamplerName, src.AtlasImageSamplerName, AXR_MAX_ASSET_NAME_SIZE);
                 strncpy_s(AtlasLayoutFilePath, src.AtlasLayoutFilePath, AXR_MAX_FILE_PATH_SIZE);
 
                 memset(src.Name, 0, sizeof(src.Name));
                 memset(src.AtlasImageName, 0, sizeof(src.AtlasImageName));
+                memset(src.AtlasImageSamplerName, 0, sizeof(src.AtlasImageSamplerName));
                 memset(src.AtlasLayoutFilePath, 0, sizeof(src.AtlasLayoutFilePath));
             }
 
@@ -3076,6 +3088,7 @@ namespace axr {
         void cleanup() {
             memset(Name, 0, sizeof(Name));
             memset(AtlasImageName, 0, sizeof(AtlasImageName));
+            memset(AtlasImageSamplerName, 0, sizeof(AtlasImageSamplerName));
             memset(AtlasLayoutFilePath, 0, sizeof(AtlasLayoutFilePath));
         }
     };
