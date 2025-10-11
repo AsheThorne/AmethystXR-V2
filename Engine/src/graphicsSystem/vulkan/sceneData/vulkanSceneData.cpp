@@ -112,6 +112,12 @@ AxrResult AxrVulkanSceneData::loadScene() {
         return axrResult;
     }
 
+    axrResult = createAllFontData();
+    if (AXR_FAILED(axrResult)) {
+        unloadScene();
+        return axrResult;
+    }
+
     axrResult = createAllMaterialData();
     if (AXR_FAILED(axrResult)) {
         unloadScene();
@@ -134,6 +140,8 @@ AxrResult AxrVulkanSceneData::loadScene() {
                      .connect<&AxrVulkanSceneData::onImageSamplerCreatedCallback>(this);
     m_AssetCollection->OnImageCreatedCallbackGraphics
                      .connect<&AxrVulkanSceneData::onImageCreatedCallback>(this);
+    m_AssetCollection->OnFontCreatedCallbackGraphics
+                     .connect<&AxrVulkanSceneData::onFontCreatedCallback>(this);
     m_AssetCollection->OnMaterialCreatedCallbackGraphics
                      .connect<&AxrVulkanSceneData::onMaterialCreatedCallback>(this);
 
@@ -160,6 +168,7 @@ void AxrVulkanSceneData::unloadScene() {
     }
 
     m_AssetCollection->OnMaterialCreatedCallbackGraphics.reset();
+    m_AssetCollection->OnFontCreatedCallbackGraphics.reset();
     m_AssetCollection->OnImageCreatedCallbackGraphics.reset();
     m_AssetCollection->OnImageSamplerCreatedCallbackGraphics.reset();
     m_AssetCollection->OnModelCreatedCallbackGraphics.reset();
@@ -171,6 +180,7 @@ void AxrVulkanSceneData::unloadScene() {
 
     destroyAllMaterialsForRendering();
     destroyAllMaterialData();
+    destroyAllFontData();
     destroyAllMaterialLayoutData();
     destroyAllImageData();
     destroyAllImageSamplerData();
@@ -187,6 +197,12 @@ AxrResult AxrVulkanSceneData::loadWindowData(const LoadWindowDataConfig& config)
     m_LoadWindowDataConfig = config;
 
     axrResult = createAllWindowUniformBufferData();
+    if (AXR_FAILED(axrResult)) {
+        unloadWindowData();
+        return axrResult;
+    }
+
+    axrResult = createAllWindowFontData();
     if (AXR_FAILED(axrResult)) {
         unloadWindowData();
         return axrResult;
@@ -217,6 +233,7 @@ void AxrVulkanSceneData::unloadWindowData() {
 
     resetAllDescriptorSets(AXR_PLATFORM_TYPE_WINDOW);
     destroyAllWindowMaterialData();
+    destroyAllWindowFontData();
     destroyAllWindowUniformBufferData();
 
     m_LoadWindowDataConfig = {};
@@ -228,6 +245,12 @@ AxrResult AxrVulkanSceneData::loadXrSessionData(const LoadXrSessionDataConfig& c
     m_LoadXrSessionDataConfig = config;
 
     axrResult = createAllXrSessionUniformBufferData();
+    if (AXR_FAILED(axrResult)) {
+        unloadXrSessionData();
+        return axrResult;
+    }
+
+    axrResult = createAllXrSessionFontData();
     if (AXR_FAILED(axrResult)) {
         unloadXrSessionData();
         return axrResult;
@@ -258,6 +281,7 @@ void AxrVulkanSceneData::unloadXrSessionData() {
 
     resetAllDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE);
     destroyAllXrSessionMaterialData();
+    destroyAllXrSessionFontData();
     destroyAllXrSessionUniformBufferData();
 
     m_LoadXrSessionDataConfig = {};
@@ -1334,34 +1358,6 @@ AxrResult AxrVulkanSceneData::createAllMaterialLayoutData() {
     // Process
     // ----------------------------------------- //
 
-    auto createMaterialLayout = [this](const AxrMaterial& material) -> void {
-        AxrResult axrResult = AXR_SUCCESS;
-
-        AxrVulkanMaterialLayoutData materialLayoutData;
-        axrResult = initializeMaterialLayoutData(material, materialLayoutData);
-        if (AXR_FAILED(axrResult)) {
-            return;
-        }
-
-        if (m_MaterialLayoutData.contains(materialLayoutData.getName())) {
-            return;
-        }
-
-        axrResult = materialLayoutData.createData();
-        if (AXR_FAILED(axrResult)) {
-            return;
-        }
-
-        auto [insertData, insertSucceeded] = m_MaterialLayoutData.insert(
-            std::pair(materialLayoutData.getName(), std::move(materialLayoutData))
-        );
-
-        if (!insertSucceeded) {
-            insertData->second.destroyData();
-            return;
-        }
-    };
-
     if (isThisGlobalSceneData()) {
         std::vector<AxrEngineAssetEnum> materialShaders;
 
@@ -1370,25 +1366,29 @@ AxrResult AxrVulkanSceneData::createAllMaterialLayoutData() {
         axrEngineAssetCreateMaterial_UIRectangle(uiRectangleMaterial, materialShaders);
         m_LocalMaterials.push_back(std::move(uiRectangleMaterial));
 
-        createMaterialLayout(m_LocalMaterials.back());
+        createMaterialLayoutData(m_LocalMaterials.back());
 
         // ---- Border UI ----
         AxrMaterial uiBorderMaterial;
         axrEngineAssetCreateMaterial_UIBorder(uiBorderMaterial, materialShaders);
         m_LocalMaterials.push_back(std::move(uiBorderMaterial));
 
-        createMaterialLayout(m_LocalMaterials.back());
+        createMaterialLayoutData(m_LocalMaterials.back());
 
         // ---- Image UI ----
         AxrMaterial uiImageMaterial;
         axrEngineAssetCreateMaterial_UIImage(uiImageMaterial, materialShaders);
         m_LocalMaterials.push_back(std::move(uiImageMaterial));
 
-        createMaterialLayout(m_LocalMaterials.back());
+        createMaterialLayoutData(m_LocalMaterials.back());
+    }
+
+    for (const auto& font : m_AssetCollection->getFonts() | std::views::values) {
+        createMaterialLayoutData(font.getMaterial());
     }
 
     for (const auto& material : m_AssetCollection->getMaterials() | std::views::values) {
-        createMaterialLayout(material);
+        createMaterialLayoutData(material);
     }
 
     return AXR_SUCCESS;
@@ -1400,6 +1400,36 @@ void AxrVulkanSceneData::destroyAllMaterialLayoutData() {
     }
     m_MaterialLayoutData.clear();
     m_LocalMaterials.clear();
+}
+
+AxrResult AxrVulkanSceneData::createMaterialLayoutData(const AxrMaterial& material) {
+    AxrResult axrResult = AXR_SUCCESS;
+
+    AxrVulkanMaterialLayoutData materialLayoutData;
+    axrResult = initializeMaterialLayoutData(material, materialLayoutData);
+    if (AXR_FAILED(axrResult)) {
+        return AXR_ERROR;
+    }
+
+    if (m_MaterialLayoutData.contains(materialLayoutData.getName())) {
+        return AXR_SUCCESS;
+    }
+
+    axrResult = materialLayoutData.createData();
+    if (AXR_FAILED(axrResult)) {
+        return AXR_ERROR;
+    }
+
+    auto [insertData, insertSucceeded] = m_MaterialLayoutData.insert(
+        std::pair(materialLayoutData.getName(), std::move(materialLayoutData))
+    );
+
+    if (!insertSucceeded) {
+        insertData->second.destroyData();
+        return AXR_ERROR;
+    }
+
+    return AXR_SUCCESS;
 }
 
 AxrResult AxrVulkanSceneData::initializeMaterialLayoutData(
@@ -1453,6 +1483,241 @@ const AxrVulkanMaterialLayoutData* AxrVulkanSceneData::findMaterialLayoutData_sh
     }
 
     return nullptr;
+}
+
+AxrResult AxrVulkanSceneData::createAllFontData() {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (!m_FontData.empty()) {
+        axrLogErrorLocation("Font data already exists.");
+        return AXR_ERROR;
+    }
+
+    if (m_AssetCollection == nullptr) {
+        axrLogErrorLocation("Asset collection is null.");
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    for (const auto& font : m_AssetCollection->getFonts() | std::views::values) {
+        createFontData(font);
+    }
+
+    return AXR_SUCCESS;
+}
+
+void AxrVulkanSceneData::destroyAllFontData() {
+    for (auto& data : m_FontData | std::views::values) {
+        data.destroyData();
+    }
+    m_FontData.clear();
+}
+
+AxrVulkanFontData* AxrVulkanSceneData::createFontData(const AxrFont& font) {
+    AxrResult axrResult = AXR_SUCCESS;
+
+    AxrVulkanFontData fontData;
+    axrResult = initializeFontData(font, fontData);
+    if (AXR_FAILED(axrResult)) {
+        return nullptr;
+    }
+
+    if (m_FontData.contains(fontData.getName())) {
+        axrLogErrorLocation("Font data named: {0} already exists.", font.getName().c_str());
+        return nullptr;
+    }
+
+    axrResult = fontData.createData();
+    if (AXR_FAILED(axrResult)) {
+        return nullptr;
+    }
+
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
+        axrResult = fontData.createWindowData(
+            m_LoadWindowDataConfig.RenderPass,
+            m_LoadWindowDataConfig.MsaaSampleCount
+        );
+
+        if (AXR_FAILED(axrResult)) {
+            fontData.destroyWindowData();
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
+        axrResult = fontData.createXrSessionData(
+            m_LoadXrSessionDataConfig.RenderPass,
+            m_LoadXrSessionDataConfig.MsaaSampleCount,
+            m_LoadXrSessionDataConfig.ViewCount
+        );
+
+        if (AXR_FAILED(axrResult)) {
+            fontData.destroyXrSessionData();
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
+    auto [insertData, insertSucceeded] = m_FontData.insert(
+        std::pair(fontData.getName(), std::move(fontData))
+    );
+
+    if (!insertSucceeded) {
+        insertData->second.destroyXrSessionData();
+        insertData->second.destroyWindowData();
+        insertData->second.destroyData();
+        axrLogErrorLocation("Failed to insert font data for font named: {0}", font.getName().c_str());
+        return nullptr;
+    }
+
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
+        axrResult = writeDescriptorSets(
+            AXR_PLATFORM_TYPE_WINDOW,
+            1,
+            insertData->second.getMaterialData()
+        );
+
+        if (AXR_FAILED(axrResult)) {
+            resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, insertData->second.getMaterialData());
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
+    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
+        axrResult = writeDescriptorSets(
+            AXR_PLATFORM_TYPE_XR_DEVICE,
+            m_LoadXrSessionDataConfig.ViewCount,
+            insertData->second.getMaterialData()
+        );
+
+        if (AXR_FAILED(axrResult)) {
+            resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, insertData->second.getMaterialData());
+            // Don't return. One platform may error but the other might still be ok.
+        }
+    }
+
+    return &insertData->second;
+}
+
+AxrResult AxrVulkanSceneData::initializeFontData(const AxrFont& font, AxrVulkanFontData& fontData) const {
+    const AxrVulkanMaterialLayoutData* foundMaterialLayoutData = findMaterialLayoutData_shared(
+        font.getMaterial().getMaterialLayoutName()
+    );
+    if (foundMaterialLayoutData == nullptr) {
+        axrLogErrorLocation(
+            "Failed to find material layout data for font material: {0}.",
+            font.getMaterial().getName()
+        );
+        return AXR_ERROR;
+    }
+
+    const AxrVulkanFontData::Config fontDataConfig{
+        .FontHandle = &font,
+        .MaterialLayoutData = foundMaterialLayoutData,
+        .MaxFramesInFlight = m_MaxFramesInFlight,
+        .Device = m_Device,
+        .DispatchHandle = m_DispatchHandle,
+    };
+
+    fontData = AxrVulkanFontData(fontDataConfig);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult AxrVulkanSceneData::createAllWindowFontData() {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (m_LoadWindowDataConfig.RenderPass == VK_NULL_HANDLE) {
+        axrLogErrorLocation("Window render pass is null.");
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+    AxrResult axrResult = AXR_SUCCESS;
+
+    for (auto& data : m_FontData | std::views::values) {
+        axrResult = data.createWindowData(
+            m_LoadWindowDataConfig.RenderPass,
+            m_LoadWindowDataConfig.MsaaSampleCount
+        );
+        if (AXR_FAILED(axrResult)) {
+            continue;
+        }
+    }
+
+    return AXR_SUCCESS;
+}
+
+void AxrVulkanSceneData::destroyAllWindowFontData() {
+    for (auto& data : m_FontData | std::views::values) {
+        data.destroyWindowData();
+    }
+}
+
+AxrResult AxrVulkanSceneData::createAllXrSessionFontData() {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (m_LoadXrSessionDataConfig.RenderPass == VK_NULL_HANDLE) {
+        axrLogErrorLocation("Xr session render pass is null.");
+        return AXR_ERROR;
+    }
+
+    if (m_LoadXrSessionDataConfig.ViewCount == 0) {
+        axrLogErrorLocation("Xr session view count is 0.");
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+    AxrResult axrResult = AXR_SUCCESS;
+
+    for (auto& data : m_FontData | std::views::values) {
+        axrResult = data.createXrSessionData(
+            m_LoadXrSessionDataConfig.RenderPass,
+            m_LoadXrSessionDataConfig.MsaaSampleCount,
+            m_LoadXrSessionDataConfig.ViewCount
+        );
+        if (AXR_FAILED(axrResult)) {
+            continue;
+        }
+    }
+
+    return AXR_SUCCESS;
+}
+
+void AxrVulkanSceneData::destroyAllXrSessionFontData() {
+    for (auto& data : m_FontData | std::views::values) {
+        data.destroyXrSessionData();
+    }
+}
+
+void AxrVulkanSceneData::onFontCreatedCallback(const AxrFontConst_T font) {
+    if (font == nullptr) {
+        axrLogErrorLocation("Font is null.");
+        return;
+    }
+
+    if (!m_MaterialLayoutData.contains(font->getMaterial().getMaterialLayoutName())) {
+        if (AXR_FAILED(createMaterialLayoutData(font->getMaterial()))) {
+            return;
+        }
+    }
+
+    AxrVulkanFontData* fontData = createFontData(*font);
+    if (fontData == nullptr) {
+        return;
+    }
 }
 
 AxrResult AxrVulkanSceneData::createAllMaterialData() {
@@ -1792,26 +2057,8 @@ void AxrVulkanSceneData::onMaterialCreatedCallback(const AxrMaterialConst_T mate
         return;
     }
 
-    AxrResult axrResult = AXR_SUCCESS;
-
     if (!m_MaterialLayoutData.contains(material->getMaterialLayoutName())) {
-        AxrVulkanMaterialLayoutData materialLayoutData;
-        axrResult = initializeMaterialLayoutData(*material, materialLayoutData);
-        if (AXR_FAILED(axrResult)) {
-            return;
-        }
-
-        axrResult = materialLayoutData.createData();
-        if (AXR_FAILED(axrResult)) {
-            return;
-        }
-
-        auto [insertData, insertSucceeded] = m_MaterialLayoutData.insert(
-            std::pair(materialLayoutData.getName(), std::move(materialLayoutData))
-        );
-
-        if (!insertSucceeded) {
-            insertData->second.destroyData();
+        if (AXR_FAILED(createMaterialLayoutData(*material))) {
             return;
         }
     }
@@ -1825,6 +2072,14 @@ void AxrVulkanSceneData::onMaterialCreatedCallback(const AxrMaterialConst_T mate
 AxrResult AxrVulkanSceneData::writeAllDescriptorSets(const AxrPlatformType platformType, const uint32_t viewCount) {
     AxrResult axrResult = AXR_SUCCESS;
 
+    for (auto& data : m_FontData | std::views::values) {
+        axrResult = writeDescriptorSets(platformType, viewCount, data.getMaterialData());
+
+        if (AXR_FAILED(axrResult)) {
+            continue;
+        }
+    }
+
     for (auto& data : m_MaterialData | std::views::values) {
         axrResult = writeDescriptorSets(platformType, viewCount, data);
 
@@ -1837,6 +2092,10 @@ AxrResult AxrVulkanSceneData::writeAllDescriptorSets(const AxrPlatformType platf
 }
 
 void AxrVulkanSceneData::resetAllDescriptorSets(const AxrPlatformType platformType) {
+    for (auto& data : m_FontData | std::views::values) {
+        resetDescriptorSets(platformType, data.getMaterialData());
+    }
+
     for (auto& data : m_MaterialData | std::views::values) {
         resetDescriptorSets(platformType, data);
     }

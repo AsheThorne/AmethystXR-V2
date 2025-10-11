@@ -11,6 +11,7 @@
 #include "vulkanMaterialData.hpp"
 #include "vulkanImageData.hpp"
 #include "vulkanImageSamplerData.hpp"
+#include "vulkanFontData.hpp"
 #include "axr/scene.h"
 #include "../../../xrSystem/xrUtils.hpp"
 #include "../vulkanRenderStructs.hpp"
@@ -220,6 +221,7 @@ private:
     std::unordered_map<std::string, AxrVulkanImageSamplerData> m_ImageSamplerData;
     std::unordered_map<std::string, AxrVulkanMaterialLayoutData> m_MaterialLayoutData;
     std::unordered_map<std::string, AxrVulkanMaterialData> m_MaterialData;
+    std::unordered_map<std::string, AxrVulkanFontData> m_FontData;
     std::vector<AxrVulkanMaterialForRendering> m_OpaqueMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_AlphaBlendMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_OITMaterialsForRendering;
@@ -419,6 +421,11 @@ private:
     /// Destroy all material layouts data
     void destroyAllMaterialLayoutData();
 
+    /// Create a single material layout data
+    /// @param material Material to use
+    /// @results A handle to the created material layout data. Or nullptr if it failed.
+    AxrResult createMaterialLayoutData(const AxrMaterial& material);
+
     /// Initialize a single material layout for the given material
     /// @param material Material to use
     /// @param materialLayoutData Output material layout data
@@ -432,6 +439,44 @@ private:
     /// @param name The name of the material layout
     /// @returns A handle to the found material layout. Or nullptr if it wasn't found
     [[nodiscard]] const AxrVulkanMaterialLayoutData* findMaterialLayoutData_shared(const std::string& name) const;
+
+    // ---- Font ----
+
+    /// Create all font data
+    /// @results AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult createAllFontData();
+    /// Destroy all font data
+    void destroyAllFontData();
+
+    /// Create a single font data
+    /// @param font Font to use
+    /// @results A handle to the created font data. Or nullptr if it failed.
+    AxrVulkanFontData* createFontData(const AxrFont& font);
+
+    /// Initialize a single font data for the given font
+    /// @param font Font to use
+    /// @param fontData Output font data
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult initializeFontData(
+        const AxrFont& font,
+        AxrVulkanFontData& fontData
+    ) const;
+
+    /// Create all window specific font data
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult createAllWindowFontData();
+    /// Destroy all window specific font data
+    void destroyAllWindowFontData();
+
+    /// Create all xr session specific font data
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult createAllXrSessionFontData();
+    /// Destroy all xr session specific font data
+    void destroyAllXrSessionFontData();
+
+    /// 'On font created' callback for the asset collection
+    /// @param font Newly created font
+    void onFontCreatedCallback(AxrFontConst_T font);
 
     // ---- Material ----
 
