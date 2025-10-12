@@ -307,6 +307,22 @@ const std::vector<AxrVulkanMaterialForRendering>& AxrVulkanSceneData::getMateria
     }
 }
 
+const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUITextMaterialForRendering(const uint16_t fontID) const {
+    const std::map<uint16_t, AxrVulkanMaterialForRendering>* uiTextMaterialsForRenderingHandle =
+        &m_UITextMaterialsForRendering;
+
+    if (AxrAssetCollection::isGlobalFont(fontID) && m_GlobalSceneData != nullptr) {
+        uiTextMaterialsForRenderingHandle = &m_GlobalSceneData->m_UITextMaterialsForRendering;
+    }
+
+    const auto foundMaterialForRenderingIt = uiTextMaterialsForRenderingHandle->find(fontID);
+    if (foundMaterialForRenderingIt != uiTextMaterialsForRenderingHandle->end()) {
+        return &foundMaterialForRenderingIt->second;
+    }
+
+    return nullptr;
+}
+
 const AxrVulkanMaterialForRendering* AxrVulkanSceneData::getUIRectangleMaterialForRendering() const {
     if (m_UIRectangleMaterialForRenderingIndex < 0 ||
         m_UIMaterialsForRendering.size() - 1 < m_UIRectangleMaterialForRenderingIndex) {
@@ -1718,6 +1734,26 @@ void AxrVulkanSceneData::onFontCreatedCallback(const AxrFontConst_T font) {
     if (fontData == nullptr) {
         return;
     }
+
+    const AxrVulkanModelData* foundModelData = findModelData_shared(
+        axrEngineAssetGetModelName(AXR_ENGINE_ASSET_MODEL_UI_RECTANGLE)
+    );
+    if (foundModelData == nullptr) {
+        axrLogErrorLocation("Failed to find UI Rectangle model asset.");
+        return;
+    }
+
+    AxrVulkanMaterialForRendering materialForRendering;
+    const AxrResult axrResult = buildUIMaterialForRendering(
+        &fontData->getMaterialData(),
+        foundModelData,
+        materialForRendering
+    );
+    if (AXR_FAILED(axrResult)) {
+        axrLogErrorLocation("Failed to build font material for rendering.");
+        return;
+    }
+    m_UITextMaterialsForRendering.emplace(fontData->getID(), materialForRendering);
 }
 
 AxrResult AxrVulkanSceneData::createAllMaterialData() {
@@ -2480,30 +2516,25 @@ AxrResult AxrVulkanSceneData::createAllMaterialsForRendering() {
         return AXR_ERROR;
     }
 
-    // We don't necessarily need a registry handle. The global assets definitely won't have one.
-    if (m_EcsRegistryHandle == nullptr) {
-        return AXR_SUCCESS;
-    }
-
     // ----------------------------------------- //
     // Process
     // ----------------------------------------- //
 
     AxrResult axrResult = AXR_SUCCESS;
 
-    if (!isThisGlobalSceneData()) {
-        axrResult = createUIMaterialsForRendering();
-        if (AXR_FAILED(axrResult)) {
-            axrLogErrorLocation("Failed to create UI materials for rendering");
-        }
+    axrResult = createUIMaterialsForRendering();
+    if (AXR_FAILED(axrResult)) {
+        axrLogErrorLocation("Failed to create UI materials for rendering");
     }
 
-    for (const auto [entity, transformComponent, modelComponent] :
-         m_EcsRegistryHandle->view<AxrTransformComponent, AxrModelComponent>().each()) {
-        axrResult = addMaterialForRendering(transformComponent, modelComponent);
+    if (m_EcsRegistryHandle != nullptr) {
+        for (const auto [entity, transformComponent, modelComponent] :
+             m_EcsRegistryHandle->view<AxrTransformComponent, AxrModelComponent>().each()) {
+            axrResult = addMaterialForRendering(transformComponent, modelComponent);
 
-        if (AXR_FAILED(axrResult)) {
-            continue;
+            if (AXR_FAILED(axrResult)) {
+                continue;
+            }
         }
     }
 
@@ -2529,52 +2560,66 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
         return AXR_ERROR;
     }
 
-    // ---- Rectangle UI ----
+    // ---- Text UI ----
 
-    const AxrVulkanMaterialData* foundMaterialData = findMaterialData_shared(
-        axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE)
-    );
-    if (foundMaterialData == nullptr) {
-        axrLogErrorLocation("Failed to find UI Rectangle material asset.");
-    } else {
+    for (const AxrVulkanFontData& fontData : m_FontData | std::views::values) {
         AxrVulkanMaterialForRendering materialForRendering;
-        axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
+        axrResult = buildUIMaterialForRendering(&fontData.getMaterialData(), foundModelData, materialForRendering);
         if (AXR_SUCCEEDED(axrResult)) {
-            m_UIRectangleMaterialForRenderingIndex = static_cast<int32_t>(m_UIMaterialsForRendering.size());
-            m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+            m_UITextMaterialsForRendering.emplace(fontData.getID(), materialForRendering);
         }
     }
 
-    // ---- Border UI ----
+    if (!isThisGlobalSceneData()) {
+        // ---- Rectangle UI ----
 
-    foundMaterialData = findMaterialData_shared(
-        axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_BORDER)
-    );
-    if (foundMaterialData == nullptr) {
-        axrLogErrorLocation("Failed to find UI Border material asset.");
-    } else {
-        AxrVulkanMaterialForRendering materialForRendering;
-        axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
-        if (AXR_SUCCEEDED(axrResult)) {
-            m_UIBorderMaterialForRenderingIndex = static_cast<int32_t>(m_UIMaterialsForRendering.size());
-            m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
-        }
-    }
-
-    // ---- Image UI ----
-
-    for (int i = 0; i < m_UIImageResourceCount; ++i) {
-        foundMaterialData = findMaterialData_shared(
-            std::string(axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)) + std::to_string(i)
+        const AxrVulkanMaterialData* foundMaterialData = findMaterialData_shared(
+            axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_RECTANGLE)
         );
         if (foundMaterialData == nullptr) {
-            axrLogErrorLocation("Failed to find UI Image material asset.");
+            axrLogErrorLocation("Failed to find UI Rectangle material asset.");
         } else {
             AxrVulkanMaterialForRendering materialForRendering;
             axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
             if (AXR_SUCCEEDED(axrResult)) {
-                m_UIImageMaterialForRenderingIndices.push_back(static_cast<int32_t>(m_UIMaterialsForRendering.size()));
+                m_UIRectangleMaterialForRenderingIndex = static_cast<int32_t>(m_UIMaterialsForRendering.size());
                 m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+            }
+        }
+
+        // ---- Border UI ----
+
+        foundMaterialData = findMaterialData_shared(
+            axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_BORDER)
+        );
+        if (foundMaterialData == nullptr) {
+            axrLogErrorLocation("Failed to find UI Border material asset.");
+        } else {
+            AxrVulkanMaterialForRendering materialForRendering;
+            axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
+            if (AXR_SUCCEEDED(axrResult)) {
+                m_UIBorderMaterialForRenderingIndex = static_cast<int32_t>(m_UIMaterialsForRendering.size());
+                m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+            }
+        }
+
+        // ---- Image UI ----
+
+        for (int i = 0; i < m_UIImageResourceCount; ++i) {
+            foundMaterialData = findMaterialData_shared(
+                std::string(axrEngineAssetGetMaterialName(AXR_ENGINE_ASSET_MATERIAL_UI_IMAGE)) + std::to_string(i)
+            );
+            if (foundMaterialData == nullptr) {
+                axrLogErrorLocation("Failed to find UI Image material asset.");
+            } else {
+                AxrVulkanMaterialForRendering materialForRendering;
+                axrResult = buildUIMaterialForRendering(foundMaterialData, foundModelData, materialForRendering);
+                if (AXR_SUCCEEDED(axrResult)) {
+                    m_UIImageMaterialForRenderingIndices.push_back(
+                        static_cast<int32_t>(m_UIMaterialsForRendering.size())
+                    );
+                    m_UIMaterialsForRendering.push_back(std::move(materialForRendering));
+                }
             }
         }
     }
@@ -2585,6 +2630,7 @@ AxrResult AxrVulkanSceneData::createUIMaterialsForRendering() {
 void AxrVulkanSceneData::destroyUIMaterialsForRendering() {
     m_UIMaterialsForRendering.clear();
 
+    m_UITextMaterialsForRendering.clear();
     m_UIRectangleMaterialForRenderingIndex = -1;
     m_UIBorderMaterialForRenderingIndex = -1;
     m_UIImageMaterialForRenderingIndices.clear();

@@ -76,7 +76,19 @@ const std::string& AxrVulkanFontData::getName() const {
     return m_FontHandle->getName();
 }
 
+uint16_t AxrVulkanFontData::getID() const {
+    if (m_FontHandle == nullptr) {
+        return 0;
+    }
+
+    return m_FontHandle->getID();
+}
+
 AxrVulkanMaterialData& AxrVulkanFontData::getMaterialData() {
+    return m_MaterialData;
+}
+
+const AxrVulkanMaterialData& AxrVulkanFontData::getMaterialData() const {
     return m_MaterialData;
 }
 

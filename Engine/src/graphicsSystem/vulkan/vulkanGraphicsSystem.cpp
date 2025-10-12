@@ -1611,7 +1611,9 @@ void AxrVulkanGraphicsSystem::renderClayUI(
                 break;
             }
             case CLAY_RENDER_COMMAND_TYPE_TEXT: {
-                axrLogErrorLocation("`Text` clay render command not supported.");
+                materialForRendering = sceneData->getUITextMaterialForRendering(
+                    clayRenderCommand.renderData.text.fontId
+                );
                 break;
             }
             case CLAY_RENDER_COMMAND_TYPE_IMAGE: {

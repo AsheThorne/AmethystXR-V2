@@ -272,6 +272,11 @@ public:
     /// @returns A map of the fonts
     [[nodiscard]] const std::unordered_map<std::string, AxrFont>& getFonts();
 
+    /// Check if the given font ID is for the global asset collection
+    /// @param fontID Font ID to check
+    /// @returns True if the given font ID is for the global asset collection
+    [[nodiscard]] static bool isGlobalFont(uint16_t fontID);
+
 private:
     // ----------------------------------------- //
     // Private Variables

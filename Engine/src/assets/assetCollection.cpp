@@ -1154,6 +1154,11 @@ const std::unordered_map<std::string, AxrFont>& AxrAssetCollection::getFonts() {
     return m_Fonts;
 }
 
+bool AxrAssetCollection::isGlobalFont(const uint16_t fontID) {
+    // If the final bit is not set, it's global
+    return !(fontID & 1 << 15);
+}
+
 // ---- Private Functions ----
 
 AxrResult AxrAssetCollection::generateFontID(uint16_t& id) const {

@@ -66,9 +66,15 @@ public:
     /// Get the font name
     /// @returns The font name
     [[nodiscard]] const std::string& getName() const;
+    /// Get the font's ID
+    /// @returns The font's ID
+    [[nodiscard]] uint16_t getID() const;
     /// Get the font's material data
     /// @returns The font's material data
     [[nodiscard]] AxrVulkanMaterialData& getMaterialData();
+    /// Get the font's material data
+    /// @returns The font's material data
+    [[nodiscard]] const AxrVulkanMaterialData& getMaterialData() const;
 
     /// Check if the data exists
     /// @returns True if the data exists

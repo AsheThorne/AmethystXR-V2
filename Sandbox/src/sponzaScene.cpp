@@ -484,21 +484,23 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                         Clay__CloseElement();
                     }
                     { // ---- Profile Text ----
-                        // Clay_TextElementConfig* textElementConfig = Clay__StoreTextElementConfig(
-                        //     Clay_TextElementConfig{
-                        //         .textColor = {
-                        //             1.0f,
-                        //             1.0f,
-                        //             1.0f,
-                        //             1.0f
-                        //         },
-                        //         .fontSize = 16
-                        //     }
-                        // );
-                        // Clay__OpenTextElement(
-                        //     CLAY_STRING("Clay - UI Library"),
-                        //     textElementConfig
-                        // );
+                        Clay_TextElementConfig* textElementConfig = Clay__StoreTextElementConfig(
+                            Clay_TextElementConfig{
+                                .textColor = {
+                                    1.0f,
+                                    1.0f,
+                                    1.0f,
+                                    1.0f
+                                },
+                                // TODO: get the font ID
+                                .fontId = 0,
+                                .fontSize = 16,
+                            }
+                        );
+                        Clay__OpenTextElement(
+                            CLAY_STRING("Clay - UI Library"),
+                            textElementConfig
+                        );
                     }
                     Clay__CloseElement();
                 }

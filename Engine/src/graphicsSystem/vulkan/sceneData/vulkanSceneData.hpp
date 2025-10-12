@@ -127,6 +127,10 @@ public:
     [[nodiscard]] const std::vector<AxrVulkanMaterialForRendering>& getMaterialsForRendering(
         AxrMaterialAlphaRenderModeEnum alphaRenderMode
     ) const;
+    /// Get the `UI Text` material for rendering
+    /// @param fontID ID of the font to use
+    /// @returns The `UI Text` material for rendering. Or nullptr if it doesn't exist.
+    [[nodiscard]] const AxrVulkanMaterialForRendering* getUITextMaterialForRendering(uint16_t fontID) const;
     /// Get the `UI Rectangle` material for rendering
     /// @returns The `UI Rectangle` material for rendering. Or nullptr if it doesn't exist.
     [[nodiscard]] const AxrVulkanMaterialForRendering* getUIRectangleMaterialForRendering() const;
@@ -226,6 +230,8 @@ private:
     std::vector<AxrVulkanMaterialForRendering> m_AlphaBlendMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_OITMaterialsForRendering;
     std::vector<AxrVulkanMaterialForRendering> m_UIMaterialsForRendering;
+    /// Key is the font ID
+    std::map<uint16_t, AxrVulkanMaterialForRendering> m_UITextMaterialsForRendering;
     uint32_t m_UIImageResourceCount;
     int32_t m_UIRectangleMaterialForRenderingIndex = -1;
     int32_t m_UIBorderMaterialForRenderingIndex = -1;
