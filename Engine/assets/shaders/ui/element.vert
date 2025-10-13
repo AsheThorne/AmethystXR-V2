@@ -15,7 +15,6 @@ layout (std140, binding = 0) uniform SceneData {
 
 layout (std140, binding = 1) uniform UICanvas {
     vec2 size;
-    bool enableAntiAliasing;
 } uiCanvas;
 
 layout (std140, binding = 2) uniform UIElement {

@@ -3329,8 +3329,7 @@ namespace axr {
         // Public Variables
         // ----------------------------------------- //
         alignas(8) glm::vec2 Size = {};
-        alignas(4) bool EnableAntialiasing = {};
-        float _padding = 0.0f;
+        float _padding[2] = {0.0f, 0.0f};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3343,12 +3342,9 @@ namespace axr {
 
         /// Constructor
         /// @param size The UI canvas size
-        /// @param enableAntialiasing Whether to enable antialiasing on ui elements within the canvas
         EngineAssetUniformBuffer_UICanvas(
-            const glm::vec2& size,
-            const bool enableAntialiasing
-        ): Size(size),
-            EnableAntialiasing(enableAntialiasing) {
+            const glm::vec2& size
+        ): Size(size) {
         }
 
         // ----------------------------------------- //
