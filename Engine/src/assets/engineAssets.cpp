@@ -1937,14 +1937,9 @@ AxrResult axrEngineAssetCreateModel_UIRectangle(const std::string& modelName, Ax
 
     std::vector<AxrVertex> vertices{
         AxrVertex{
-            .Position = {1.0f, 1.0f, 0.0f},
+            .Position = {1.0f, 0.0f, 0.0f},
             .Color = {1.0f, 1.0f, 1.0f},
-            .TexCoord_0 = {1.0f, 1.0f},
-        },
-        AxrVertex{
-            .Position = {0.0f, 1.0f, 0.0f},
-            .Color = {1.0f, 1.0f, 1.0f},
-            .TexCoord_0 = {0.0f, 1.0f},
+            .TexCoord_0 = {1.0f, 0.0f},
         },
         AxrVertex{
             .Position = {0.0f, 0.0f, 0.0f},
@@ -1952,9 +1947,14 @@ AxrResult axrEngineAssetCreateModel_UIRectangle(const std::string& modelName, Ax
             .TexCoord_0 = {0.0f, 0.0f},
         },
         AxrVertex{
-            .Position = {1.0f, 0.0f, 0.0f},
+            .Position = {0.0f, -1.0f, 0.0f},
             .Color = {1.0f, 1.0f, 1.0f},
-            .TexCoord_0 = {1.0f, 0.0f},
+            .TexCoord_0 = {0.0f, 1.0f},
+        },
+        AxrVertex{
+            .Position = {1.0f, -1.0f, 0.0f},
+            .Color = {1.0f, 1.0f, 1.0f},
+            .TexCoord_0 = {1.0f, 1.0f},
         },
     };
 

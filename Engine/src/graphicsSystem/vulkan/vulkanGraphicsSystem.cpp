@@ -1584,8 +1584,8 @@ void AxrVulkanGraphicsSystem::renderClayUI(
     float uiHeight = glm::distance(uiBottomLeft, uiTopLeft);
 
     auto uiTransform = AxrTransformComponent{
-        .Position = uiBottomLeft,
-        .Scale = glm::vec3(1.0f, 1.0f, 1.0f),
+        .Position = uiTopLeft,
+        .Scale = glm::vec3(uiWidth, uiHeight, 1.0f),
         .Orientation = cameraInfo.Orientation,
     };
 
@@ -1653,11 +1653,6 @@ void AxrVulkanGraphicsSystem::renderClayUI(
         }
 
         uint32_t bufferDataOffset = renderCommandIndex * uniformBufferAlignment;
-        uiTransform.Scale = glm::vec3(
-            uiWidth,
-            uiHeight,
-            1.0f
-        );
 
         auto pipelines = AxrVulkanRenderCommandPipelines{
             .WindowPipeline = *materialForRendering->WindowPipeline,

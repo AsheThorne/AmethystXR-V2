@@ -29,7 +29,7 @@ layout (location = 1) out vec2 fragTexCoord;
 void main() {
     vec3 position = vec3(
     (inPosition.x * (uiElement.size.x / uiCanvas.size.x)) + (uiElement.position.x / uiCanvas.size.x),
-    (inPosition.y * (uiElement.size.y / uiCanvas.size.y)) + (uiElement.position.y / uiCanvas.size.y),
+    (inPosition.y * (uiElement.size.y / uiCanvas.size.y)) - (uiElement.position.y / uiCanvas.size.y),
     inPosition.z
     );
 
