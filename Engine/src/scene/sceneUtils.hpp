@@ -3,7 +3,7 @@
 // ----------------------------------------- //
 // AXR Headers
 // ----------------------------------------- //
-#include "scene.hpp"
+#include "axr/scene.h"
 
 /// Get the matrix for the given transform component
 /// @param transformComponent Transform component
@@ -13,4 +13,5 @@
 /// Convert the given clay error type to a string
 /// @param errorType Clay error type
 /// @returns String equivalent
+// TODO: Move this out of here. it's not part of the scene
 [[nodiscard]] const char* axrToString(Clay_ErrorType errorType);

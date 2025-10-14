@@ -87,6 +87,20 @@ struct AxrMirrorPoseInputActionComponent {
     glm::quat OffsetOrientation;
 };
 
+// ----------------------------------------- //
+// External Function Definitions
+// ----------------------------------------- //
+extern "C" {
+    /// Get a transform component relative to a parent transform component
+    /// @param child The child transform component
+    /// @param parent The parent transform component
+    /// @returns The child transform component relative to the parent
+    AXR_API AxrTransformComponent axrTransformComponentRelativeTo(
+        const AxrTransformComponent* child,
+        const AxrTransformComponent* parent
+    );
+}
+
 // ---------------------------------------------------------------------------------- //
 //                                     UI Canvas                                      //
 // ---------------------------------------------------------------------------------- //

@@ -4,6 +4,33 @@
 #include "sceneUtils.hpp"
 
 // ----------------------------------------- //
+// External Functions
+// ----------------------------------------- //
+
+AxrTransformComponent axrTransformComponentRelativeTo(
+    const AxrTransformComponent* child,
+    const AxrTransformComponent* parent
+) {
+    if (child == nullptr) {
+        return AxrTransformComponent{};
+    }
+
+    if (parent == nullptr) {
+        return AxrTransformComponent{
+            .Position = child->Position,
+            .Scale = child->Scale,
+            .Orientation = child->Orientation,
+        };
+    }
+
+    return AxrTransformComponent{
+        .Position = parent->Position + (parent->Orientation * child->Position),
+        .Scale = parent->Scale * child->Scale,
+        .Orientation = parent->Orientation * child->Orientation,
+    };
+}
+
+// ----------------------------------------- //
 // Internal Functions
 // ----------------------------------------- //
 
