@@ -1580,12 +1580,12 @@ void AxrVulkanGraphicsSystem::renderClayUI(
     glm::vec3 uiTopLeft = inverseViewMatrix * glm::vec4(uiFrustumLeft, uiFrustumUp, uiDistance, 1.0f);
     glm::vec3 uiBottomLeft = inverseViewMatrix * glm::vec4(uiFrustumLeft, uiFrustumDown, uiDistance, 1.0f);
     glm::vec3 uiBottomRight = inverseViewMatrix * glm::vec4(uiFrustumRight, uiFrustumDown, uiDistance, 1.0f);
-    float uiWidth = glm::distance(uiBottomRight, uiBottomLeft);
-    float uiHeight = glm::distance(uiBottomLeft, uiTopLeft);
+    float canvasWidth = glm::distance(uiBottomRight, uiBottomLeft);
+    float canvasHeight = glm::distance(uiBottomLeft, uiTopLeft);
 
-    auto uiTransform = AxrTransformComponent{
+    auto canvasTransform = AxrTransformComponent{
         .Position = uiTopLeft,
-        .Scale = glm::vec3(uiWidth, uiHeight, 1.0f),
+        .Scale = glm::vec3(canvasWidth, canvasHeight, 1.0f),
         .Orientation = cameraInfo.Orientation,
     };
 
@@ -1653,6 +1653,21 @@ void AxrVulkanGraphicsSystem::renderClayUI(
         }
 
         uint32_t bufferDataOffset = renderCommandIndex * uniformBufferAlignment;
+        auto elementTransform = AxrTransformComponent{
+            .Position = glm::vec3(
+                canvasWidth * (clayRenderCommand.boundingBox.x / cameraInfo.PixelWidth),
+                -canvasHeight * (clayRenderCommand.boundingBox.y / cameraInfo.PixelHeight),
+                0.0f
+            ),
+            .Scale = glm::vec3(
+                clayRenderCommand.boundingBox.width / cameraInfo.PixelWidth,
+                clayRenderCommand.boundingBox.height / cameraInfo.PixelHeight,
+                1.0f
+            ),
+            .Orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+        };
+        // To world space
+        elementTransform = axrTransformComponentRelativeTo(&elementTransform, &canvasTransform);
 
         auto pipelines = AxrVulkanRenderCommandPipelines{
             .WindowPipeline = *materialForRendering->WindowPipeline,
@@ -1687,7 +1702,7 @@ void AxrVulkanGraphicsSystem::renderClayUI(
                 *materialForRendering->PipelineLayout,
                 mesh.PushConstantShaderStages,
                 mesh.PushConstantBufferName,
-                &uiTransform,
+                &elementTransform,
                 sceneData
             );
             renderCommands.draw(viewIndex, mesh);

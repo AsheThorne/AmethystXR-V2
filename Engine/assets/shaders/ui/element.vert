@@ -26,13 +26,7 @@ layout (location = 0) out vec2 fragPixelCoord;
 layout (location = 1) out vec2 fragTexCoord;
 
 void main() {
-    vec3 position = vec3(
-    (inPosition.x * (uiElement.size.x / uiCanvas.size.x)) + (uiElement.position.x / uiCanvas.size.x),
-    (inPosition.y * (uiElement.size.y / uiCanvas.size.y)) - (uiElement.position.y / uiCanvas.size.y),
-    inPosition.z
-    );
-
-    gl_Position = scene.viewProjectionMatrix * modelMatrix * vec4(position, 1.0);
+    gl_Position = scene.viewProjectionMatrix * modelMatrix * vec4(inPosition, 1.0);
     fragPixelCoord = inTexCoord * uiElement.size;
     fragTexCoord = inTexCoord;
 }
