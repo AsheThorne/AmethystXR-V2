@@ -966,38 +966,38 @@ struct alignas(16) AxrEngineAssetUniformBuffer_CameraData {
 
 /// Engine asset uniform buffer named 'UI Rectangle' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIRectangle {
-    // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-    alignas(8) glm::vec2 Position;
+    // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
     alignas(16) AxrUIRoundedCorners Corners;
+    float _padding[2];
 };
 
 /// Engine asset uniform buffer named 'UI Border' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIBorder {
-    // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-    alignas(8) glm::vec2 Position;
+    // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 Color;
     alignas(16) AxrUIRoundedCorners Corners;
     alignas(16) AxrUIBorders Borders;
+    float _padding[2];
 };
 
 /// Engine asset uniform buffer named 'UI Image' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
-    // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-    alignas(8) glm::vec2 Position;
+    // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
     alignas(16) AxrUIRoundedCorners Corners;
+    float _padding[2];
 };
 
 /// Engine asset uniform buffer named 'UI Text' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIText {
-    // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-    alignas(8) glm::vec2 Position;
+    // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 TextColor;
+    float _padding[2];
 };
 
 /// Engine asset uniform buffer for a general UI element.

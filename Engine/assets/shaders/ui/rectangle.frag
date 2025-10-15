@@ -10,7 +10,6 @@ struct RoundedCorners {
 layout (location = 0) in vec2 fragPixelCoord;
 
 layout (std140, binding = 1) uniform UIElement {
-    vec2 position;
     vec2 size;
     vec4 backgroundColor;
     RoundedCorners corners;

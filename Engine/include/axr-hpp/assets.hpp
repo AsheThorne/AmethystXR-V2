@@ -3327,11 +3327,11 @@ namespace axr {
         // ----------------------------------------- //
         // Public Variables
         // ----------------------------------------- //
-        // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-        alignas(8) glm::vec2 Position = {};
+        // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
         alignas(16) axr::UIRoundedCorners Corners = {};
+        float _padding[2] = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3343,17 +3343,14 @@ namespace axr {
         EngineAssetUniformBuffer_UIRectangle() = default;
 
         /// Constructor
-        /// @param position The UI element position
         /// @param size The UI element size
         /// @param backgroundColor The background color
         /// @param corners The rounded corners
         EngineAssetUniformBuffer_UIRectangle(
-            const glm::vec2& position,
             const glm::vec2& size,
             const glm::vec4& backgroundColor,
             const axr::UIRoundedCorners& corners
-        ): Position(position),
-            Size(size),
+        ): Size(size),
             BackgroundColor(backgroundColor),
             Corners(corners) {
         }
@@ -3385,12 +3382,12 @@ namespace axr {
         // ----------------------------------------- //
         // Public Variables
         // ----------------------------------------- //
-        // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-        alignas(8) glm::vec2 Position = {};
+        // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 Color = {};
         alignas(16) axr::UIRoundedCorners Corners = {};
         alignas(16) axr::UIBorders Borders = {};
+        float _padding[2] = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3402,19 +3399,16 @@ namespace axr {
         EngineAssetUniformBuffer_UIBorder() = default;
 
         /// Constructor
-        /// @param position The UI element position
         /// @param size The UI element size
         /// @param color The color
         /// @param corners The rounded corners
         /// @param borders The border thicknesses
         EngineAssetUniformBuffer_UIBorder(
-            const glm::vec2& position,
             const glm::vec2& size,
             const glm::vec4& color,
             const axr::UIRoundedCorners& corners,
             const axr::UIBorders& borders
-        ): Position(position),
-            Size(size),
+        ): Size(size),
             Color(color),
             Corners(corners),
             Borders(borders) {
@@ -3447,11 +3441,11 @@ namespace axr {
         // ----------------------------------------- //
         // Public Variables
         // ----------------------------------------- //
-        // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-        alignas(8) glm::vec2 Position = {};
+        // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
         alignas(16) axr::UIRoundedCorners Corners = {};
+        float _padding[2] = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3463,17 +3457,14 @@ namespace axr {
         EngineAssetUniformBuffer_UIImage() = default;
 
         /// Constructor
-        /// @param position The UI element position
         /// @param size The UI element size
         /// @param backgroundColor The background color
         /// @param corners The rounded corners
         EngineAssetUniformBuffer_UIImage(
-            const glm::vec2& position,
             const glm::vec2& size,
             const glm::vec4& backgroundColor,
             const axr::UIRoundedCorners& corners
-        ): Position(position),
-            Size(size),
+        ): Size(size),
             BackgroundColor(backgroundColor),
             Corners(corners) {
         }
@@ -3505,10 +3496,10 @@ namespace axr {
         // ----------------------------------------- //
         // Public Variables
         // ----------------------------------------- //
-        // Every element MUST start with `position` and `size` since they're used in the vertex shader that all ui elements use
-        alignas(8) glm::vec2 Position = {};
+        // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 TextColor = {};
+        float _padding[2] = {};
 
         // ----------------------------------------- //
         // Special Functions
@@ -3520,15 +3511,12 @@ namespace axr {
         EngineAssetUniformBuffer_UIText() = default;
 
         /// Constructor
-        /// @param position The UI element position
         /// @param size The UI element size
         /// @param textColor The text color
         EngineAssetUniformBuffer_UIText(
-            const glm::vec2& position,
             const glm::vec2& size,
             const glm::vec4& textColor
-        ): Position(position),
-            Size(size),
+        ): Size(size),
             TextColor(textColor) {
         }
 

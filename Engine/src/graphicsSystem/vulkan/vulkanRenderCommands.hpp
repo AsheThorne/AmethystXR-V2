@@ -202,10 +202,6 @@ public:
                         uiElements.emplace_back(
                             AxrEngineAssetUniformBuffer_UIElement{
                                 .Rectangle = AxrEngineAssetUniformBuffer_UIRectangle{
-                                    .Position = glm::vec2(
-                                        clayRenderCommand.boundingBox.x,
-                                        clayRenderCommand.boundingBox.y
-                                    ),
                                     .Size = glm::vec2(
                                         clayRenderCommand.boundingBox.width,
                                         clayRenderCommand.boundingBox.height
@@ -233,10 +229,6 @@ public:
                         uiElements.emplace_back(
                             AxrEngineAssetUniformBuffer_UIElement{
                                 .Border = AxrEngineAssetUniformBuffer_UIBorder{
-                                    .Position = glm::vec2(
-                                        clayRenderCommand.boundingBox.x,
-                                        clayRenderCommand.boundingBox.y
-                                    ),
                                     .Size = glm::vec2(
                                         clayRenderCommand.boundingBox.width,
                                         clayRenderCommand.boundingBox.height
@@ -270,10 +262,6 @@ public:
                         uiElements.emplace_back(
                             AxrEngineAssetUniformBuffer_UIElement{
                                 .Text = AxrEngineAssetUniformBuffer_UIText{
-                                    .Position = glm::vec2(
-                                        clayRenderCommand.boundingBox.x,
-                                        clayRenderCommand.boundingBox.y
-                                    ),
                                     .Size = glm::vec2(
                                         clayRenderCommand.boundingBox.width,
                                         clayRenderCommand.boundingBox.height
@@ -296,10 +284,6 @@ public:
                         uiElements.emplace_back(
                             AxrEngineAssetUniformBuffer_UIElement{
                                 .Image = AxrEngineAssetUniformBuffer_UIImage{
-                                    .Position = glm::vec2(
-                                        clayRenderCommand.boundingBox.x,
-                                        clayRenderCommand.boundingBox.y
-                                    ),
                                     .Size = glm::vec2(
                                         clayRenderCommand.boundingBox.width,
                                         clayRenderCommand.boundingBox.height

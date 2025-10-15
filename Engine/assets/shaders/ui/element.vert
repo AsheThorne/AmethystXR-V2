@@ -14,7 +14,6 @@ layout (std140, binding = 0) uniform SceneData {
 } scene;
 
 layout (std140, binding = 1) uniform UIElement {
-    vec2 position;
     vec2 size;
 } uiElement;
 

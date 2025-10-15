@@ -11,7 +11,6 @@ layout (location = 0) in vec2 fragPixelCoord;
 layout (location = 1) in vec2 fragTexCoord;
 
 layout (std140, binding = 1) uniform UIElement {
-    vec2 position;
     vec2 size;
     vec4 backgroundColor;
     RoundedCorners corners;
