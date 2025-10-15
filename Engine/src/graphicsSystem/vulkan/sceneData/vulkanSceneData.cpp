@@ -1595,10 +1595,17 @@ AxrResult AxrVulkanSceneData::initializeFontData(const AxrFont& font, AxrVulkanF
         .MaterialLayoutData = foundMaterialLayoutData,
         .MaxFramesInFlight = m_MaxFramesInFlight,
         .Device = m_Device,
+        .PhysicalDevice = m_PhysicalDevice,
+        .TransferCommandPool = m_TransferCommandPool,
+        .TransferQueue = m_TransferQueue,
         .DispatchHandle = m_DispatchHandle,
     };
 
     fontData = AxrVulkanFontData(fontDataConfig);
+
+    fontData.FindUniformBufferCallback.connect<&AxrVulkanSceneData::findUniformBufferData_shared>(this);
+    fontData.FindImageSamplerCallback.connect<&AxrVulkanSceneData::findImageSamplerData_shared>(this);
+    fontData.FindImageCallback.connect<&AxrVulkanSceneData::findImageData_shared>(this);
 
     return AXR_SUCCESS;
 }

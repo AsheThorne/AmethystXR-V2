@@ -901,6 +901,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA = 65,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA = 66,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS = 67,
+    AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS = 68,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_END = 96,
 
     // ---- Push Constant Buffers - Max of 32 ----
@@ -967,6 +968,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_CameraData {
 /// Engine asset uniform buffer named 'UI Rectangle' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIRectangle {
     // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+    /// Size in pixels
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
     alignas(16) AxrUIRoundedCorners Corners;
@@ -976,6 +978,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIRectangle {
 /// Engine asset uniform buffer named 'UI Border' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIBorder {
     // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+    /// Size in pixels
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 Color;
     alignas(16) AxrUIRoundedCorners Corners;
@@ -986,6 +989,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIBorder {
 /// Engine asset uniform buffer named 'UI Image' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
     // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+    /// Size in pixels
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 BackgroundColor;
     alignas(16) AxrUIRoundedCorners Corners;
@@ -995,6 +999,7 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIImage {
 /// Engine asset uniform buffer named 'UI Text' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIText {
     // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+    /// Size in pixels
     alignas(8) glm::vec2 Size;
     alignas(16) glm::vec4 TextColor;
     float _padding[2];
@@ -1006,6 +1011,14 @@ union AxrEngineAssetUniformBuffer_UIElement {
     AxrEngineAssetUniformBuffer_UIBorder Border;
     AxrEngineAssetUniformBuffer_UIImage Image;
     AxrEngineAssetUniformBuffer_UIText Text;
+};
+
+/// Engine asset uniform buffer named 'UI Glyphs' structure
+struct alignas(16) AxrEngineAssetUniformBuffer_UIGlyph {
+    /// Size in pixels
+    alignas(8) glm::vec2 Size;
+    /// Normalized offset (0 - 1)
+    alignas(8) glm::vec2 AtlasOffset;
 };
 
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN

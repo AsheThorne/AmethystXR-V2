@@ -449,6 +449,7 @@ AxrResult AxrApplication::setupClay() {
     // have a max of 65536 / 256 = 256 elements.
     // NOTE: If we need more than we should use a dynamic storage buffer instead of a dynamic uniform buffer.
     //  Or we just accept having a max of 128 elements instead (65536 / 512 = 128).
+    // TODO: Change this to 1028. And implement a fallback in case the dynamic uniform buffer doesn't support it.
     Clay_SetMaxElementCount(256);
     static_assert(
         sizeof(AxrEngineAssetUniformBuffer_UIElement) <= 256,

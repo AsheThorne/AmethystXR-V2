@@ -178,8 +178,6 @@ const void* AxrUniformBuffer::getData() const {
     return m_Data;
 }
 
-// ---- Private Functions ----
-
 void AxrUniformBuffer::cleanup() {
     destroyData(m_DataSize, m_Data);
 
@@ -188,3 +186,5 @@ void AxrUniformBuffer::cleanup() {
     m_InstanceCount = 0;
     m_InstanceSize = 0;
 }
+
+// ---- Private Functions ----

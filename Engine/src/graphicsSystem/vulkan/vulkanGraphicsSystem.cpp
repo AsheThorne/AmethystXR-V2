@@ -1595,6 +1595,12 @@ void AxrVulkanGraphicsSystem::renderClayUI(
          ++renderCommandIndex
     ) {
         const AxrVulkanMaterialForRendering* materialForRendering = nullptr;
+        uint32_t uiElementUniformBufferDataOffset = renderCommandIndex * uniformBufferAlignment;
+
+        std::vector<uint32_t> dynamicUniformBufferOffsets{
+            uiElementUniformBufferDataOffset,
+        };
+
         const Clay_RenderCommand clayRenderCommand =
             uiCanvasConfig.ClayRenderCommands.internalArray[renderCommandIndex];
 
@@ -1614,6 +1620,10 @@ void AxrVulkanGraphicsSystem::renderClayUI(
                 materialForRendering = sceneData->getUITextMaterialForRendering(
                     clayRenderCommand.renderData.text.fontId
                 );
+
+                // TODO: Get the correct buffer offset
+                uint32_t uiGlyphUniformBufferDataOffset = 0;
+                dynamicUniformBufferOffsets.push_back(uiGlyphUniformBufferDataOffset);
                 break;
             }
             case CLAY_RENDER_COMMAND_TYPE_IMAGE: {
@@ -1652,23 +1662,6 @@ void AxrVulkanGraphicsSystem::renderClayUI(
             continue;
         }
 
-        uint32_t bufferDataOffset = renderCommandIndex * uniformBufferAlignment;
-        auto elementTransform = AxrTransformComponent{
-            .Position = glm::vec3(
-                canvasWidth * (clayRenderCommand.boundingBox.x / cameraInfo.PixelWidth),
-                -canvasHeight * (clayRenderCommand.boundingBox.y / cameraInfo.PixelHeight),
-                0.0f
-            ),
-            .Scale = glm::vec3(
-                clayRenderCommand.boundingBox.width / cameraInfo.PixelWidth,
-                clayRenderCommand.boundingBox.height / cameraInfo.PixelHeight,
-                1.0f
-            ),
-            .Orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
-        };
-        // To world space
-        elementTransform = axrTransformComponentRelativeTo(&elementTransform, &canvasTransform);
-
         auto pipelines = AxrVulkanRenderCommandPipelines{
             .WindowPipeline = *materialForRendering->WindowPipeline,
             .XrSessionPipeline = *materialForRendering->XrSessionPipeline,
@@ -1691,21 +1684,78 @@ void AxrVulkanGraphicsSystem::renderClayUI(
                 .WindowDescriptorSets = *materialForRendering->WindowDescriptorSets,
                 .XrSessionDescriptorSets = *materialForRendering->XrSessionDescriptorSets,
             },
-            std::vector{
-                bufferDataOffset,
-            }
+            dynamicUniformBufferOffsets
         );
 
-        for (const AxrVulkanMeshForRendering& mesh : materialForRendering->Meshes) {
-            renderCommands.pushConstants(
-                viewIndex,
-                *materialForRendering->PipelineLayout,
-                mesh.PushConstantShaderStages,
-                mesh.PushConstantBufferName,
-                &elementTransform,
-                sceneData
-            );
-            renderCommands.draw(viewIndex, mesh);
+        if (clayRenderCommand.commandType == CLAY_RENDER_COMMAND_TYPE_TEXT) {
+            // TODO: Get the font
+
+            float currentTextWidth = 0.0f;
+            for (int i = 0; i < clayRenderCommand.renderData.text.stringContents.length; ++i) {
+                // TODO: Get the font glyph dimensions
+                float glyphWidth = clayRenderCommand.renderData.text.fontSize;
+                float glyphHeight = clayRenderCommand.renderData.text.fontSize;
+
+                auto elementTransform = AxrTransformComponent{
+                    .Position = glm::vec3(
+                        canvasWidth * ((clayRenderCommand.boundingBox.x + currentTextWidth) / cameraInfo.PixelWidth),
+                        -canvasHeight * (clayRenderCommand.boundingBox.y / cameraInfo.PixelHeight),
+                        0.0f
+                    ),
+                    .Scale = glm::vec3(
+                        glyphWidth / cameraInfo.PixelWidth,
+                        glyphHeight / cameraInfo.PixelHeight,
+                        1.0f
+                    ),
+                    .Orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+                };
+                // To world space
+                elementTransform = axrTransformComponentRelativeTo(&elementTransform, &canvasTransform);
+                currentTextWidth += glyphWidth;
+
+                // Skip rendering 'spaces'
+                if (clayRenderCommand.renderData.text.stringContents.chars[i] == ' ') continue;
+
+                for (const AxrVulkanMeshForRendering& mesh : materialForRendering->Meshes) {
+                    renderCommands.pushConstants(
+                        viewIndex,
+                        *materialForRendering->PipelineLayout,
+                        mesh.PushConstantShaderStages,
+                        mesh.PushConstantBufferName,
+                        &elementTransform,
+                        sceneData
+                    );
+                    renderCommands.draw(viewIndex, mesh);
+                }
+            }
+        } else {
+            auto elementTransform = AxrTransformComponent{
+                .Position = glm::vec3(
+                    canvasWidth * (clayRenderCommand.boundingBox.x / cameraInfo.PixelWidth),
+                    -canvasHeight * (clayRenderCommand.boundingBox.y / cameraInfo.PixelHeight),
+                    0.0f
+                ),
+                .Scale = glm::vec3(
+                    clayRenderCommand.boundingBox.width / cameraInfo.PixelWidth,
+                    clayRenderCommand.boundingBox.height / cameraInfo.PixelHeight,
+                    1.0f
+                ),
+                .Orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+            };
+            // To world space
+            elementTransform = axrTransformComponentRelativeTo(&elementTransform, &canvasTransform);
+
+            for (const AxrVulkanMeshForRendering& mesh : materialForRendering->Meshes) {
+                renderCommands.pushConstants(
+                    viewIndex,
+                    *materialForRendering->PipelineLayout,
+                    mesh.PushConstantShaderStages,
+                    mesh.PushConstantBufferName,
+                    &elementTransform,
+                    sceneData
+                );
+                renderCommands.draw(viewIndex, mesh);
+            }
         }
     }
 }

@@ -117,6 +117,10 @@ AxrResult axrEngineAssetCreateUniformBuffer_CameraData(AxrUniformBuffer& uniform
 /// @param uniformBuffer Output created uniform buffer
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateUniformBuffer_UIElements(AxrUniformBuffer& uniformBuffer);
+/// Create the 'UI Glyphs' engine asset uniform buffer
+/// @param uniformBuffer Output created uniform buffer
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateUniformBuffer_UIGlyphs(AxrUniformBuffer& uniformBuffer);
 
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
 // ---------------------------------------------------------------------------------- //

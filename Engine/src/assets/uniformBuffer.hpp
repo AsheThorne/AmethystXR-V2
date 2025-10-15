@@ -91,6 +91,9 @@ public:
     /// @returns The buffer data
     [[nodiscard]] const void* getData() const;
 
+    /// Cleanup the uniform buffer class
+    void cleanup();
+
 private:
     // ----------------------------------------- //
     // Private Variables
@@ -107,7 +110,4 @@ private:
     // ----------------------------------------- //
     // Private Functions
     // ----------------------------------------- //
-
-    /// Cleanup the uniform buffer class
-    void cleanup();
 };

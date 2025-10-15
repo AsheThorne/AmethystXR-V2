@@ -31,6 +31,18 @@ AxrVulkanFontData::AxrVulkanFontData(const Config& config):
             }
         );
         setMaterialDataCallbacks();
+
+        m_GlyphUniformBufferData = AxrVulkanUniformBufferData(
+            AxrVulkanUniformBufferData::Config{
+                .UniformBufferHandle = &m_FontHandle->getGlyphUniformBuffer(),
+                .MaxFramesInFlight = config.MaxFramesInFlight,
+                .PhysicalDevice = config.PhysicalDevice,
+                .Device = m_Device,
+                .TransferCommandPool = config.TransferCommandPool,
+                .TransferQueue = config.TransferQueue,
+                .DispatchHandle = m_DispatchHandle,
+            }
+        );
     }
 }
 
@@ -39,6 +51,7 @@ AxrVulkanFontData::AxrVulkanFontData(AxrVulkanFontData&& src) noexcept {
     FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
     FindImageCallback = std::move(src.FindImageCallback);
     m_MaterialData = std::move(src.m_MaterialData);
+    m_GlyphUniformBufferData = std::move(src.m_GlyphUniformBufferData);
 
     // We need to set these again because 'this' changed
     setMaterialDataCallbacks();
@@ -64,6 +77,7 @@ AxrVulkanFontData& AxrVulkanFontData::operator=(AxrVulkanFontData&& src) noexcep
         FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
         FindImageCallback = std::move(src.FindImageCallback);
         m_MaterialData = std::move(src.m_MaterialData);
+        m_GlyphUniformBufferData = std::move(src.m_GlyphUniformBufferData);
 
         // We need to set these again because 'this' changed
         setMaterialDataCallbacks();
@@ -101,8 +115,13 @@ const AxrVulkanMaterialData& AxrVulkanFontData::getMaterialData() const {
     return m_MaterialData;
 }
 
+const AxrVulkanUniformBufferData& AxrVulkanFontData::getGlyphUniformBufferData() const {
+    return m_GlyphUniformBufferData;
+}
+
 bool AxrVulkanFontData::doesDataExist() const {
-    return m_MaterialData.doesDataExist();
+    return m_MaterialData.doesDataExist() &&
+        m_GlyphUniformBufferData.doesDataExist();
 }
 
 bool AxrVulkanFontData::doesWindowDataExist() const {
@@ -114,11 +133,26 @@ bool AxrVulkanFontData::doesXrSessionDataExist() const {
 }
 
 AxrResult AxrVulkanFontData::createData() {
-    return m_MaterialData.createData();
+    AxrResult axrResult = AXR_SUCCESS;
+
+    axrResult = m_GlyphUniformBufferData.createData();
+    if (AXR_FAILED(axrResult)) {
+        destroyData();
+        return axrResult;
+    }
+
+    axrResult = m_MaterialData.createData();
+    if (AXR_FAILED(axrResult)) {
+        destroyData();
+        return axrResult;
+    }
+
+    return AXR_SUCCESS;
 }
 
 void AxrVulkanFontData::destroyData() {
     m_MaterialData.destroyData();
+    m_GlyphUniformBufferData.destroyData();
 }
 
 AxrResult AxrVulkanFontData::createWindowData(

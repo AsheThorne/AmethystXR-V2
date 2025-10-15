@@ -8,11 +8,16 @@ layout (std140, binding = 1) uniform UIElement {
     vec4 textColor;
 } uiElement;
 
-layout (binding = 2) uniform sampler2D texSampler;
+layout (std140, binding = 2) uniform UIGlyph {
+    vec2 size;
+    vec2 atlasOffset;
+} uiGlyph;
+
+layout (binding = 3) uniform sampler2D texAtlas;
 
 layout (location = 0) out vec4 outColor;
 
 void main() {
-    vec4 texColor = texture(texSampler, fragTexCoord);
+    vec4 texColor = texture(texAtlas, fragTexCoord);
     outColor = texColor;
 }

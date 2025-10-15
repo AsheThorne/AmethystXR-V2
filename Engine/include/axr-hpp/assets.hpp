@@ -3169,6 +3169,7 @@ namespace axr {
         UniformBufferSceneData = AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA,
         UniformBufferCameraData = AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA,
         UniformBufferUIElements = AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
+        UniformBufferUIGlyphs = AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS,
         UniformBufferEnd = AXR_ENGINE_ASSET_UNIFORM_BUFFER_END,
 
         // ---- Push Constant Buffers ----
@@ -3328,6 +3329,7 @@ namespace axr {
         // Public Variables
         // ----------------------------------------- //
         // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+        /// Size in pixels
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
         alignas(16) axr::UIRoundedCorners Corners = {};
@@ -3343,7 +3345,7 @@ namespace axr {
         EngineAssetUniformBuffer_UIRectangle() = default;
 
         /// Constructor
-        /// @param size The UI element size
+        /// @param size The UI element size in pixels
         /// @param backgroundColor The background color
         /// @param corners The rounded corners
         EngineAssetUniformBuffer_UIRectangle(
@@ -3383,6 +3385,7 @@ namespace axr {
         // Public Variables
         // ----------------------------------------- //
         // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+        /// Size in pixels
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 Color = {};
         alignas(16) axr::UIRoundedCorners Corners = {};
@@ -3399,7 +3402,7 @@ namespace axr {
         EngineAssetUniformBuffer_UIBorder() = default;
 
         /// Constructor
-        /// @param size The UI element size
+        /// @param size The UI element size in pixels
         /// @param color The color
         /// @param corners The rounded corners
         /// @param borders The border thicknesses
@@ -3442,6 +3445,7 @@ namespace axr {
         // Public Variables
         // ----------------------------------------- //
         // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+        /// Size in pixels
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 BackgroundColor = {};
         alignas(16) axr::UIRoundedCorners Corners = {};
@@ -3457,7 +3461,7 @@ namespace axr {
         EngineAssetUniformBuffer_UIImage() = default;
 
         /// Constructor
-        /// @param size The UI element size
+        /// @param size The UI element size in pixels
         /// @param backgroundColor The background color
         /// @param corners The rounded corners
         EngineAssetUniformBuffer_UIImage(
@@ -3497,6 +3501,7 @@ namespace axr {
         // Public Variables
         // ----------------------------------------- //
         // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+        /// Size in pixels
         alignas(8) glm::vec2 Size = {};
         alignas(16) glm::vec4 TextColor = {};
         float _padding[2] = {};
@@ -3511,7 +3516,7 @@ namespace axr {
         EngineAssetUniformBuffer_UIText() = default;
 
         /// Constructor
-        /// @param size The UI element size
+        /// @param size The UI element size in pixels
         /// @param textColor The text color
         EngineAssetUniformBuffer_UIText(
             const glm::vec2& size,
@@ -3544,6 +3549,57 @@ namespace axr {
 
     /// Engine asset uniform buffer for a general UI element.
     using EngineAssetUniformBuffer_UIElement = AxrEngineAssetUniformBuffer_UIElement;
+
+    /// Engine asset uniform buffer named 'UI Glyphs' structure
+    struct alignas(16) EngineAssetUniformBuffer_UIGlyph {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        // Every element MUST start with `size` since it's used in the vertex shader that all ui elements use
+        /// Size in pixels
+        alignas(8) glm::vec2 Size = {};
+        /// Normalized offset (0 - 1)
+        alignas(8) glm::vec2 AtlasOffset = {};
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default Constructor
+        EngineAssetUniformBuffer_UIGlyph() = default;
+
+        /// Constructor
+        /// @param size The UI element size in pixels
+        /// @param atlasOffset The atlas offset normalized (0 - 1)
+        EngineAssetUniformBuffer_UIGlyph(
+            const glm::vec2& size,
+            const glm::vec2& atlasOffset
+        ): Size(size),
+            AtlasOffset(atlasOffset) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the EngineAssetUniformBuffer_UIGlyph as an AxrEngineAssetUniformBuffer_UIGlyph
+        /// @returns This as an AxrEngineAssetUniformBuffer_UIGlyph
+        const AxrEngineAssetUniformBuffer_UIGlyph* toRaw() const {
+            return reinterpret_cast<const AxrEngineAssetUniformBuffer_UIGlyph*>(this);
+        }
+
+        /// Get a handle to the EngineAssetUniformBuffer_UIGlyph as an AxrEngineAssetUniformBuffer_UIGlyph
+        /// @returns This as an AxrEngineAssetUniformBuffer_UIGlyph
+        AxrEngineAssetUniformBuffer_UIGlyph* toRaw() {
+            return reinterpret_cast<AxrEngineAssetUniformBuffer_UIGlyph*>(this);
+        }
+    };
+
+    static_assert(
+        sizeof(AxrEngineAssetUniformBuffer_UIGlyph) == sizeof(axr::EngineAssetUniformBuffer_UIGlyph),
+        "Original type and wrapper have different size!"
+    );
 
     // ---- Push Constant Buffers ----
 

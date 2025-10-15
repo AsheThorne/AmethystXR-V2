@@ -494,11 +494,11 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                                 },
                                 // TODO: get the font ID
                                 .fontId = 0,
-                                .fontSize = 16,
+                                .fontSize = 14,
                             }
                         );
                         Clay__OpenTextElement(
-                            CLAY_STRING("Clay - UI Library"),
+                            CLAY_STRING("Sphinx of black quartz, judge my vow!"),
                             textElementConfig
                         );
                     }

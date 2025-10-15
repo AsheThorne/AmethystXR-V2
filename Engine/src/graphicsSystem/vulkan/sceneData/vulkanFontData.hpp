@@ -59,6 +59,9 @@ public:
         const AxrVulkanMaterialLayoutData* MaterialLayoutData;
         uint32_t MaxFramesInFlight;
         vk::Device Device;
+        vk::PhysicalDevice PhysicalDevice;
+        vk::CommandPool TransferCommandPool;
+        vk::Queue TransferQueue;
         vk::DispatchLoaderDynamic* DispatchHandle;
     };
 
@@ -107,6 +110,9 @@ public:
     /// Get the font's material data
     /// @returns The font's material data
     [[nodiscard]] const AxrVulkanMaterialData& getMaterialData() const;
+    /// Get the font's glyph uniform buffer data
+    /// @returns The font's glyph uniform buffer data
+    [[nodiscard]] const AxrVulkanUniformBufferData& getGlyphUniformBufferData() const;
 
     /// Check if the data exists
     /// @returns True if the data exists
@@ -162,6 +168,7 @@ private:
     /// This should never be used for anything other than returning a reference to the name if no name can be found.
     std::string m_DummyName;
     AxrVulkanMaterialData m_MaterialData = {};
+    AxrVulkanUniformBufferData m_GlyphUniformBufferData = {};
 
     // ----------------------------------------- //
     // Private Functions

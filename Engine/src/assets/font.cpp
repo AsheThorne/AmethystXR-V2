@@ -66,6 +66,13 @@ AxrFont::AxrFont(const AxrFontConfig& config, const uint16_t id):
     } else {
         m_Material = std::move(material);
     }
+
+    AxrUniformBuffer glyphUniformBuffer;
+    if (AXR_FAILED(axrEngineAssetCreateUniformBuffer(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS, glyphUniformBuffer))) {
+        axrLogErrorLocation("Glyph uniform buffer is invalid.");
+    } else {
+        m_GlyphUniformBuffer = std::move(glyphUniformBuffer);
+    }
 }
 
 AxrFont::AxrFont(const AxrFont& src) {
@@ -75,13 +82,8 @@ AxrFont::AxrFont(const AxrFont& src) {
     m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
     m_ID = src.m_ID;
     m_Material = src.m_Material;
-    m_Type = src.m_Type;
-    m_AtlasWidth = src.m_AtlasWidth;
-    m_AtlasHeight = src.m_AtlasHeight;
-    m_LineHeight = src.m_LineHeight;
-    m_UnderlineY = src.m_UnderlineY;
-    m_UnderlineThickness = src.m_UnderlineThickness;
-    m_Glyphs = src.m_Glyphs;
+    m_GlyphUniformBuffer = src.m_GlyphUniformBuffer;
+    m_Data = src.m_Data;
 }
 
 AxrFont::AxrFont(AxrFont&& src) noexcept {
@@ -90,23 +92,12 @@ AxrFont::AxrFont(AxrFont&& src) noexcept {
     m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
     m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
     m_Material = std::move(src.m_Material);
-    m_Glyphs = std::move(src.m_Glyphs);
+    m_GlyphUniformBuffer = std::move(src.m_GlyphUniformBuffer);
+    m_Data = std::move(src.m_Data);
 
     m_ID = src.m_ID;
-    m_Type = src.m_Type;
-    m_AtlasWidth = src.m_AtlasWidth;
-    m_AtlasHeight = src.m_AtlasHeight;
-    m_LineHeight = src.m_LineHeight;
-    m_UnderlineY = src.m_UnderlineY;
-    m_UnderlineThickness = src.m_UnderlineThickness;
 
     src.m_ID = 0;
-    src.m_Type = Type::Undefined;
-    src.m_AtlasWidth = 0;
-    src.m_AtlasHeight = 0;
-    src.m_LineHeight = 0.0f;
-    src.m_UnderlineY = 0.0f;
-    src.m_UnderlineThickness = 0.0f;
 }
 
 AxrFont::~AxrFont() {
@@ -123,13 +114,8 @@ AxrFont& AxrFont::operator=(const AxrFont& src) {
         m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
         m_ID = src.m_ID;
         m_Material = src.m_Material;
-        m_Type = src.m_Type;
-        m_AtlasWidth = src.m_AtlasWidth;
-        m_AtlasHeight = src.m_AtlasHeight;
-        m_LineHeight = src.m_LineHeight;
-        m_UnderlineY = src.m_UnderlineY;
-        m_UnderlineThickness = src.m_UnderlineThickness;
-        m_Glyphs = src.m_Glyphs;
+        m_GlyphUniformBuffer = src.m_GlyphUniformBuffer;
+        m_Data = src.m_Data;
     }
 
     return *this;
@@ -144,23 +130,12 @@ AxrFont& AxrFont::operator=(AxrFont&& src) noexcept {
         m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
         m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
         m_Material = std::move(src.m_Material);
-        m_Glyphs = std::move(src.m_Glyphs);
+        m_GlyphUniformBuffer = std::move(src.m_GlyphUniformBuffer);
+        m_Data = std::move(src.m_Data);
 
         m_ID = src.m_ID;
-        m_Type = src.m_Type;
-        m_AtlasWidth = src.m_AtlasWidth;
-        m_AtlasHeight = src.m_AtlasHeight;
-        m_LineHeight = src.m_LineHeight;
-        m_UnderlineY = src.m_UnderlineY;
-        m_UnderlineThickness = src.m_UnderlineThickness;
 
         src.m_ID = 0;
-        src.m_Type = Type::Undefined;
-        src.m_AtlasWidth = 0;
-        src.m_AtlasHeight = 0;
-        src.m_LineHeight = 0.0f;
-        src.m_UnderlineY = 0.0f;
-        src.m_UnderlineThickness = 0.0f;
     }
 
     return *this;
@@ -180,12 +155,12 @@ const AxrMaterial& AxrFont::getMaterial() const {
     return m_Material;
 }
 
+const AxrUniformBuffer& AxrFont::getGlyphUniformBuffer() const {
+    return m_GlyphUniformBuffer;
+}
+
 bool AxrFont::isLoaded() const {
-    return m_Type != Type::Undefined &&
-        m_AtlasWidth != 0 &&
-        m_AtlasHeight != 0 &&
-        m_LineHeight != 0.0f &&
-        !m_Glyphs.empty();
+    return m_Data.isValid();
 }
 
 AxrResult AxrFont::loadFile() const {
@@ -239,21 +214,23 @@ AxrResult AxrFont::loadFile() const {
         return readDataError(file);
     }
 
+    Data fontData;
+
     const std::string& atlasType = atlas.value("type", "");
     if (atlasType == "msdf") {
-        m_Type = Type::MSDF;
+        fontData.Type = Type::MSDF;
     } else if (atlasType == "mtsdf") {
-        m_Type = Type::MTSDF;
+        fontData.Type = Type::MTSDF;
     } else {
         return readDataError(file);
     }
 
-    m_AtlasWidth = atlas.value("width", 0);
-    m_AtlasHeight = atlas.value("height", 0);
+    fontData.AtlasWidth = atlas.value("width", 0);
+    fontData.AtlasHeight = atlas.value("height", 0);
 
-    m_LineHeight = metrics.value("lineHeight", 0.0f);
-    m_UnderlineY = metrics.value("underlineY", 0.0f);
-    m_UnderlineThickness = metrics.value("underlineThickness", 0.0f);
+    fontData.LineHeight = metrics.value("lineHeight", 0.0f);
+    fontData.UnderlineY = metrics.value("underlineY", 0.0f);
+    fontData.UnderlineThickness = metrics.value("underlineThickness", 0.0f);
 
     AxrResult axrResult = AXR_SUCCESS;
     for (const json& glyph : glyphs) {
@@ -274,7 +251,7 @@ AxrResult AxrFont::loadFile() const {
         };
 
         uint32_t unicode = glyph.value("unicode", 0);
-        m_Glyphs.emplace(
+        fontData.Glyphs.emplace(
             std::pair(
                 unicode,
                 Glyph{
@@ -286,10 +263,10 @@ AxrResult AxrFont::loadFile() const {
                         .Bottom = atlasBoundsData.Bottom,
                     },
                     .AtlasUVBounds = {
-                        .Left = atlasBoundsData.Left / static_cast<float>(m_AtlasWidth),
-                        .Right = atlasBoundsData.Right / static_cast<float>(m_AtlasWidth),
-                        .Top = atlasBoundsData.Top / static_cast<float>(m_AtlasHeight),
-                        .Bottom = atlasBoundsData.Bottom / static_cast<float>(m_AtlasHeight),
+                        .Left = atlasBoundsData.Left / static_cast<float>(fontData.AtlasWidth),
+                        .Right = atlasBoundsData.Right / static_cast<float>(fontData.AtlasWidth),
+                        .Top = atlasBoundsData.Top / static_cast<float>(fontData.AtlasHeight),
+                        .Bottom = atlasBoundsData.Bottom / static_cast<float>(fontData.AtlasHeight),
                     },
                 }
             )
@@ -300,18 +277,13 @@ AxrResult AxrFont::loadFile() const {
     }
 
     file.close();
+    m_Data = std::move(fontData);
 
     return AXR_SUCCESS;
 }
 
 void AxrFont::unloadFile() const {
-    m_Type = Type::Undefined;
-    m_AtlasWidth = 0;
-    m_AtlasHeight = 0;
-    m_LineHeight = 0.0f;
-    m_UnderlineY = 0.0f;
-    m_UnderlineThickness = 0.0f;
-    m_Glyphs.clear();
+    m_Data.cleanup();
 }
 
 // ---- Private Functions ----
@@ -325,4 +297,5 @@ void AxrFont::cleanup() {
     m_AtlasLayoutFilePath.clear();
     m_ID = 0;
     m_Material.cleanup();
+    m_GlyphUniformBuffer.cleanup();
 }
