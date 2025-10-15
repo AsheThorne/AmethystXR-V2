@@ -34,7 +34,6 @@ AxrVulkanSceneData::AxrVulkanSceneData(const Config& config):
         {
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA,
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA,
-            AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS,
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         }
     ),

@@ -96,10 +96,6 @@ const std::unordered_map EngineAssetUniformBufferNames{
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "CameraData"
     ),
     std::pair(
-        AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS,
-        AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "UICanvas"
-    ),
-    std::pair(
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "UIElements"
     ),
@@ -266,9 +262,6 @@ uint64_t axrEngineAssetGetUniformBufferSize(const AxrEngineAssetEnum engineAsset
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
             return sizeof(AxrEngineAssetUniformBuffer_CameraData);
         }
-        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
-            return sizeof(AxrEngineAssetUniformBuffer_UICanvas);
-        }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
             if (Clay_GetCurrentContext() == nullptr) {
                 axrLogWarningLocation("Clay context is null.");
@@ -297,9 +290,6 @@ uint64_t axrEngineAssetGetUniformBufferInstanceSize(const AxrEngineAssetEnum eng
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
             return sizeof(AxrEngineAssetUniformBuffer_CameraData);
         }
-        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
-            return sizeof(AxrEngineAssetUniformBuffer_UIElement);
-        }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
             return sizeof(AxrEngineAssetUniformBuffer_UIElement);
         }
@@ -321,9 +311,6 @@ AxrUniformBufferTypeEnum axrEngineAssetGetUniformBufferType(const AxrEngineAsset
             return AXR_UNIFORM_BUFFER_TYPE_STANDARD;
         }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
-            return AXR_UNIFORM_BUFFER_TYPE_STANDARD;
-        }
-        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
             return AXR_UNIFORM_BUFFER_TYPE_STANDARD;
         }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
@@ -611,13 +598,8 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
         .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA)
     };
 
-    AxrShaderUniformBufferLayout uiCanvasBufferLayout{
-        .Binding = 1,
-        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS)
-    };
-
     AxrShaderDynamicUniformBufferLayout uiElementBufferLayout{
-        .Binding = 2,
+        .Binding = 1,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS)
     };
 
@@ -629,7 +611,6 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
 
     std::array bufferLayouts{
         reinterpret_cast<AxrShaderBufferLayout_T>(&sceneDataBufferLayout),
-        reinterpret_cast<AxrShaderBufferLayout_T>(&uiCanvasBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&uiElementBufferLayout),
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
         reinterpret_cast<AxrShaderBufferLayout_T>(&modelMatrixBufferLayout),
@@ -673,7 +654,7 @@ AxrResult axrEngineAssetCreateShader_UIElementVert(const AxrGraphicsApiEnum grap
 
 AxrResult axrEngineAssetCreateShader_UIRectangleFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
-        .Binding = 2,
+        .Binding = 1,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
@@ -716,7 +697,7 @@ AxrResult axrEngineAssetCreateShader_UIRectangleFrag(const AxrGraphicsApiEnum gr
 
 AxrResult axrEngineAssetCreateShader_UIBorderFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
-        .Binding = 2,
+        .Binding = 1,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
@@ -759,12 +740,12 @@ AxrResult axrEngineAssetCreateShader_UIBorderFrag(const AxrGraphicsApiEnum graph
 
 AxrResult axrEngineAssetCreateShader_UIImageFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
-        .Binding = 2,
+        .Binding = 1,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
     AxrShaderImageSamplerBufferLayout imageSamplerBufferLayout{
-        .Binding = 3,
+        .Binding = 2,
     };
 
     std::array bufferLayouts{
@@ -807,12 +788,12 @@ AxrResult axrEngineAssetCreateShader_UIImageFrag(const AxrGraphicsApiEnum graphi
 
 AxrResult axrEngineAssetCreateShader_UITextFrag(const AxrGraphicsApiEnum graphicsApi, AxrShader& shader) {
     AxrShaderDynamicUniformBufferLayout dynamicUniformBufferLayout{
-        .Binding = 2,
+        .Binding = 1,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
     AxrShaderImageSamplerBufferLayout imageSamplerBufferLayout{
-        .Binding = 3,
+        .Binding = 2,
     };
 
     std::array bufferLayouts{
@@ -902,9 +883,6 @@ AxrResult axrEngineAssetCreateUniformBuffer(const AxrEngineAssetEnum engineAsset
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA: {
             return axrEngineAssetCreateUniformBuffer_CameraData(uniformBuffer);
         }
-        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS: {
-            return axrEngineAssetCreateUniformBuffer_UICanvas(uniformBuffer);
-        }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS: {
             return axrEngineAssetCreateUniformBuffer_UIElements(uniformBuffer);
         }
@@ -942,23 +920,6 @@ AxrResult axrEngineAssetCreateUniformBuffer_CameraData(AxrUniformBuffer& uniform
     strncpy_s(
         uniformBufferConfig.Name,
         axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA),
-        AXR_MAX_ASSET_NAME_SIZE
-    );
-
-    uniformBuffer = AxrUniformBuffer(uniformBufferConfig);
-
-    return AXR_SUCCESS;
-}
-
-AxrResult axrEngineAssetCreateUniformBuffer_UICanvas(AxrUniformBuffer& uniformBuffer) {
-    AxrUniformBufferConfig uniformBufferConfig{
-        .Name = {},
-        .DataSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
-        .Data = nullptr,
-    };
-    strncpy_s(
-        uniformBufferConfig.Name,
-        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
         AXR_MAX_ASSET_NAME_SIZE
     );
 
@@ -1169,19 +1130,8 @@ AxrResult axrEngineAssetCreateMaterial_UIRectangle(
         AXR_MAX_ASSET_NAME_SIZE
     );
 
-    AxrShaderUniformBufferLink uiCanvasDataBufferLink{
-        .Binding = 1,
-        .BufferName = {},
-    };
-    strncpy_s(
-        uiCanvasDataBufferLink.BufferName,
-        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
-        AXR_MAX_ASSET_NAME_SIZE
-    );
-
     std::array vertexBufferLinks{
         reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
     };
 
     AxrShaderValues vertexShaderValues{
@@ -1190,7 +1140,7 @@ AxrResult axrEngineAssetCreateMaterial_UIRectangle(
     };
 
     AxrShaderUniformBufferLink dynamicUniformBufferLink{
-        .Binding = 2,
+        .Binding = 1,
         .BufferName = {},
     };
     strncpy_s(
@@ -1200,7 +1150,6 @@ AxrResult axrEngineAssetCreateMaterial_UIRectangle(
     );
 
     std::array fragmentBufferLinks{
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&dynamicUniformBufferLink),
     };
 
@@ -1261,19 +1210,8 @@ AxrResult axrEngineAssetCreateMaterial_UIBorder(
         AXR_MAX_ASSET_NAME_SIZE
     );
 
-    AxrShaderUniformBufferLink uiCanvasDataBufferLink{
-        .Binding = 1,
-        .BufferName = {},
-    };
-    strncpy_s(
-        uiCanvasDataBufferLink.BufferName,
-        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
-        AXR_MAX_ASSET_NAME_SIZE
-    );
-
     std::array vertexBufferLinks{
         reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
     };
 
     AxrShaderValues vertexShaderValues{
@@ -1282,7 +1220,7 @@ AxrResult axrEngineAssetCreateMaterial_UIBorder(
     };
 
     AxrShaderUniformBufferLink dynamicUniformBufferLink{
-        .Binding = 2,
+        .Binding = 1,
         .BufferName = {},
     };
     strncpy_s(
@@ -1292,7 +1230,6 @@ AxrResult axrEngineAssetCreateMaterial_UIBorder(
     );
 
     std::array fragmentBufferLinks{
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasDataBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&dynamicUniformBufferLink),
     };
 
@@ -1353,19 +1290,8 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
         AXR_MAX_ASSET_NAME_SIZE
     );
 
-    AxrShaderUniformBufferLink uiCanvasBufferLink{
-        .Binding = 1,
-        .BufferName = {},
-    };
-    strncpy_s(
-        uiCanvasBufferLink.BufferName,
-        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
-        AXR_MAX_ASSET_NAME_SIZE
-    );
-
     std::array vertexBufferLinks{
         reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasBufferLink),
     };
 
     AxrShaderValues vertexShaderValues{
@@ -1374,7 +1300,7 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
     };
 
     AxrShaderUniformBufferLink dynamicUniformBufferLink{
-        .Binding = 2,
+        .Binding = 1,
         .BufferName = {},
     };
     strncpy_s(
@@ -1384,7 +1310,7 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
     );
 
     AxrShaderImageSamplerBufferLink imageSamplerBufferLink{
-        .Binding = 3,
+        .Binding = 2,
         .ImageName = {},
         .ImageSamplerName = {},
     };
@@ -1402,7 +1328,6 @@ AxrResult axrEngineAssetCreateMaterial_UIImage(
     );
 
     std::array fragmentBufferLinks{
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&dynamicUniformBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&imageSamplerBufferLink),
     };
@@ -1467,19 +1392,8 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
         AXR_MAX_ASSET_NAME_SIZE
     );
 
-    AxrShaderUniformBufferLink uiCanvasBufferLink{
-        .Binding = 1,
-        .BufferName = {},
-    };
-    strncpy_s(
-        uiCanvasBufferLink.BufferName,
-        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
-        AXR_MAX_ASSET_NAME_SIZE
-    );
-
     std::array vertexBufferLinks{
         reinterpret_cast<AxrShaderBufferLink_T>(&sceneDataBufferLink),
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasBufferLink),
     };
 
     AxrShaderValues vertexShaderValues{
@@ -1488,7 +1402,7 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
     };
 
     AxrShaderUniformBufferLink dynamicUniformBufferLink{
-        .Binding = 2,
+        .Binding = 1,
         .BufferName = {},
     };
     strncpy_s(
@@ -1498,7 +1412,7 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
     );
 
     AxrShaderImageSamplerBufferLink imageSamplerBufferLink{
-        .Binding = 3,
+        .Binding = 2,
         .ImageName = {},
         .ImageSamplerName = {},
     };
@@ -1514,7 +1428,6 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
     );
 
     std::array fragmentBufferLinks{
-        reinterpret_cast<AxrShaderBufferLink_T>(&uiCanvasBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&dynamicUniformBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&imageSamplerBufferLink),
     };

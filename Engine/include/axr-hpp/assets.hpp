@@ -3168,7 +3168,6 @@ namespace axr {
         UniformBufferStart = AXR_ENGINE_ASSET_UNIFORM_BUFFER_START,
         UniformBufferSceneData = AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA,
         UniformBufferCameraData = AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA,
-        UniformBufferUICanvas = AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS,
         UniformBufferUIElements = AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         UniformBufferEnd = AXR_ENGINE_ASSET_UNIFORM_BUFFER_END,
 
@@ -3320,52 +3319,6 @@ namespace axr {
 
     static_assert(
         sizeof(AxrEngineAssetUniformBuffer_CameraData) == sizeof(axr::EngineAssetUniformBuffer_CameraData),
-        "Original type and wrapper have different size!"
-    );
-
-    /// Engine asset uniform buffer named 'UI Canvas' structure
-    struct alignas(16) EngineAssetUniformBuffer_UICanvas {
-        // ----------------------------------------- //
-        // Public Variables
-        // ----------------------------------------- //
-        alignas(8) glm::vec2 Size = {};
-        float _padding[2] = {0.0f, 0.0f};
-
-        // ----------------------------------------- //
-        // Special Functions
-        // ----------------------------------------- //
-
-        // ---- Constructors ----
-
-        /// Default Constructor
-        EngineAssetUniformBuffer_UICanvas() = default;
-
-        /// Constructor
-        /// @param size The UI canvas size
-        EngineAssetUniformBuffer_UICanvas(
-            const glm::vec2& size
-        ): Size(size) {
-        }
-
-        // ----------------------------------------- //
-        // Public Functions
-        // ----------------------------------------- //
-
-        /// Get a handle to the EngineAssetUniformBuffer_UICanvas as an AxrEngineAssetUniformBuffer_UICanvas
-        /// @returns This as an AxrEngineAssetUniformBuffer_UICanvas
-        const AxrEngineAssetUniformBuffer_UICanvas* toRaw() const {
-            return reinterpret_cast<const AxrEngineAssetUniformBuffer_UICanvas*>(this);
-        }
-
-        /// Get a handle to the EngineAssetUniformBuffer_UICanvas as an AxrEngineAssetUniformBuffer_UICanvas
-        /// @returns This as an AxrEngineAssetUniformBuffer_UICanvas
-        AxrEngineAssetUniformBuffer_UICanvas* toRaw() {
-            return reinterpret_cast<AxrEngineAssetUniformBuffer_UICanvas*>(this);
-        }
-    };
-
-    static_assert(
-        sizeof(AxrEngineAssetUniformBuffer_UICanvas) == sizeof(axr::EngineAssetUniformBuffer_UICanvas),
         "Original type and wrapper have different size!"
     );
 

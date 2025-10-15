@@ -113,10 +113,6 @@ AxrResult axrEngineAssetCreateUniformBuffer_SceneData(AxrUniformBuffer& uniformB
 /// @param uniformBuffer Output created uniform buffer
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateUniformBuffer_CameraData(AxrUniformBuffer& uniformBuffer);
-/// Create the 'UI Canvas' engine asset uniform buffer
-/// @param uniformBuffer Output created uniform buffer
-/// @returns AXR_SUCCESS if the function succeeded
-AxrResult axrEngineAssetCreateUniformBuffer_UICanvas(AxrUniformBuffer& uniformBuffer);
 /// Create the 'UI Elements' engine asset uniform buffer
 /// @param uniformBuffer Output created uniform buffer
 /// @returns AXR_SUCCESS if the function succeeded

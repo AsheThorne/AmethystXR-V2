@@ -13,11 +13,7 @@ layout (std140, binding = 0) uniform SceneData {
     mat4 viewProjectionMatrix;
 } scene;
 
-layout (std140, binding = 1) uniform UICanvas {
-    vec2 size;
-} uiCanvas;
-
-layout (std140, binding = 2) uniform UIElement {
+layout (std140, binding = 1) uniform UIElement {
     vec2 position;
     vec2 size;
 } uiElement;

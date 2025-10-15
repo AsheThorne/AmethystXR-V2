@@ -169,26 +169,6 @@ public:
             return axrResult;
         }
 
-        // ---- UI Canvas Uniform Buffer----
-
-        AxrEngineAssetUniformBuffer_UICanvas uiCanvasUniformBuffer{};
-        uiCanvasUniformBuffer.Size = glm::vec2(cameraInfo.PixelWidth, cameraInfo.PixelHeight);
-
-        axrResult = sceneData->setUniformBufferData(
-            platformType,
-            axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_CANVAS),
-            currentFrame,
-            viewIndex,
-            false,
-            0,
-            sizeof(uiCanvasUniformBuffer),
-            &uiCanvasUniformBuffer
-        );
-        if (AXR_FAILED(axrResult)) {
-            axrLogErrorLocation("Failed to set engine asset uniform buffer camera data.");
-            return axrResult;
-        }
-
         return AXR_SUCCESS;
     }
 
