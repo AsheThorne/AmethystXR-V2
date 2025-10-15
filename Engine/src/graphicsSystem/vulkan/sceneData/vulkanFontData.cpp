@@ -2,8 +2,8 @@
 // AXR Headers
 // ----------------------------------------- //
 #include "vulkanFontData.hpp"
-
 #include "axr/logger.h"
+#include "../../../assets/engineAssets.hpp"
 
 // ----------------------------------------- //
 // Internal Functions
@@ -30,11 +30,18 @@ AxrVulkanFontData::AxrVulkanFontData(const Config& config):
                 .DispatchHandle = m_DispatchHandle,
             }
         );
+        setMaterialDataCallbacks();
     }
 }
 
 AxrVulkanFontData::AxrVulkanFontData(AxrVulkanFontData&& src) noexcept {
+    FindUniformBufferCallback = std::move(src.FindUniformBufferCallback);
+    FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
+    FindImageCallback = std::move(src.FindImageCallback);
     m_MaterialData = std::move(src.m_MaterialData);
+
+    // We need to set these again because 'this' changed
+    setMaterialDataCallbacks();
 
     m_FontHandle = src.m_FontHandle;
     m_Device = src.m_Device;
@@ -53,7 +60,13 @@ AxrVulkanFontData& AxrVulkanFontData::operator=(AxrVulkanFontData&& src) noexcep
     if (this != &src) {
         cleanup();
 
+        FindUniformBufferCallback = std::move(src.FindUniformBufferCallback);
+        FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
+        FindImageCallback = std::move(src.FindImageCallback);
         m_MaterialData = std::move(src.m_MaterialData);
+
+        // We need to set these again because 'this' changed
+        setMaterialDataCallbacks();
 
         m_FontHandle = src.m_FontHandle;
         m_Device = src.m_Device;
@@ -82,10 +95,6 @@ uint16_t AxrVulkanFontData::getID() const {
     }
 
     return m_FontHandle->getID();
-}
-
-AxrVulkanMaterialData& AxrVulkanFontData::getMaterialData() {
-    return m_MaterialData;
 }
 
 const AxrVulkanMaterialData& AxrVulkanFontData::getMaterialData() const {
@@ -138,9 +147,38 @@ void AxrVulkanFontData::destroyXrSessionData() {
 // ---- Private Functions ----
 
 void AxrVulkanFontData::cleanup() {
-    m_MaterialData.destroyData();
+    destroyData();
 
     m_FontHandle = nullptr;
     m_Device = VK_NULL_HANDLE;
     m_DispatchHandle = nullptr;
+    FindUniformBufferCallback.reset();
+    FindImageSamplerCallback.reset();
+    FindImageCallback.reset();
+}
+
+void AxrVulkanFontData::setMaterialDataCallbacks() {
+    m_MaterialData.FindUniformBufferCallback.connect<&AxrVulkanFontData::findUniformBufferData>(this);
+    m_MaterialData.FindImageSamplerCallback.connect<&AxrVulkanFontData::findImageSamplerData>(this);
+    m_MaterialData.FindImageCallback.connect<&AxrVulkanFontData::findImageData>(this);
+}
+
+const AxrVulkanUniformBufferData* AxrVulkanFontData::findUniformBufferData(
+    const std::string& name,
+    const AxrPlatformType platformType,
+    const uint32_t viewIndex
+) const {
+    if (name == axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS)) {
+        return &m_GlyphUniformBufferData;
+    }
+
+    return FindUniformBufferCallback(name, platformType, viewIndex);
+}
+
+const AxrVulkanImageSamplerData* AxrVulkanFontData::findImageSamplerData(const std::string& name) const {
+    return FindImageSamplerCallback(name);
+}
+
+const AxrVulkanImageData* AxrVulkanFontData::findImageData(const std::string& name) const {
+    return FindImageCallback(name);
 }

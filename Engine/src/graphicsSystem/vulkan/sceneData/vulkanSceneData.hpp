@@ -541,30 +541,6 @@ private:
 
     // ---- Write Descriptor Sets ----
 
-    /// Write all material descriptor sets
-    /// @param platformType The platform type to use
-    /// @param viewCount The number of views for the xr device
-    /// @returns AXR_SUCCESS if the function succeeded
-    [[nodiscard]] AxrResult writeAllDescriptorSets(AxrPlatformType platformType, uint32_t viewCount);
-    /// Reset all material descriptor sets
-    /// @param platformType The platform type to use
-    void resetAllDescriptorSets(AxrPlatformType platformType);
-
-    /// Write the descriptor sets for the given material data
-    /// @param platformType The platform type to use
-    /// @param viewCount The number of views for the xr device
-    /// @param materialData The material data to use
-    /// @returns AXR_SUCCESS if the function succeeded
-    [[nodiscard]] AxrResult writeDescriptorSets(
-        AxrPlatformType platformType,
-        uint32_t viewCount,
-        AxrVulkanMaterialData& materialData
-    ) const;
-    /// Reset the descriptor sets for the given material data
-    /// @param platformType The platform type to use
-    /// @param materialData The material data
-    void resetDescriptorSets(AxrPlatformType platformType, AxrVulkanMaterialData& materialData) const;
-
     /// Write to the UI Image descriptor sets
     /// @param platformType Platform type to use
     /// @param frameIndex Frame index to use

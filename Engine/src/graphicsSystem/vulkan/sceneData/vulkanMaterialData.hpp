@@ -6,6 +6,10 @@
 // ----------------------------------------- //
 #include "axr/common/enums.h"
 #include "vulkanMaterialLayoutData.hpp"
+#include "axr/common/callback.h"
+#include "vulkanUniformBufferData.hpp"
+#include "vulkanImageSamplerData.hpp"
+#include "vulkanImageData.hpp"
 
 // ----------------------------------------- //
 // C/C++ Headers
@@ -20,6 +24,41 @@
 /// Vulkan material data
 class AxrVulkanMaterialData {
 public:
+    // ----------------------------------------- //
+    // Types
+    // ----------------------------------------- //
+
+    /// Find uniform buffer callback function type
+    /// @param 1: The name of the uniform buffer
+    /// @param 2: The platform type to check for platform specific uniform buffers
+    /// @param 3: The view index
+    using FindUniformBufferCallback_T = AxrCallback<const AxrVulkanUniformBufferData*(
+        const std::string& name,
+        AxrPlatformType platformType,
+        uint32_t viewIndex
+    )>;
+    /// Find image sampler callback function type
+    /// @param 1: The name of the uniform buffer
+    using FindImageSamplerCallback_T = AxrCallback<const AxrVulkanImageSamplerData*(
+        const std::string& name
+    )>;
+    /// Find image callback function type
+    /// @param 1: The name of the uniform buffer
+    using FindImageCallback_T = AxrCallback<const AxrVulkanImageData*(
+        const std::string& name
+    )>;
+
+    // ----------------------------------------- //
+    // Public Variables
+    // ----------------------------------------- //
+
+    /// Find uniform buffer callback function
+    FindUniformBufferCallback_T FindUniformBufferCallback;
+    /// Find image sampler callback function
+    FindImageSamplerCallback_T FindImageSamplerCallback;
+    /// Find image callback function
+    FindImageCallback_T FindImageCallback;
+
     // ----------------------------------------- //
     // Structs
     // ----------------------------------------- //
@@ -205,6 +244,15 @@ private:
     void resetDescriptorSets(
         vk::DescriptorPool descriptorPool,
         std::vector<vk::DescriptorSet>& descriptorSets
+    ) const;
+
+    /// Write the descriptor sets for the given platform type
+    /// @param platformType The platform type to use
+    /// @param viewCount The number of views for the xr device
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult writeDescriptorSets(
+        AxrPlatformType platformType,
+        uint32_t viewCount
     ) const;
 
     // ---- Pipeline ----

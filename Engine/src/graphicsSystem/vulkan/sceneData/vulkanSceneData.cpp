@@ -215,12 +215,6 @@ AxrResult AxrVulkanSceneData::loadWindowData(const LoadWindowDataConfig& config)
 
     m_IsWindowDataLoaded = true;
 
-    axrResult = writeAllDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, 1);
-    if (AXR_FAILED(axrResult)) {
-        unloadWindowData();
-        return axrResult;
-    }
-
     return AXR_SUCCESS;
 }
 
@@ -230,7 +224,6 @@ void AxrVulkanSceneData::unloadWindowData() {
     const vk::Result vkResult = m_Device.waitIdle(*m_DispatchHandle);
     axrLogVkResult(vkResult, "m_Device.waitIdle");
 
-    resetAllDescriptorSets(AXR_PLATFORM_TYPE_WINDOW);
     destroyAllWindowMaterialData();
     destroyAllWindowFontData();
     destroyAllWindowUniformBufferData();
@@ -263,12 +256,6 @@ AxrResult AxrVulkanSceneData::loadXrSessionData(const LoadXrSessionDataConfig& c
 
     m_IsXrSessionDataLoaded = true;
 
-    axrResult = writeAllDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, m_LoadXrSessionDataConfig.ViewCount);
-    if (AXR_FAILED(axrResult)) {
-        unloadXrSessionData();
-        return axrResult;
-    }
-
     return AXR_SUCCESS;
 }
 
@@ -278,7 +265,6 @@ void AxrVulkanSceneData::unloadXrSessionData() {
     const vk::Result vkResult = m_Device.waitIdle(*m_DispatchHandle);
     axrLogVkResult(vkResult, "m_Device.waitIdle");
 
-    resetAllDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE);
     destroyAllXrSessionMaterialData();
     destroyAllXrSessionFontData();
     destroyAllXrSessionUniformBufferData();
@@ -1589,32 +1575,6 @@ AxrVulkanFontData* AxrVulkanSceneData::createFontData(const AxrFont& font) {
         return nullptr;
     }
 
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
-        axrResult = writeDescriptorSets(
-            AXR_PLATFORM_TYPE_WINDOW,
-            1,
-            insertData->second.getMaterialData()
-        );
-
-        if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, insertData->second.getMaterialData());
-            // Don't return. One platform may error but the other might still be ok.
-        }
-    }
-
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
-        axrResult = writeDescriptorSets(
-            AXR_PLATFORM_TYPE_XR_DEVICE,
-            m_LoadXrSessionDataConfig.ViewCount,
-            insertData->second.getMaterialData()
-        );
-
-        if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, insertData->second.getMaterialData());
-            // Don't return. One platform may error but the other might still be ok.
-        }
-    }
-
     return &insertData->second;
 }
 
@@ -1868,27 +1828,6 @@ AxrVulkanMaterialData* AxrVulkanSceneData::createMaterialData(
         return nullptr;
     }
 
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_WINDOW)) {
-        axrResult = writeDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, 1, insertData->second);
-
-        if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, insertData->second);
-            // Don't return. One platform may error but the other might still be ok.
-        }
-    }
-
-    if (isPlatformLoaded(AXR_PLATFORM_TYPE_XR_DEVICE)) {
-        axrResult = writeDescriptorSets(
-            AXR_PLATFORM_TYPE_XR_DEVICE,
-            m_LoadXrSessionDataConfig.ViewCount,
-            insertData->second
-        );
-
-        if (AXR_FAILED(axrResult)) {
-            resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, insertData->second);
-            // Don't return. One platform may error but the other might still be ok.
-        }
-    }
 
     return &insertData->second;
 }
@@ -1919,6 +1858,10 @@ AxrResult AxrVulkanSceneData::initializeMaterialData(
     };
 
     materialData = AxrVulkanMaterialData(materialDataConfig);
+
+    materialData.FindUniformBufferCallback.connect<&AxrVulkanSceneData::findUniformBufferData_shared>(this);
+    materialData.FindImageSamplerCallback.connect<&AxrVulkanSceneData::findImageSamplerData_shared>(this);
+    materialData.FindImageCallback.connect<&AxrVulkanSceneData::findImageData_shared>(this);
 
     return AXR_SUCCESS;
 }
@@ -2102,233 +2045,6 @@ void AxrVulkanSceneData::onMaterialCreatedCallback(const AxrMaterialConst_T mate
     if (materialData == nullptr) {
         return;
     }
-}
-
-AxrResult AxrVulkanSceneData::writeAllDescriptorSets(const AxrPlatformType platformType, const uint32_t viewCount) {
-    AxrResult axrResult = AXR_SUCCESS;
-
-    for (auto& data : m_FontData | std::views::values) {
-        axrResult = writeDescriptorSets(platformType, viewCount, data.getMaterialData());
-
-        if (AXR_FAILED(axrResult)) {
-            continue;
-        }
-    }
-
-    for (auto& data : m_MaterialData | std::views::values) {
-        axrResult = writeDescriptorSets(platformType, viewCount, data);
-
-        if (AXR_FAILED(axrResult)) {
-            continue;
-        }
-    }
-
-    return AXR_SUCCESS;
-}
-
-void AxrVulkanSceneData::resetAllDescriptorSets(const AxrPlatformType platformType) {
-    for (auto& data : m_FontData | std::views::values) {
-        resetDescriptorSets(platformType, data.getMaterialData());
-    }
-
-    for (auto& data : m_MaterialData | std::views::values) {
-        resetDescriptorSets(platformType, data);
-    }
-}
-
-AxrResult AxrVulkanSceneData::writeDescriptorSets(
-    const AxrPlatformType platformType,
-    const uint32_t viewCount,
-    AxrVulkanMaterialData& materialData
-) const {
-    // ----------------------------------------- //
-    // Validation
-    // ----------------------------------------- //
-
-    if (!isPlatformLoaded(platformType)) {
-        // The platform hasn't loaded so nothing to do
-        return AXR_SUCCESS;
-    }
-
-    if (m_Device == VK_NULL_HANDLE) {
-        axrLogErrorLocation("Device is null.");
-        return AXR_ERROR;
-    }
-
-    if (m_DispatchHandle == nullptr) {
-        axrLogErrorLocation("Dispatch Handle is null.");
-        return AXR_ERROR;
-    }
-
-    const AxrVulkanMaterialLayoutData* materialLayoutData = materialData.getMaterialLayoutData();
-    if (materialLayoutData == nullptr) {
-        axrLogErrorLocation("Material layout data is null.");
-        return AXR_ERROR;
-    }
-
-    const AxrMaterial* material = materialData.getMaterial();
-    if (material == nullptr) {
-        axrLogErrorLocation("Material is null.");
-        return AXR_ERROR;
-    }
-
-    const std::vector<vk::DescriptorSet>& descriptorSets = materialData.getDescriptorSets(platformType);
-    if (descriptorSets.empty()) {
-        axrLogErrorLocation("Descriptor sets are empty.");
-        return AXR_ERROR;
-    }
-
-    if (m_MaxFramesInFlight * viewCount != descriptorSets.size()) {
-        axrLogErrorLocation("View count doesn't match what was used for descriptor set creation.");
-        return AXR_ERROR;
-    }
-
-    // ----------------------------------------- //
-    // Process
-    // ----------------------------------------- //
-
-    AxrResult axrResult = AXR_SUCCESS;
-
-    const std::vector<AxrShaderUniformBufferLinkConst_T> uniformBufferLinks = material->getUniformBufferLinks();
-    const std::vector<AxrShaderImageSamplerBufferLinkConst_T> imageSamplerBufferLinks =
-        material->getImageSamplerBufferLinks();
-    std::vector<vk::WriteDescriptorSet> descriptorWrites;
-    std::vector<vk::DescriptorBufferInfo> descriptorBufferInfos;
-    std::vector<vk::DescriptorImageInfo> descriptorImageInfos;
-    const size_t maxWrites =
-        (uniformBufferLinks.size() +
-            imageSamplerBufferLinks.size()) *
-        m_MaxFramesInFlight *
-        viewCount;
-
-    descriptorWrites.reserve(maxWrites);
-    descriptorBufferInfos.reserve(maxWrites);
-    descriptorImageInfos.reserve(maxWrites);
-
-    for (const AxrShaderUniformBufferLinkConst_T uniformBuffer : uniformBufferLinks) {
-        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex) {
-            const AxrVulkanUniformBufferData* foundUniformBufferData = findUniformBufferData_shared(
-                uniformBuffer->BufferName,
-                platformType,
-                viewIndex
-            );
-
-            if (foundUniformBufferData == nullptr) {
-                axrLogErrorLocation("Failed to find uniform buffer named: {0}.", uniformBuffer->BufferName);
-                axrResult = AXR_ERROR;
-                break;
-            }
-
-            for (uint32_t frameIndex = 0; frameIndex < m_MaxFramesInFlight; ++frameIndex) {
-                descriptorBufferInfos.emplace_back(
-                    foundUniformBufferData->getBuffer(frameIndex).getBuffer(),
-                    0,
-                    foundUniformBufferData->getInstanceSize()
-                );
-
-                const uint32_t viewIndexOffset = m_MaxFramesInFlight * viewIndex;
-
-                descriptorWrites.emplace_back(
-                    descriptorSets[viewIndexOffset + frameIndex],
-                    uniformBuffer->Binding,
-                    0,
-                    1,
-                    axrToVkDescriptorType(foundUniformBufferData->getBufferType()),
-                    nullptr,
-                    &descriptorBufferInfos.back(),
-                    nullptr
-                );
-            }
-
-            if (AXR_FAILED(axrResult)) {
-                break;
-            }
-        }
-
-        if (AXR_FAILED(axrResult)) {
-            break;
-        }
-    }
-
-    for (const AxrShaderImageSamplerBufferLinkConst_T imageSamplerBuffer : imageSamplerBufferLinks) {
-        const AxrVulkanImageSamplerData* foundImageSamplerData = findImageSamplerData_shared(
-            imageSamplerBuffer->ImageSamplerName
-        );
-
-        if (foundImageSamplerData == nullptr) {
-            axrLogErrorLocation("Failed to find image sampler named: {0}.", imageSamplerBuffer->ImageSamplerName);
-            axrResult = AXR_ERROR;
-            break;
-        }
-
-        const AxrVulkanImageData* foundImageData = findImageData_shared(imageSamplerBuffer->ImageName);
-        if (foundImageData == nullptr) {
-            // If image data wasn't found, use the "Missing Texture" image
-            foundImageData = findImageData_shared(
-                axrEngineAssetGetImageName(AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE)
-            );
-
-            if (foundImageData == nullptr) {
-                axrLogErrorLocation("Failed to find image named: {0}.", imageSamplerBuffer->ImageName);
-                axrResult = AXR_ERROR;
-                break;
-            }
-
-            // When we use the 'missing texture', try to use the image sampler options NEAREST and REPEAT. otherwise it looks weird
-            const AxrVulkanImageSamplerData* missingTextureImageSamplerData = findImageSamplerData_shared(
-                axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT)
-            );
-
-            if (missingTextureImageSamplerData != nullptr) {
-                foundImageSamplerData = missingTextureImageSamplerData;
-            }
-        }
-
-        descriptorImageInfos.emplace_back(
-            foundImageSamplerData->getSampler(foundImageData->getImageFormat()),
-            foundImageData->getImageView(),
-            vk::ImageLayout::eShaderReadOnlyOptimal
-        );
-
-        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex) {
-            for (uint32_t frameIndex = 0; frameIndex < m_MaxFramesInFlight; ++frameIndex) {
-                const uint32_t viewIndexOffset = m_MaxFramesInFlight * viewIndex;
-
-                descriptorWrites.emplace_back(
-                    descriptorSets[viewIndexOffset + frameIndex],
-                    imageSamplerBuffer->Binding,
-                    0,
-                    1,
-                    vk::DescriptorType::eCombinedImageSampler,
-                    &descriptorImageInfos.back(),
-                    nullptr,
-                    nullptr
-                );
-            }
-        }
-    }
-
-    if (AXR_FAILED(axrResult)) {
-        resetDescriptorSets(platformType, materialData);
-        return axrResult;
-    }
-
-    m_Device.updateDescriptorSets(
-        static_cast<uint32_t>(descriptorWrites.size()),
-        descriptorWrites.data(),
-        0,
-        nullptr,
-        *m_DispatchHandle
-    );
-
-    return AXR_SUCCESS;
-}
-
-void AxrVulkanSceneData::resetDescriptorSets(
-    const AxrPlatformType platformType,
-    AxrVulkanMaterialData& materialData
-) const {
-    materialData.resetDescriptorSets(platformType);
 }
 
 AxrResult AxrVulkanSceneData::writeUIImageDescriptorSets(

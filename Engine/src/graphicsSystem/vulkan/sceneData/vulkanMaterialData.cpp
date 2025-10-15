@@ -7,6 +7,7 @@
 #include "axr/logger.h"
 #include "../vulkanUtils.hpp"
 #include "../../../assets/material.hpp"
+#include "../../../assets/engineAssets.hpp"
 
 // ----------------------------------------- //
 // C/C++ Headers
@@ -47,6 +48,9 @@ AxrVulkanMaterialData::AxrVulkanMaterialData(const Config& config):
 }
 
 AxrVulkanMaterialData::AxrVulkanMaterialData(AxrVulkanMaterialData&& src) noexcept {
+    FindUniformBufferCallback = std::move(src.FindUniformBufferCallback);
+    FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
+    FindImageCallback = std::move(src.FindImageCallback);
     m_WindowDescriptorSets = std::move(src.m_WindowDescriptorSets);
     m_XrSessionDescriptorSets = std::move(src.m_XrSessionDescriptorSets);
     m_Name = std::move(src.m_Name);
@@ -79,6 +83,9 @@ AxrVulkanMaterialData::~AxrVulkanMaterialData() {
 AxrVulkanMaterialData& AxrVulkanMaterialData::operator=(AxrVulkanMaterialData&& src) noexcept {
     if (this != &src) {
         cleanup();
+        FindUniformBufferCallback = std::move(src.FindUniformBufferCallback);
+        FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
+        FindImageCallback = std::move(src.FindImageCallback);
         m_WindowDescriptorSets = std::move(src.m_WindowDescriptorSets);
         m_XrSessionDescriptorSets = std::move(src.m_XrSessionDescriptorSets);
         m_Name = std::move(src.m_Name);
@@ -240,12 +247,18 @@ AxrResult AxrVulkanMaterialData::createWindowData(
         return axrResult;
     }
 
+    axrResult = writeDescriptorSets(AXR_PLATFORM_TYPE_WINDOW, 1);
+    if (AXR_FAILED(axrResult)) {
+        destroyXrSessionData();
+        return axrResult;
+    }
+
     return AXR_SUCCESS;
 }
 
 void AxrVulkanMaterialData::destroyWindowData() {
-    destroyPipeline(m_WindowPipeline);
     resetDescriptorSets(AXR_PLATFORM_TYPE_WINDOW);
+    destroyPipeline(m_WindowPipeline);
     destroyDescriptorPool(m_WindowDescriptorPool);
 }
 
@@ -292,12 +305,18 @@ AxrResult AxrVulkanMaterialData::createXrSessionData(
         return axrResult;
     }
 
+    axrResult = writeDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE, viewCount);
+    if (AXR_FAILED(axrResult)) {
+        destroyXrSessionData();
+        return axrResult;
+    }
+
     return AXR_SUCCESS;
 }
 
 void AxrVulkanMaterialData::destroyXrSessionData() {
-    destroyPipeline(m_XrSessionPipeline);
     resetDescriptorSets(AXR_PLATFORM_TYPE_XR_DEVICE);
+    destroyPipeline(m_XrSessionPipeline);
     destroyDescriptorPool(m_XrSessionDescriptorPool);
 }
 
@@ -314,6 +333,10 @@ void AxrVulkanMaterialData::cleanup() {
     m_Device = VK_NULL_HANDLE;
     m_DispatchHandle = nullptr;
     m_Name.clear();
+
+    FindUniformBufferCallback.reset();
+    FindImageSamplerCallback.reset();
+    FindImageCallback.reset();
 }
 
 AxrResult AxrVulkanMaterialData::createDescriptorPool(
@@ -509,6 +532,191 @@ void AxrVulkanMaterialData::resetDescriptorSets(
 
     m_Device.resetDescriptorPool(descriptorPool, {}, *m_DispatchHandle);
     descriptorSets.clear();
+}
+
+AxrResult AxrVulkanMaterialData::writeDescriptorSets(
+    const AxrPlatformType platformType,
+    const uint32_t viewCount
+) const {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (m_Device == VK_NULL_HANDLE) {
+        axrLogErrorLocation("Device is null.");
+        return AXR_ERROR;
+    }
+
+    if (m_DispatchHandle == nullptr) {
+        axrLogErrorLocation("Dispatch Handle is null.");
+        return AXR_ERROR;
+    }
+
+    if (m_MaterialLayoutData == nullptr) {
+        axrLogErrorLocation("Material layout data is null.");
+        return AXR_ERROR;
+    }
+
+    if (m_MaterialHandle == nullptr) {
+        axrLogErrorLocation("Material handle is null.");
+        return AXR_ERROR;
+    }
+
+    const std::vector<vk::DescriptorSet>& descriptorSets = getDescriptorSets(platformType);
+    if (descriptorSets.empty()) {
+        axrLogErrorLocation("Descriptor sets are empty.");
+        return AXR_ERROR;
+    }
+
+    if (m_MaxFramesInFlight * viewCount != descriptorSets.size()) {
+        axrLogErrorLocation("View count doesn't match what was used for descriptor set creation.");
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    AxrResult axrResult = AXR_SUCCESS;
+
+    const std::vector<AxrShaderUniformBufferLinkConst_T> uniformBufferLinks =
+        m_MaterialHandle->getUniformBufferLinks();
+    const std::vector<AxrShaderImageSamplerBufferLinkConst_T> imageSamplerBufferLinks =
+        m_MaterialHandle->getImageSamplerBufferLinks();
+
+    std::vector<vk::DescriptorBufferInfo> descriptorBufferInfos;
+    std::vector<vk::DescriptorImageInfo> descriptorImageInfos;
+    const size_t maxBufferWrites =
+        uniformBufferLinks.size() *
+        m_MaxFramesInFlight *
+        viewCount;
+    const size_t maxImageWrites =
+        imageSamplerBufferLinks.size() *
+        m_MaxFramesInFlight *
+        viewCount;
+
+    descriptorBufferInfos.reserve(maxBufferWrites);
+    descriptorImageInfos.reserve(maxImageWrites);
+
+    std::vector<vk::WriteDescriptorSet> descriptorWrites;
+    descriptorWrites.reserve(maxBufferWrites + maxImageWrites);
+
+    for (const AxrShaderUniformBufferLinkConst_T uniformBuffer : uniformBufferLinks) {
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex) {
+            const AxrVulkanUniformBufferData* foundUniformBufferData = FindUniformBufferCallback(
+                uniformBuffer->BufferName,
+                platformType,
+                viewIndex
+            );
+
+            if (foundUniformBufferData == nullptr) {
+                axrLogErrorLocation("Failed to find uniform buffer data named: {0}.", uniformBuffer->BufferName);
+                axrResult = AXR_ERROR;
+                break;
+            }
+
+            for (uint32_t frameIndex = 0; frameIndex < m_MaxFramesInFlight; ++frameIndex) {
+                descriptorBufferInfos.emplace_back(
+                    foundUniformBufferData->getBuffer(frameIndex).getBuffer(),
+                    0,
+                    foundUniformBufferData->getInstanceSize()
+                );
+
+                const uint32_t viewIndexOffset = m_MaxFramesInFlight * viewIndex;
+
+                descriptorWrites.emplace_back(
+                    descriptorSets[viewIndexOffset + frameIndex],
+                    uniformBuffer->Binding,
+                    0,
+                    1,
+                    axrToVkDescriptorType(foundUniformBufferData->getBufferType()),
+                    nullptr,
+                    &descriptorBufferInfos.back(),
+                    nullptr
+                );
+            }
+
+            if (AXR_FAILED(axrResult)) {
+                break;
+            }
+        }
+
+        if (AXR_FAILED(axrResult)) {
+            break;
+        }
+    }
+
+    for (const AxrShaderImageSamplerBufferLinkConst_T imageSamplerBuffer : imageSamplerBufferLinks) {
+        const AxrVulkanImageSamplerData* foundImageSamplerData = FindImageSamplerCallback(
+            imageSamplerBuffer->ImageSamplerName
+        );
+
+        if (foundImageSamplerData == nullptr) {
+            axrLogErrorLocation("Failed to find image sampler named: {0}.", imageSamplerBuffer->ImageSamplerName);
+            axrResult = AXR_ERROR;
+            break;
+        }
+
+        const AxrVulkanImageData* foundImageData = FindImageCallback(imageSamplerBuffer->ImageName);
+        if (foundImageData == nullptr) {
+            // If image data wasn't found, use the "Missing Texture" image
+            foundImageData = FindImageCallback(
+                axrEngineAssetGetImageName(AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE)
+            );
+
+            if (foundImageData == nullptr) {
+                axrLogErrorLocation("Failed to find image named: {0}.", imageSamplerBuffer->ImageName);
+                axrResult = AXR_ERROR;
+                break;
+            }
+
+            // When we use the 'missing texture', try to use the image sampler options NEAREST and REPEAT. otherwise it looks weird
+            const AxrVulkanImageSamplerData* missingTextureImageSamplerData = FindImageSamplerCallback(
+                axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT)
+            );
+
+            if (missingTextureImageSamplerData != nullptr) {
+                foundImageSamplerData = missingTextureImageSamplerData;
+            }
+        }
+
+        descriptorImageInfos.emplace_back(
+            foundImageSamplerData->getSampler(foundImageData->getImageFormat()),
+            foundImageData->getImageView(),
+            vk::ImageLayout::eShaderReadOnlyOptimal
+        );
+
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex) {
+            for (uint32_t frameIndex = 0; frameIndex < m_MaxFramesInFlight; ++frameIndex) {
+                const uint32_t viewIndexOffset = m_MaxFramesInFlight * viewIndex;
+
+                descriptorWrites.emplace_back(
+                    descriptorSets[viewIndexOffset + frameIndex],
+                    imageSamplerBuffer->Binding,
+                    0,
+                    1,
+                    vk::DescriptorType::eCombinedImageSampler,
+                    &descriptorImageInfos.back(),
+                    nullptr,
+                    nullptr
+                );
+            }
+        }
+    }
+
+    if (AXR_FAILED(axrResult)) {
+        return axrResult;
+    }
+
+    m_Device.updateDescriptorSets(
+        static_cast<uint32_t>(descriptorWrites.size()),
+        descriptorWrites.data(),
+        0,
+        nullptr,
+        *m_DispatchHandle
+    );
+
+    return AXR_SUCCESS;
 }
 
 AxrResult AxrVulkanMaterialData::createPipeline(

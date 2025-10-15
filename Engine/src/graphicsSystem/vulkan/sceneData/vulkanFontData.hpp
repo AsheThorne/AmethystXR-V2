@@ -15,6 +15,41 @@
 class AxrVulkanFontData {
 public:
     // ----------------------------------------- //
+    // Types
+    // ----------------------------------------- //
+
+    /// Find uniform buffer callback function type
+    /// @param 1: The name of the uniform buffer
+    /// @param 2: The platform type to check for platform specific uniform buffers
+    /// @param 3: The view index
+    using FindUniformBufferCallback_T = AxrCallback<const AxrVulkanUniformBufferData*(
+        const std::string& name,
+        AxrPlatformType platformType,
+        uint32_t viewIndex
+    )>;
+    /// Find image sampler callback function type
+    /// @param 1: The name of the uniform buffer
+    using FindImageSamplerCallback_T = AxrCallback<const AxrVulkanImageSamplerData*(
+        const std::string& name
+    )>;
+    /// Find image callback function type
+    /// @param 1: The name of the uniform buffer
+    using FindImageCallback_T = AxrCallback<const AxrVulkanImageData*(
+        const std::string& name
+    )>;
+
+    // ----------------------------------------- //
+    // Public Variables
+    // ----------------------------------------- //
+
+    /// Find uniform buffer callback function
+    FindUniformBufferCallback_T FindUniformBufferCallback;
+    /// Find image sampler callback function
+    FindImageSamplerCallback_T FindImageSamplerCallback;
+    /// Find image callback function
+    FindImageCallback_T FindImageCallback;
+
+    // ----------------------------------------- //
     // Structs
     // ----------------------------------------- //
 
@@ -69,9 +104,6 @@ public:
     /// Get the font's ID
     /// @returns The font's ID
     [[nodiscard]] uint16_t getID() const;
-    /// Get the font's material data
-    /// @returns The font's material data
-    [[nodiscard]] AxrVulkanMaterialData& getMaterialData();
     /// Get the font's material data
     /// @returns The font's material data
     [[nodiscard]] const AxrVulkanMaterialData& getMaterialData() const;
@@ -137,4 +169,26 @@ private:
 
     /// Clean up this class
     void cleanup();
+
+    /// Set the material data function callbacks
+    void setMaterialDataCallbacks();
+
+    /// Find the named uniform buffer data
+    /// @param name The name of the uniform buffer
+    /// @param platformType The platform type to check for platform specific uniform buffers
+    /// @param viewIndex The view index
+    /// @returns A handle to the found uniform buffer. Or nullptr if it wasn't found
+    [[nodiscard]] const AxrVulkanUniformBufferData* findUniformBufferData(
+        const std::string& name,
+        AxrPlatformType platformType,
+        uint32_t viewIndex
+    ) const;
+    /// Find the named image sampler data
+    /// @param name The name of the image sampler
+    /// @returns A handle to the found image sampler. Or nullptr if it wasn't found
+    [[nodiscard]] const AxrVulkanImageSamplerData* findImageSamplerData(const std::string& name) const;
+    /// Find the named image data
+    /// @param name The name of the image
+    /// @returns A handle to the found image. Or nullptr if it wasn't found
+    [[nodiscard]] const AxrVulkanImageData* findImageData(const std::string& name) const;
 };
