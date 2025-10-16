@@ -33,20 +33,16 @@ public:
     /// @param 2: The platform type to check for platform specific uniform buffers
     /// @param 3: The view index
     using FindUniformBufferCallback_T = AxrCallback<const AxrVulkanUniformBufferData*(
-        const std::string& name,
-        AxrPlatformType platformType,
-        uint32_t viewIndex
+        const std::string&,
+        AxrPlatformType,
+        uint32_t
     )>;
     /// Find image sampler callback function type
     /// @param 1: The name of the uniform buffer
-    using FindImageSamplerCallback_T = AxrCallback<const AxrVulkanImageSamplerData*(
-        const std::string& name
-    )>;
+    using FindImageSamplerCallback_T = AxrCallback<const AxrVulkanImageSamplerData*(const std::string&)>;
     /// Find image callback function type
     /// @param 1: The name of the uniform buffer
-    using FindImageCallback_T = AxrCallback<const AxrVulkanImageData*(
-        const std::string& name
-    )>;
+    using FindImageCallback_T = AxrCallback<const AxrVulkanImageData*(const std::string&)>;
 
     // ----------------------------------------- //
     // Public Variables

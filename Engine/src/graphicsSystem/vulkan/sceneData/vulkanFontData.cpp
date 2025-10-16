@@ -133,7 +133,29 @@ bool AxrVulkanFontData::doesXrSessionDataExist() const {
 }
 
 AxrResult AxrVulkanFontData::createData() {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
+    if (m_FontHandle == nullptr) {
+        axrLogErrorLocation("Font handle is null.");
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
     AxrResult axrResult = AXR_SUCCESS;
+
+    if (!m_FontHandle->isLoaded()) {
+        axrResult = m_FontHandle->loadFile();
+
+        if (AXR_FAILED(axrResult)) {
+            destroyData();
+            return axrResult;
+        }
+    }
 
     axrResult = m_GlyphUniformBufferData.createData();
     if (AXR_FAILED(axrResult)) {

@@ -4,6 +4,7 @@
 // AXR Headers
 // ----------------------------------------- //
 #include "axr/assets.h"
+#include "axr/common/eventHandler.h"
 
 // ----------------------------------------- //
 // C/C++ Headers
@@ -13,6 +14,13 @@
 /// Uniform buffer
 class AxrUniformBuffer {
 public:
+    // ----------------------------------------- //
+    // Types
+    // ----------------------------------------- //
+
+    /// On 'data changed' event handler type
+    using OnDataChangedEventHandler_T = AxrEventHandler<>;
+
     // ----------------------------------------- //
     // Special Functions
     // ----------------------------------------- //
@@ -74,6 +82,60 @@ public:
     /// @param size Size of the data
     /// @returns The data
     [[nodiscard]] static void* createData(uint64_t size);
+    /// Set the buffer data.
+    /// @param offset Offset of the data to set
+    /// @param dataSize Size of the data to set
+    /// @param data Data to set
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult setData(uint64_t offset, uint64_t dataSize, const void* data) const;
+    /// Clear uniform buffer data
+    void clear();
+
+    /// Add a new 'On Data Changed' callback function
+    /// @tparam Candidate Function callback to add
+    template <auto Candidate>
+    void addOnDataChangedCallback() const {
+        m_OnDataChangedEventHandler.addCallback<Candidate>();
+    }
+
+    /// Add a new 'On Data Changed' callback function
+    /// @tparam Candidate Function callback to add
+    /// @tparam Type Instance type
+    template <auto Candidate, typename Type>
+    void addOnDataChangedCallback(Type& instance) const {
+        m_OnDataChangedEventHandler.addCallback<Candidate, Type>(instance);
+    }
+
+    /// Add a new 'On Data Changed' callback function
+    /// @tparam Candidate Function callback to add
+    /// @tparam Type Instance type
+    template <auto Candidate, typename Type>
+    void addOnDataChangedCallback(Type* instance) const {
+        m_OnDataChangedEventHandler.addCallback<Candidate, Type>(instance);
+    }
+
+    /// Remove an 'On Data Changed' callback function
+    /// @tparam Candidate Function callback to remove
+    template <auto Candidate>
+    void removeOnDataChangedCallback() const {
+        m_OnDataChangedEventHandler.removeCallback<Candidate>();
+    }
+
+    /// Remove an 'On Data Changed' callback function
+    /// @tparam Candidate Function callback to remove
+    /// @tparam Type Instance type
+    template <auto Candidate, typename Type>
+    void removeOnDataChangedCallback(Type& instance) const {
+        m_OnDataChangedEventHandler.removeCallback<Candidate, Type>(instance);
+    }
+
+    /// Remove an 'On Data Changed' callback function
+    /// @tparam Candidate Function callback to remove
+    /// @tparam Type Instance type
+    template <auto Candidate, typename Type>
+    void removeOnDataChangedCallback(Type* instance) const {
+        m_OnDataChangedEventHandler.removeCallback<Candidate, Type>(instance);
+    }
 
     /// Get the buffer type
     /// @returns The buffer type
@@ -106,6 +168,8 @@ private:
     uint64_t m_InstanceSize;
     uint64_t m_DataSize;
     void* m_Data;
+
+    mutable OnDataChangedEventHandler_T m_OnDataChangedEventHandler;
 
     // ----------------------------------------- //
     // Private Functions

@@ -279,10 +279,38 @@ AxrResult AxrFont::loadFile() const {
     file.close();
     m_Data = std::move(fontData);
 
+    std::vector<AxrEngineAssetUniformBuffer_UIGlyph> uiGlyphUniformBufferData;
+    uiGlyphUniformBufferData.reserve(m_Data.Glyphs.size());
+    for (const Glyph& glyph : m_Data.Glyphs | std::views::values) {
+        uiGlyphUniformBufferData.push_back(
+            AxrEngineAssetUniformBuffer_UIGlyph{
+                .Size = glm::vec2(
+                    glyph.AtlasUVBounds.Right - glyph.AtlasUVBounds.Left,
+                    glyph.AtlasUVBounds.Top - glyph.AtlasUVBounds.Bottom
+                ),
+                .AtlasOffset = glm::vec2(
+                    glyph.AtlasUVBounds.Left,
+                    1.0f - glyph.AtlasUVBounds.Top
+                ),
+            }
+        );
+    }
+
+    axrResult = m_GlyphUniformBuffer.setData(
+        0,
+        uiGlyphUniformBufferData.size() * sizeof(AxrEngineAssetUniformBuffer_UIGlyph),
+        uiGlyphUniformBufferData.data()
+    );
+    if (AXR_FAILED(axrResult)) {
+        axrLogErrorLocation("Failed to set glyph uniform buffer data.");
+        return AXR_ERROR;
+    }
+
     return AXR_SUCCESS;
 }
 
 void AxrFont::unloadFile() const {
+    m_GlyphUniformBuffer.clear();
     m_Data.cleanup();
 }
 

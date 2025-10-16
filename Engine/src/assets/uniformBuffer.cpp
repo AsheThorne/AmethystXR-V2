@@ -75,17 +75,20 @@ AxrUniformBuffer::AxrUniformBuffer(const AxrUniformBuffer& src) {
     m_InstanceSize = src.m_InstanceSize;
     m_DataSize = src.m_DataSize;
     m_Data = cloneData(src.m_DataSize, src.m_Data);
+
+    m_OnDataChangedEventHandler = src.m_OnDataChangedEventHandler;
 }
 
 AxrUniformBuffer::AxrUniformBuffer(AxrUniformBuffer&& src) noexcept {
-    m_Name = src.m_Name;
+    m_Name = std::move(src.m_Name);
+    m_OnDataChangedEventHandler = std::move(src.m_OnDataChangedEventHandler);
+
     m_BufferType = src.m_BufferType;
     m_InstanceCount = src.m_InstanceCount;
     m_InstanceSize = src.m_InstanceSize;
     m_DataSize = src.m_DataSize;
     m_Data = src.m_Data;
 
-    src.m_Name = "";
     src.m_BufferType = AXR_UNIFORM_BUFFER_TYPE_UNDEFINED;
     src.m_InstanceCount = 0;
     src.m_InstanceSize = 0;
@@ -107,6 +110,8 @@ AxrUniformBuffer& AxrUniformBuffer::operator=(const AxrUniformBuffer& src) {
         m_InstanceSize = src.m_InstanceSize;
         m_DataSize = src.m_DataSize;
         m_Data = cloneData(src.m_DataSize, src.m_Data);
+
+        m_OnDataChangedEventHandler = src.m_OnDataChangedEventHandler;
     }
     return *this;
 }
@@ -115,14 +120,15 @@ AxrUniformBuffer& AxrUniformBuffer::operator=(AxrUniformBuffer&& src) noexcept {
     if (this != &src) {
         cleanup();
 
-        m_Name = src.m_Name;
+        m_Name = std::move(src.m_Name);
+        m_OnDataChangedEventHandler = std::move(src.m_OnDataChangedEventHandler);
+
         m_BufferType = src.m_BufferType;
         m_InstanceCount = src.m_InstanceCount;
         m_InstanceSize = src.m_InstanceSize;
         m_DataSize = src.m_DataSize;
         m_Data = src.m_Data;
 
-        src.m_Name = "";
         src.m_BufferType = AXR_UNIFORM_BUFFER_TYPE_UNDEFINED;
         src.m_InstanceCount = 0;
         src.m_InstanceSize = 0;
@@ -158,6 +164,46 @@ void* AxrUniformBuffer::createData(const uint64_t size) {
     return calloc(1, size);
 }
 
+AxrResult AxrUniformBuffer::setData(
+    const uint64_t offset,
+    const uint64_t dataSize,
+    const void* data
+) const {
+    if (m_Data == nullptr) {
+        axrLogErrorLocation("Data is null.");
+        return AXR_ERROR;
+    }
+
+    if (dataSize + offset > m_DataSize) {
+        axrLogErrorLocation("Data is out of bounds.");
+        return AXR_ERROR;
+    }
+
+    const errno_t memcpyError = memcpy_s(
+        static_cast<uint8_t*>(m_Data) + offset,
+        m_DataSize - offset,
+        data,
+        dataSize
+    );
+    if (memcpyError != 0) {
+        axrLogErrorLocation("Failed to copy memory.");
+        return AXR_ERROR;
+    }
+
+    m_OnDataChangedEventHandler.invoke();
+
+    return AXR_SUCCESS;
+}
+
+void AxrUniformBuffer::clear() {
+    if (m_Data == nullptr) {
+        return;
+    }
+
+    memset(m_Data, 0, m_DataSize);
+    m_OnDataChangedEventHandler.invoke();
+}
+
 AxrUniformBufferTypeEnum AxrUniformBuffer::getBufferType() const {
     return m_BufferType;
 }
@@ -181,10 +227,12 @@ const void* AxrUniformBuffer::getData() const {
 void AxrUniformBuffer::cleanup() {
     destroyData(m_DataSize, m_Data);
 
-    m_Name = "";
+    m_Name.clear();
     m_BufferType = AXR_UNIFORM_BUFFER_TYPE_UNDEFINED;
     m_InstanceCount = 0;
     m_InstanceSize = 0;
+
+    m_OnDataChangedEventHandler.clear();
 }
 
 // ---- Private Functions ----

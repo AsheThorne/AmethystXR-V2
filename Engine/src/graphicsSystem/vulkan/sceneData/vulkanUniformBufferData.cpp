@@ -33,6 +33,7 @@ AxrVulkanUniformBufferData::AxrVulkanUniformBufferData(const Config& config):
     m_TransferQueue(config.TransferQueue),
     m_DispatchHandle(config.DispatchHandle),
     m_UniformBufferAlignment(0) {
+    m_UniformBufferHandle->addOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(this);
 }
 
 AxrVulkanUniformBufferData::AxrVulkanUniformBufferData(AxrVulkanUniformBufferData&& src) noexcept {
@@ -46,6 +47,15 @@ AxrVulkanUniformBufferData::AxrVulkanUniformBufferData(AxrVulkanUniformBufferDat
     m_TransferQueue = src.m_TransferQueue;
     m_DispatchHandle = src.m_DispatchHandle;
     m_UniformBufferAlignment = src.m_UniformBufferAlignment;
+
+    if (m_UniformBufferHandle != nullptr) {
+        m_UniformBufferHandle->removeOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(
+            &src
+        );
+        m_UniformBufferHandle->addOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(
+            this
+        );
+    }
 
     src.m_UniformBufferHandle = nullptr;
     src.m_MaxFramesInFlight = 0;
@@ -75,6 +85,15 @@ AxrVulkanUniformBufferData& AxrVulkanUniformBufferData::operator=(AxrVulkanUnifo
         m_TransferQueue = src.m_TransferQueue;
         m_DispatchHandle = src.m_DispatchHandle;
         m_UniformBufferAlignment = src.m_UniformBufferAlignment;
+
+        if (m_UniformBufferHandle != nullptr) {
+            m_UniformBufferHandle->removeOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(
+                &src
+            );
+            m_UniformBufferHandle->addOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(
+                this
+            );
+        }
 
         src.m_UniformBufferHandle = nullptr;
         src.m_MaxFramesInFlight = 0;
@@ -260,6 +279,12 @@ vk::DeviceSize AxrVulkanUniformBufferData::calculateUniformBufferAlignment(
 void AxrVulkanUniformBufferData::cleanup() {
     destroyData();
 
+    if (m_UniformBufferHandle != nullptr) {
+        m_UniformBufferHandle->removeOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(
+            this
+        );
+    }
+
     m_UniformBufferHandle = nullptr;
     m_MaxFramesInFlight = 0;
     m_PhysicalDevice = VK_NULL_HANDLE;
@@ -423,6 +448,13 @@ AxrResult AxrVulkanUniformBufferData::setData(
     }
 
     return AXR_SUCCESS;
+}
+
+void AxrVulkanUniformBufferData::onDataChangedCallback() {
+    // TODO: Set an 'isDirty' flag here and nothing else.
+    //  Have a function in vulkanSceneData that updates all 'vulkan uniform buffer data's with the current frame index.
+    //  if the uniform buffer data is dirty, then it updates the data from the original uniform buffer handle.
+    auto test = 0;
 }
 
 #endif

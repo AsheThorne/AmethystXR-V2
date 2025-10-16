@@ -187,5 +187,8 @@ private:
         vk::DeviceSize size,
         const void* data
     ) const;
+
+    /// Uniform buffer 'On Data Changed' callback function
+    void onDataChangedCallback();
 };
 #endif

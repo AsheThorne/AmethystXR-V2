@@ -18,6 +18,6 @@ layout (binding = 3) uniform sampler2D texAtlas;
 layout (location = 0) out vec4 outColor;
 
 void main() {
-    vec4 texColor = texture(texAtlas, fragTexCoord);
+    vec4 texColor = texture(texAtlas, uiGlyph.atlasOffset + uiGlyph.size * fragTexCoord);
     outColor = texColor;
 }

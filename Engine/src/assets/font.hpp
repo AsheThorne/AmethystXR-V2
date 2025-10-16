@@ -261,7 +261,7 @@ private:
 
     // ---- Data ----
     AxrMaterial m_Material;
-    AxrUniformBuffer m_GlyphUniformBuffer;
+    mutable AxrUniformBuffer m_GlyphUniformBuffer;
 
     mutable Data m_Data;
 
