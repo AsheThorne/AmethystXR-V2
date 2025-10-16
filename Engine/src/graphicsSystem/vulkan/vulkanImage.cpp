@@ -180,6 +180,7 @@ AxrResult AxrVulkanImage::createImage(const AxrImageConst_T image) {
     }
 
     m_MipLevelCount = countImageMipLevels(image->getWidth(), image->getHeight());
+    // TODO: Make this a parameter. Any MSDF atlas needs to be in Unorm. while others are Srgb (currently)
     m_ImageFormat = vk::Format::eR8G8B8A8Srgb;
     vk::ImageUsageFlags imageUsageFlags = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
     if (m_MipLevelCount > 1) {

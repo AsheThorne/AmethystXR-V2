@@ -238,17 +238,20 @@ AxrResult AxrFont::loadFile() const {
             axrResult = AXR_ERROR;
             break;
         }
-        const json& atlasBounds = glyph["atlasBounds"];
-        if (!atlasBounds.is_object()) {
-            axrResult = AXR_ERROR;
-            break;
+        Bounds atlasBoundsData{};
+        if (glyph.contains("atlasBounds")) {
+            const json& atlasBounds = glyph["atlasBounds"];
+            if (!atlasBounds.is_object()) {
+                axrResult = AXR_ERROR;
+                break;
+            }
+            atlasBoundsData = Bounds{
+                .Left = atlasBounds.value("left", 0.0f),
+                .Right = atlasBounds.value("right", 0.0f),
+                .Top = atlasBounds.value("top", 0.0f),
+                .Bottom = atlasBounds.value("bottom", 0.0f),
+            };
         }
-        const Bounds atlasBoundsData{
-            .Left = atlasBounds.value("left", 0.0f),
-            .Right = atlasBounds.value("right", 0.0f),
-            .Top = atlasBounds.value("top", 0.0f),
-            .Bottom = atlasBounds.value("bottom", 0.0f),
-        };
 
         uint32_t unicode = glyph.value("unicode", 0);
         fontData.Glyphs.emplace(

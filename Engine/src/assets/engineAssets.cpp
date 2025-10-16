@@ -2266,7 +2266,7 @@ AxrResult axrEngineAssetCreateFont_JetbrainsMono_Regular(
     );
     strncpy_s(
         fontConfig.AtlasImageSamplerName,
-        axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_NEAREST_REPEAT),
+        axrEngineAssetGetImageSamplerName(AXR_ENGINE_ASSET_IMAGE_SAMPLER_LINEAR_REPEAT),
         AXR_MAX_ASSET_NAME_SIZE
     );
     strncpy_s(

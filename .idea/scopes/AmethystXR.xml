@@ -1,3 +1,3 @@
 <component name="DependencyValidationManager">
-  <scope name="AmethystXR" pattern="file[AmethystXR]:*/&amp;&amp;!ext:*/&amp;&amp;!file[AmethystXR]:external//*&amp;&amp;!file[AmethystXR]:cmake-build//*&amp;&amp;!file[AmethystXR]:cmake-build-*//*" />
+  <scope name="AmethystXR" pattern="file[AmethystXR]:*/&amp;&amp;!ext:*/&amp;&amp;!file[AmethystXR]:external//*&amp;&amp;!file[AmethystXR]:cmake-build//*&amp;&amp;!file[AmethystXR]:cmake-build-*//*&amp;&amp;!file[AmethystXR]:Sandbox/assets/sample-models/*&amp;&amp;!file[AmethystXR]:Sandbox/assets/sample-models//*" />
 </component>

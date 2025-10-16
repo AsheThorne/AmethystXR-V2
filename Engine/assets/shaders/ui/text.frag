@@ -17,7 +17,26 @@ layout (binding = 3) uniform sampler2D texAtlas;
 
 layout (location = 0) out vec4 outColor;
 
+float median(float r, float g, float b) {
+    return max(min(r, g), min(max(r, g), b));
+}
+
+vec2 atlasUV() {
+    return uiGlyph.atlasOffset + uiGlyph.size * fragTexCoord;
+}
+
+float screenPxRange() {
+    vec2 unitRange = vec2(2.0) / vec2(textureSize(texAtlas, 0));
+    vec2 screenTexSize = vec2(1.0) / fwidth(atlasUV());
+    return max(0.5 * dot(unitRange, screenTexSize), 1.0);
+}
+
 void main() {
-    vec4 texColor = texture(texAtlas, uiGlyph.atlasOffset + uiGlyph.size * fragTexCoord);
-    outColor = texColor;
+    vec4 texel = texture(texAtlas, atlasUV());
+    float dist = median(texel.r, texel.g, texel.b);
+
+    float pxDist = screenPxRange() * (dist - 0.5);
+    float opacity = clamp(pxDist + 0.5, 0.0, 1.0);
+
+    outColor = mix(vec4(0.0f), uiElement.textColor, opacity);
 }
