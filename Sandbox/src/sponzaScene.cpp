@@ -351,6 +351,9 @@ axr::Result SponzaScene::setup() {
         return axr::Result::Error;
     }
 
+    fpsString = "FPS: 0";
+    deltaTimeString = "DeltaTime: 0";
+
     return axr::Result::Success;
 }
 
@@ -363,8 +366,20 @@ axr::Result SponzaScene::setAsActiveScene() const {
 }
 
 void SponzaScene::update() {
-    fpsString = "FPS: " + std::to_string(1 / m_Application.getDeltaTime());
-    deltaTimeString = "DeltaTime: " + std::to_string(m_Application.getDeltaTime());
+    const float deltaTime = m_Application.getDeltaTime();
+    accumulatedDeltaTime += deltaTime;
+    accumulatedDeltaTimeCount++;
+
+    if (accumulatedDeltaTime >= 0.5f) {
+        const float averageDeltaTime = accumulatedDeltaTime / static_cast<float>(accumulatedDeltaTimeCount);
+        const auto fps = static_cast<uint32_t>(std::round(1.0f / averageDeltaTime));
+
+        fpsString = "FPS: " + std::to_string(fps);
+        deltaTimeString = "DeltaTime: " + std::to_string(averageDeltaTime);
+
+        accumulatedDeltaTime = 0.0f;
+        accumulatedDeltaTimeCount = 0;
+    }
 }
 
 axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType, Clay_Context* context) {

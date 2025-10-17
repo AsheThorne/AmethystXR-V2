@@ -58,6 +58,8 @@ private:
     axr::Entity_T m_XrHandEntity;
 
     axr::UIImageData m_UIImageData;
+    float accumulatedDeltaTime = 0.0f;
+    uint32_t accumulatedDeltaTimeCount = 0;
     std::string fpsString;
     std::string deltaTimeString;
     uint16_t m_FontID = 0;

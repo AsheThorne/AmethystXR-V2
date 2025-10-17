@@ -2,7 +2,7 @@
 
 ## Graphics
 
-## Uniform Buffers
+### Uniform Buffers
 - [ ] Implement a backup strategy for dynamic uniform buffers that aren't supported on certain physical devices
 
   Maybe use a dynamic storage buffer instead?
