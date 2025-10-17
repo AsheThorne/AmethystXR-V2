@@ -2115,6 +2115,7 @@ AxrResult axrEngineAssetCreateImage_MissingTexture(const std::string& imageName,
     AxrImageConfig imageConfig{
         .Name = {},
         .FilePath = {},
+        .Format = AXR_IMAGE_FORMAT_SRGB,
     };
     strncpy_s(imageConfig.Name, imageName.c_str(), AXR_MAX_ASSET_NAME_SIZE);
 
@@ -2152,6 +2153,7 @@ AxrResult axrEngineAssetCreateImage_UvTester(const std::string& imageName, AxrIm
     AxrImageConfig imageConfig{
         .Name = {},
         .FilePath = {},
+        .Format = AXR_IMAGE_FORMAT_SRGB,
     };
     strncpy_s(imageConfig.Name, imageName.c_str(), AXR_MAX_ASSET_NAME_SIZE);
     strncpy_s(imageConfig.FilePath, filePath.c_str(), AXR_MAX_FILE_PATH_SIZE);
@@ -2169,6 +2171,7 @@ AxrResult axrEngineAssetCreateImage_FontAtlasJetbrainsMono_Regular(const std::st
     AxrImageConfig imageConfig{
         .Name = {},
         .FilePath = {},
+        .Format = AXR_IMAGE_FORMAT_UNORM,
     };
     strncpy_s(imageConfig.Name, imageName.c_str(), AXR_MAX_ASSET_NAME_SIZE);
     strncpy_s(imageConfig.FilePath, filePath.c_str(), AXR_MAX_FILE_PATH_SIZE);

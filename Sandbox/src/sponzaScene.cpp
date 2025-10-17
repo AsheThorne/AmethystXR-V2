@@ -68,7 +68,8 @@ axr::Result SponzaScene::setup() {
 
         axr::ImageConfig config(
             imageNames[i].c_str(),
-            modelInfo.Images[i].FilePath
+            modelInfo.Images[i].FilePath,
+            axr::ImageFormatEnum::Srgb
         );
         if (AXR_FAILED(assetCollection.createImage(config))) return axr::Result::Error;
     }

@@ -126,6 +126,15 @@ public:
     // Public Static Functions
     // ----------------------------------------- //
 
+    /// Convert the given image format and color channels to a vk::Format
+    /// @param imageFormat Image format to use
+    /// @param colorChannels Color channels to use
+    /// @returns The vk::Format
+    [[nodiscard]] static vk::Format toVkFormat(
+        AxrImageFormatEnum imageFormat,
+        AxrImageColorChannelsEnum colorChannels
+    );
+
     /// Create a vulkan image
     /// @param device Device to use
     /// @param physicalDevice Physical device to use

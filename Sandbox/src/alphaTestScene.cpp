@@ -68,7 +68,8 @@ axr::Result AlphaTestScene::setup() {
 
         axr::ImageConfig config(
             imageNames[i].c_str(),
-            modelInfo.Images[i].FilePath
+            modelInfo.Images[i].FilePath,
+            axr::ImageFormatEnum::Srgb
         );
         if (AXR_FAILED(assetCollection.createImage(config))) return axr::Result::Error;
     }
@@ -219,15 +220,36 @@ axr::Result AlphaTestScene::setup() {
         return axr::Result::Error;
 
     std::string cyanGlassImageName = "CyanGlassImage";
-    if (AXR_FAILED(assetCollection.createImage(axr::ImageConfig(cyanGlassImageName.c_str(), "cyan-glass.png"))))
+    if (AXR_FAILED(
+        assetCollection.createImage(
+            axr::ImageConfig(
+                cyanGlassImageName.c_str(),
+                "cyan-glass.png",
+                axr::ImageFormatEnum::Srgb
+            ))
+    ))
         return axr::Result::Error;
 
     std::string magentaGlassImageName = "MagentaGlassImage";
-    if (AXR_FAILED(assetCollection.createImage(axr::ImageConfig(magentaGlassImageName.c_str(), "magenta-glass.png"))))
+    if (AXR_FAILED(
+        assetCollection.createImage(
+            axr::ImageConfig(
+                magentaGlassImageName.c_str(),
+                "magenta-glass.png",
+                axr::ImageFormatEnum::Srgb
+            ))
+    ))
         return axr::Result::Error;
 
     std::string yellowGlassImageName = "YellowGlassImage";
-    if (AXR_FAILED(assetCollection.createImage(axr::ImageConfig(yellowGlassImageName.c_str(), "yellow-glass.png"))))
+    if (AXR_FAILED(
+        assetCollection.createImage(
+            axr::ImageConfig(
+                yellowGlassImageName.c_str(),
+                "yellow-glass.png",
+                axr::ImageFormatEnum::Srgb
+            ))
+    ))
         return axr::Result::Error;
 
     std::string cyanGlassMaterialName = "CyanGlassMaterial";

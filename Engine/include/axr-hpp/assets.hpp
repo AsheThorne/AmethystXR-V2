@@ -2263,6 +2263,13 @@ namespace axr {
         RGBAlpha = AXR_IMAGE_COLOR_CHANNELS_RGB_ALPHA,
     };
 
+    /// Image format enum
+    enum class ImageFormatEnum {
+        Undefined = AXR_IMAGE_FORMAT_UNDEFINED,
+        Srgb = AXR_IMAGE_FORMAT_SRGB,
+        UNorm = AXR_IMAGE_FORMAT_UNORM,
+    };
+
     // ----------------------------------------- //
     // Structs
     // ----------------------------------------- //
@@ -2275,6 +2282,7 @@ namespace axr {
 
         char Name[AXR_MAX_ASSET_NAME_SIZE]{};
         char FilePath[AXR_MAX_FILE_PATH_SIZE]{};
+        ImageFormatEnum Format = ImageFormatEnum::Undefined;
 
         // ----------------------------------------- //
         // Special Functions
@@ -2288,10 +2296,12 @@ namespace axr {
         /// Constructor
         /// @param name Name of the image
         /// @param filePath Image file path
+        /// @param format Image format
         ImageConfig(
             const char* name,
-            const char* filePath
-        ) {
+            const char* filePath,
+            const ImageFormatEnum format
+        ): Format(format) {
             if (name != nullptr) {
                 strncpy_s(Name, name, AXR_MAX_ASSET_NAME_SIZE);
             }
@@ -2303,26 +2313,21 @@ namespace axr {
         /// Copy Constructor
         /// @param src Source ImageConfig to copy from
         ImageConfig(const ImageConfig& src) {
-            if (src.Name != nullptr) {
-                strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
-            }
-            if (src.FilePath != nullptr) {
-                strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
-            }
+            strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
+            Format = src.Format;
         }
 
         /// Move Constructor
         /// @param src Source ImageConfig to move from
         ImageConfig(ImageConfig&& src) noexcept {
-            if (src.Name != nullptr) {
-                strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
-            }
-            if (src.FilePath != nullptr) {
-                strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
-            }
+            strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+            strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
+            Format = src.Format;
 
             memset(src.Name, 0, sizeof(src.Name));
             memset(src.FilePath, 0, sizeof(src.FilePath));
+            src.Format = ImageFormatEnum::Undefined;
         }
 
         // ---- Destructor ----
@@ -2340,12 +2345,9 @@ namespace axr {
             if (this != &src) {
                 cleanup();
 
-                if (src.Name != nullptr) {
-                    strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
-                }
-                if (src.FilePath != nullptr) {
-                    strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
-                }
+                strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
+                Format = src.Format;
             }
 
             return *this;
@@ -2357,15 +2359,13 @@ namespace axr {
             if (this != &src) {
                 cleanup();
 
-                if (src.Name != nullptr) {
-                    strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
-                }
-                if (src.FilePath != nullptr) {
-                    strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
-                }
+                strncpy_s(Name, src.Name, AXR_MAX_ASSET_NAME_SIZE);
+                strncpy_s(FilePath, src.FilePath, AXR_MAX_FILE_PATH_SIZE);
+                Format = src.Format;
 
                 memset(src.Name, 0, sizeof(src.Name));
                 memset(src.FilePath, 0, sizeof(src.FilePath));
+                src.Format = ImageFormatEnum::Undefined;
             }
 
             return *this;
@@ -2396,6 +2396,7 @@ namespace axr {
         void cleanup() {
             memset(Name, 0, sizeof(Name));
             memset(FilePath, 0, sizeof(FilePath));
+            Format = ImageFormatEnum::Undefined;
         }
     };
 

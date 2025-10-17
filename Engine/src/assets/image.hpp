@@ -58,6 +58,9 @@ public:
     /// Get the image name
     /// @returns The name of the image
     [[nodiscard]] const std::string& getName() const;
+    /// Get the image format
+    /// @returns The image format
+    [[nodiscard]] AxrImageFormatEnum getFormat() const;
 
     /// Set the image data
     /// @param width Image width
@@ -103,9 +106,9 @@ private:
     struct Data {
         // ---- Public Variables ----
 
-        uint32_t Width;
-        uint32_t Height;
-        AxrImageColorChannelsEnum ColorChannels;
+        uint32_t Width = 0;
+        uint32_t Height = 0;
+        AxrImageColorChannelsEnum ColorChannels = AXR_IMAGE_COLOR_CHANNELS_UNDEFINED;
         std::vector<stbi_uc> Pixels;
 
         // ---- Constructors ----
@@ -179,6 +182,7 @@ private:
     // ---- Config Variables ----
     std::string m_Name;
     std::string m_FilePath;
+    AxrImageFormatEnum m_Format = AXR_IMAGE_FORMAT_UNDEFINED;
 
     mutable Data m_Data;
 

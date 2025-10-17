@@ -710,6 +710,13 @@ enum AxrImageColorChannelsEnum {
     AXR_IMAGE_COLOR_CHANNELS_RGB_ALPHA = 4,
 };
 
+/// Image format enum
+enum AxrImageFormatEnum {
+    AXR_IMAGE_FORMAT_UNDEFINED = 0,
+    AXR_IMAGE_FORMAT_SRGB,
+    AXR_IMAGE_FORMAT_UNORM,
+};
+
 // ----------------------------------------- //
 // Structs
 // ----------------------------------------- //
@@ -718,6 +725,7 @@ enum AxrImageColorChannelsEnum {
 struct AxrImageConfig {
     char Name[AXR_MAX_ASSET_NAME_SIZE];
     char FilePath[AXR_MAX_FILE_PATH_SIZE];
+    AxrImageFormatEnum Format;
 };
 
 /// UI Image Data

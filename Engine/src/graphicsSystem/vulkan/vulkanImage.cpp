@@ -180,8 +180,7 @@ AxrResult AxrVulkanImage::createImage(const AxrImageConst_T image) {
     }
 
     m_MipLevelCount = countImageMipLevels(image->getWidth(), image->getHeight());
-    // TODO: Make this a parameter. Any MSDF atlas needs to be in Unorm. while others are Srgb (currently)
-    m_ImageFormat = vk::Format::eR8G8B8A8Srgb;
+    m_ImageFormat = toVkFormat(image->getFormat(), image->getColorChannels());
     vk::ImageUsageFlags imageUsageFlags = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
     if (m_MipLevelCount > 1) {
         imageUsageFlags |= vk::ImageUsageFlagBits::eTransferSrc;
@@ -395,6 +394,61 @@ AxrResult AxrVulkanImage::transitionImageLayout(
     }
 
     return AXR_SUCCESS;
+}
+
+vk::Format AxrVulkanImage::toVkFormat(
+    const AxrImageFormatEnum imageFormat,
+    const AxrImageColorChannelsEnum colorChannels
+) {
+    switch (imageFormat) {
+        case AXR_IMAGE_FORMAT_SRGB: {
+            switch (colorChannels) {
+                case AXR_IMAGE_COLOR_CHANNELS_GRAY: {
+                    return vk::Format::eR8Srgb;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_GRAY_ALPHA: {
+                    return vk::Format::eR8G8Srgb;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_RGB: {
+                    return vk::Format::eR8G8B8Srgb;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_RGB_ALPHA: {
+                    return vk::Format::eR8G8B8A8Srgb;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_UNDEFINED:
+                default: {
+                    axrLogErrorLocation("Unknown image color channels.");
+                    return vk::Format::eUndefined;
+                }
+            }
+        }
+        case AXR_IMAGE_FORMAT_UNORM: {
+            switch (colorChannels) {
+                case AXR_IMAGE_COLOR_CHANNELS_GRAY: {
+                    return vk::Format::eR8Unorm;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_GRAY_ALPHA: {
+                    return vk::Format::eR8G8Unorm;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_RGB: {
+                    return vk::Format::eR8G8B8Unorm;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_RGB_ALPHA: {
+                    return vk::Format::eR8G8B8A8Unorm;
+                }
+                case AXR_IMAGE_COLOR_CHANNELS_UNDEFINED:
+                default: {
+                    axrLogErrorLocation("Unknown image color channels.");
+                    return vk::Format::eUndefined;
+                }
+            }
+        }
+        case AXR_IMAGE_FORMAT_UNDEFINED:
+        default: {
+            axrLogErrorLocation("Unknown image format.");
+            return vk::Format::eUndefined;
+        }
+    }
 }
 
 AxrResult AxrVulkanImage::createImage(

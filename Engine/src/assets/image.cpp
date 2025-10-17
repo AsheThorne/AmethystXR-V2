@@ -39,14 +39,12 @@ AxrResult axrImageSetData(
 
 // ---- Special Functions ----
 
-AxrImage::AxrImage():
-    m_Data() {
-}
+AxrImage::AxrImage() = default;
 
 AxrImage::AxrImage(const AxrImageConfig& config):
     m_Name(config.Name),
     m_FilePath(config.FilePath),
-    m_Data() {
+    m_Format(config.Format) {
     if (!m_FilePath.empty() && !axrFileExists(m_FilePath)) {
         axrLogErrorLocation("File path is invalid.");
     }
@@ -55,6 +53,7 @@ AxrImage::AxrImage(const AxrImageConfig& config):
 AxrImage::AxrImage(const AxrImage& src) {
     m_Name = src.m_Name;
     m_FilePath = src.m_FilePath;
+    m_Format = src.m_Format;
     m_Data = src.m_Data;
 }
 
@@ -62,6 +61,10 @@ AxrImage::AxrImage(AxrImage&& src) noexcept {
     m_Name = std::move(src.m_Name);
     m_FilePath = std::move(src.m_FilePath);
     m_Data = std::move(src.m_Data);
+
+    m_Format = src.m_Format;
+
+    src.m_Format = AXR_IMAGE_FORMAT_UNDEFINED;
 }
 
 AxrImage::~AxrImage() {
@@ -74,6 +77,7 @@ AxrImage& AxrImage::operator=(const AxrImage& src) {
 
         m_Name = src.m_Name;
         m_FilePath = src.m_FilePath;
+        m_Format = src.m_Format;
         m_Data = src.m_Data;
     }
 
@@ -87,6 +91,10 @@ AxrImage& AxrImage::operator=(AxrImage&& src) noexcept {
         m_Name = std::move(src.m_Name);
         m_FilePath = std::move(src.m_FilePath);
         m_Data = std::move(src.m_Data);
+
+        m_Format = src.m_Format;
+
+        src.m_Format = AXR_IMAGE_FORMAT_UNDEFINED;
     }
 
     return *this;
@@ -96,6 +104,10 @@ AxrImage& AxrImage::operator=(AxrImage&& src) noexcept {
 
 const std::string& AxrImage::getName() const {
     return m_Name;
+}
+
+AxrImageFormatEnum AxrImage::getFormat() const {
+    return m_Format;
 }
 
 AxrResult AxrImage::setData(
@@ -176,6 +188,7 @@ AxrImageColorChannelsEnum AxrImage::getColorChannels() const {
 void AxrImage::cleanup() {
     m_Name.clear();
     m_FilePath.clear();
+    m_Format = AXR_IMAGE_FORMAT_UNDEFINED;
     m_Data.clear();
 }
 
