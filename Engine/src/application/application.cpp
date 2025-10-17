@@ -378,7 +378,33 @@ AxrResult AxrApplication::setActiveScene(const std::string& sceneName) {
 }
 
 Clay_Dimensions AxrApplication::measureClayText(Clay_StringSlice text, Clay_TextElementConfig* config) const {
-    // TODO: Do this properly
+    if (config == nullptr) {
+        return {};
+    }
+
+    const AxrFont* font = nullptr;
+    if (AxrAssetCollection::isGlobalFont(config->fontId)) {
+        font = m_GlobalAssetCollection.findFont(config->fontId);
+    }
+
+    const AxrFont::AtlasLayout& atlasLayout = font->getLayoutData();
+
+    float textWidth = 0.0f;
+    const float textHeight = atlasLayout.LineHeight * config->fontSize;
+
+    for (int i = 0; i < text.length; ++i) {
+        const AxrFont::Glyph* glyph = font->getGlyph(static_cast<uint32_t>(text.chars[i]));
+        if (glyph == nullptr) {
+            continue;
+        }
+
+        textWidth += glyph->Advance * config->fontSize;
+    }
+
+    return Clay_Dimensions{
+        .width = textWidth,
+        .height = textHeight,
+    };
     return Clay_Dimensions{
         .width = static_cast<float>(text.length * config->fontSize),
         .height = static_cast<float>(config->fontSize)

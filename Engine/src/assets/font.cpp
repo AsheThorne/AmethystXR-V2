@@ -176,6 +176,10 @@ const AxrUniformBuffer& AxrFont::getGlyphUniformBuffer() const {
     return m_GlyphUniformBuffer;
 }
 
+const AxrFont::AtlasLayout& AxrFont::getLayoutData() const {
+    return m_Data.Atlas;
+}
+
 const AxrFont::Glyph* AxrFont::getGlyph(const uint32_t unicode) const {
     const auto foundGlyph = m_Data.Glyphs.find(unicode);
     if (foundGlyph == m_Data.Glyphs.end()) {
@@ -301,21 +305,21 @@ AxrResult AxrFont::loadAtlasLayoutData() const {
 
     const std::string& atlasType = atlas.value("type", "");
     if (atlasType == "msdf") {
-        fontData.Type = Type::MSDF;
+        fontData.Atlas.Type = Type::MSDF;
     } else if (atlasType == "mtsdf") {
-        fontData.Type = Type::MTSDF;
+        fontData.Atlas.Type = Type::MTSDF;
     } else {
         return readDataError(file);
     }
 
-    fontData.DistanceRange = atlas.value("distanceRange", 0.0f);
-    fontData.AtlasWidth = atlas.value("width", 0);
-    fontData.AtlasHeight = atlas.value("height", 0);
-    fontData.Size = atlas.value("size", 0.0f);
+    fontData.Atlas.DistanceRange = atlas.value("distanceRange", 0.0f);
+    fontData.Atlas.AtlasWidth = atlas.value("width", 0);
+    fontData.Atlas.AtlasHeight = atlas.value("height", 0);
+    fontData.Atlas.Size = atlas.value("size", 0.0f);
 
-    fontData.LineHeight = metrics.value("lineHeight", 0.0f);
-    fontData.UnderlineY = metrics.value("underlineY", 0.0f);
-    fontData.UnderlineThickness = metrics.value("underlineThickness", 0.0f);
+    fontData.Atlas.LineHeight = metrics.value("lineHeight", 0.0f);
+    fontData.Atlas.UnderlineY = metrics.value("underlineY", 0.0f);
+    fontData.Atlas.UnderlineThickness = metrics.value("underlineThickness", 0.0f);
 
     for (const json& glyph : glyphs) {
         if (!glyph.is_object()) {
@@ -365,10 +369,10 @@ AxrResult AxrFont::loadAtlasLayoutData() const {
                     .PlaneBounds = planeBoundsData,
                     .AtlasPixelBounds = atlasBoundsData,
                     .AtlasUVBounds = {
-                        .Left = atlasBoundsData.Left / static_cast<float>(fontData.AtlasWidth),
-                        .Right = atlasBoundsData.Right / static_cast<float>(fontData.AtlasWidth),
-                        .Top = atlasBoundsData.Top / static_cast<float>(fontData.AtlasHeight),
-                        .Bottom = atlasBoundsData.Bottom / static_cast<float>(fontData.AtlasHeight),
+                        .Left = atlasBoundsData.Left / static_cast<float>(fontData.Atlas.AtlasWidth),
+                        .Right = atlasBoundsData.Right / static_cast<float>(fontData.Atlas.AtlasWidth),
+                        .Top = atlasBoundsData.Top / static_cast<float>(fontData.Atlas.AtlasHeight),
+                        .Bottom = atlasBoundsData.Bottom / static_cast<float>(fontData.Atlas.AtlasHeight),
                     },
                 }
             )
@@ -388,9 +392,9 @@ AxrResult AxrFont::setFontUniformBufferData() const {
     AxrResult axrResult = AXR_SUCCESS;
 
     const AxrEngineAssetUniformBuffer_FontData fontData{
-        .SdfDistanceRange = m_Data.DistanceRange,
-        .SdfUnitRange = glm::vec2(m_Data.DistanceRange, m_Data.DistanceRange) /
-        glm::vec2(m_Data.AtlasWidth, m_Data.AtlasHeight),
+        .SdfDistanceRange = m_Data.Atlas.DistanceRange,
+        .SdfUnitRange = glm::vec2(m_Data.Atlas.DistanceRange, m_Data.Atlas.DistanceRange) /
+        glm::vec2(m_Data.Atlas.AtlasWidth, m_Data.Atlas.AtlasHeight),
     };
 
     axrResult = m_FontDataUniformBuffer.setData(

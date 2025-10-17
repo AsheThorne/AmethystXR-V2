@@ -45,7 +45,7 @@ public:
         float Bottom = 0.0f;
     };
 
-    /// Font Glyph
+    /// Font Glyph Data
     struct Glyph {
         uint32_t Unicode = 0;
         uint32_t UniformBufferIndex = 0;
@@ -59,8 +59,8 @@ public:
         Bounds AtlasUVBounds;
     };
 
-    /// Font Data
-    class Data {
+    /// Font Atlas Layout Data
+    class AtlasLayout {
     public:
         // ----------------------------------------- //
         // Public Variables
@@ -70,20 +70,12 @@ public:
         uint32_t AtlasWidth = 0;
         uint32_t AtlasHeight = 0;
         float Size = 0.0f;
+        /// Line height in ems
         float LineHeight = 0.0f;
+        /// Underline y offset in ems
         float UnderlineY = 0.0f;
+        /// Underline thickness in ems
         float UnderlineThickness = 0.0f;
-        /// Key is the Unicode character, value is the glyph data
-        std::map<uint32_t, Glyph> Glyphs;
-
-        // ----------------------------------------- //
-        // Special Functions
-        // ----------------------------------------- //
-
-        // ---- Constructors ----
-
-        /// Default Constructor
-        Data() = default;
 
         // ----------------------------------------- //
         // Public Functions
@@ -99,7 +91,6 @@ public:
             LineHeight = 0.0f;
             UnderlineY = 0.0f;
             UnderlineThickness = 0.0f;
-            Glyphs.clear();
         }
 
         /// Check if this data is valid
@@ -110,7 +101,34 @@ public:
                 AtlasWidth != 0 &&
                 AtlasHeight != 0 &&
                 Size != 0 &&
-                LineHeight != 0.0f &&
+                LineHeight != 0.0f;
+        }
+    };
+
+    /// Font Data
+    class Data {
+    public:
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        AtlasLayout Atlas;
+        /// Key is the Unicode character, value is the glyph data
+        std::map<uint32_t, Glyph> Glyphs;
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Clean up this class
+        void cleanup() {
+            Atlas.cleanup();
+            Glyphs.clear();
+        }
+
+        /// Check if this data is valid
+        /// @returns True if this data is valid
+        [[nodiscard]] bool isValid() const {
+            return Atlas.isValid() &&
                 !Glyphs.empty();
         }
     };
@@ -167,6 +185,9 @@ public:
     /// Get the font's glyph uniform buffer
     /// @returns The font's glyph uniform buffer
     [[nodiscard]] const AxrUniformBuffer& getGlyphUniformBuffer() const;
+    /// Get the atlas layout data
+    /// @returns The atlas layout data
+    [[nodiscard]] const AxrFont::AtlasLayout& getLayoutData() const;
     /// Get the glyph data for the given Unicode
     /// @param unicode Unicode
     /// @returns A handle to the glyph data. Or nullptr if it wasn't found
