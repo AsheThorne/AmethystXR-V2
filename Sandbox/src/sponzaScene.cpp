@@ -354,6 +354,8 @@ axr::Result SponzaScene::setAsActiveScene() const {
 }
 
 void SponzaScene::update() {
+    fpsString = "FPS: " + std::to_string(1 / m_Application.getDeltaTime());
+    deltaTimeString = "DeltaTime: " + std::to_string(m_Application.getDeltaTime());
 }
 
 axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType, Clay_Context* context) {
@@ -427,6 +429,58 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                     },
                 }
             );
+            { // ---- Fps Outer ----
+                std::string outer_id = std::string("FpsOuter");
+                Clay__OpenElement();
+                Clay__ConfigureOpenElement(
+                    Clay_ElementDeclaration{
+                        .id = CLAY_SID(Clay_String(false, outer_id.size(), outer_id.c_str())),
+                        .layout = {
+                            .sizing = {.width = CLAY_SIZING_GROW(0)},
+                            .padding = Clay_Padding{
+                                5, 5, 5, 5
+                            },
+                            .layoutDirection = CLAY_TOP_TO_BOTTOM,
+                        },
+                        .backgroundColor = Clay_Color{
+                            0.01,
+                            0.01,
+                            0.01,
+                            1.0
+                        },
+                        .cornerRadius = Clay_CornerRadius{
+                            .topLeft = 10,
+                            .topRight = 10,
+                            .bottomLeft = 10,
+                            .bottomRight = 10,
+                        },
+                    }
+                );
+                { // ---- FPS ----
+                    Clay_TextElementConfig* textElementConfig = Clay__StoreTextElementConfig(
+                        Clay_TextElementConfig{
+                            .textColor = {
+                                1.0f,
+                                1.0f,
+                                1.0f,
+                                1.0f
+                            },
+                            // TODO: get the font ID
+                            .fontId = 0,
+                            .fontSize = 20,
+                        }
+                    );
+                    Clay__OpenTextElement(
+                        Clay_String(false, fpsString.length(), fpsString.c_str()),
+                        textElementConfig
+                    );
+                    Clay__OpenTextElement(
+                        Clay_String(false, deltaTimeString.length(), deltaTimeString.c_str()),
+                        textElementConfig
+                    );
+                }
+                Clay__CloseElement();
+            }
             for (int i = 0; i < 3; ++i) {
                 { // ---- Profile Picture Outer ----
                     std::string outer_id = std::string("ProfilePictureOuter") + std::to_string(i);

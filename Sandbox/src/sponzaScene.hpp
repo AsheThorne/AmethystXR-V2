@@ -58,4 +58,6 @@ private:
     axr::Entity_T m_XrHandEntity;
 
     axr::UIImageData m_UIImageData;
+    std::string fpsString;
+    std::string deltaTimeString;
 };
