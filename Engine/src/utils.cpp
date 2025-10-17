@@ -76,3 +76,35 @@ bool axrContainsString(
 
     return false;
 }
+
+const char* axrToString(const Clay_ErrorType errorType) {
+    switch (errorType) {
+        case CLAY_ERROR_TYPE_TEXT_MEASUREMENT_FUNCTION_NOT_PROVIDED: {
+            return "CLAY_ERROR_TYPE_TEXT_MEASUREMENT_FUNCTION_NOT_PROVIDED";
+        }
+        case CLAY_ERROR_TYPE_ARENA_CAPACITY_EXCEEDED: {
+            return "CLAY_ERROR_TYPE_ARENA_CAPACITY_EXCEEDED";
+        }
+        case CLAY_ERROR_TYPE_ELEMENTS_CAPACITY_EXCEEDED: {
+            return "CLAY_ERROR_TYPE_ELEMENTS_CAPACITY_EXCEEDED";
+        }
+        case CLAY_ERROR_TYPE_TEXT_MEASUREMENT_CAPACITY_EXCEEDED: {
+            return "CLAY_ERROR_TYPE_TEXT_MEASUREMENT_CAPACITY_EXCEEDED";
+        }
+        case CLAY_ERROR_TYPE_DUPLICATE_ID: {
+            return "CLAY_ERROR_TYPE_DUPLICATE_ID";
+        }
+        case CLAY_ERROR_TYPE_FLOATING_CONTAINER_PARENT_NOT_FOUND: {
+            return "CLAY_ERROR_TYPE_FLOATING_CONTAINER_PARENT_NOT_FOUND";
+        }
+        case CLAY_ERROR_TYPE_PERCENTAGE_OVER_1: {
+            return "CLAY_ERROR_TYPE_PERCENTAGE_OVER_1";
+        }
+        case CLAY_ERROR_TYPE_INTERNAL_ERROR: {
+            return "CLAY_ERROR_TYPE_INTERNAL_ERROR";
+        }
+        default: {
+            return "UNKNOWN_ERROR";
+        }
+    }
+}

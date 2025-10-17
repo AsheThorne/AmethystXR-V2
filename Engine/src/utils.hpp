@@ -7,6 +7,11 @@
 #include <vector>
 
 // ----------------------------------------- //
+// Clay Headers
+// ----------------------------------------- //
+#include <clay.h>
+
+// ----------------------------------------- //
 // Function Definitions
 // ----------------------------------------- //
 
@@ -24,3 +29,8 @@ bool axrContainsString(
     const std::string& string,
     const std::vector<std::string>& stringCollection
 );
+
+/// Convert the given clay error type to a string
+/// @param errorType Clay error type
+/// @returns String equivalent
+[[nodiscard]] const char* axrToString(Clay_ErrorType errorType);
