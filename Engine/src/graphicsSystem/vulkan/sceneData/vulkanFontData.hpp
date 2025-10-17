@@ -153,6 +153,10 @@ public:
     /// Destroy the xr session specific font data
     void destroyXrSessionData();
 
+    /// Update all 'dirty' uniform buffer data
+    /// @param frameIndex Frame index to use
+    void updateDirtyUniformBufferData(uint32_t frameIndex) const;
+
 private:
     // ----------------------------------------- //
     // Private Variables

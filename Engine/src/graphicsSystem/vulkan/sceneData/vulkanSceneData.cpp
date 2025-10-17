@@ -370,6 +370,41 @@ AxrResult AxrVulkanSceneData::setUniformBufferData(
     return AXR_SUCCESS;
 }
 
+void AxrVulkanSceneData::updateDirtyUniformBufferData(const uint32_t frameIndex) const {
+    auto updateBufferData = [frameIndex](const AxrVulkanSceneData* sceneData) -> void {
+        if (sceneData == nullptr) {
+            axrLogErrorLocation("Scene data is nullptr.");
+            return;
+        }
+
+        for (const AxrVulkanUniformBufferData& uniformBufferData : sceneData->m_UniformBufferData |
+             std::views::values) {
+            uniformBufferData.updateDirtyData(frameIndex);
+        }
+
+        for (const AxrVulkanUniformBufferData& uniformBufferData : sceneData->m_WindowUniformBufferData |
+             std::views::values) {
+            uniformBufferData.updateDirtyData(frameIndex);
+        }
+
+        for (const auto& uniformBufferDataArray : sceneData->m_XrSessionUniformBufferData | std::views::values) {
+            for (const AxrVulkanUniformBufferData& uniformBufferData : uniformBufferDataArray) {
+                uniformBufferData.updateDirtyData(frameIndex);
+            }
+        }
+
+        for (const AxrVulkanFontData& fontData : sceneData->m_FontData | std::views::values) {
+            fontData.updateDirtyUniformBufferData(frameIndex);
+        }
+    };
+
+    if (m_GlobalSceneData != nullptr) {
+        updateBufferData(m_GlobalSceneData);
+    }
+
+    updateBufferData(this);
+}
+
 AxrResult AxrVulkanSceneData::setUIImageData(
     const AxrPlatformType platformType,
     const uint32_t frameIndex,

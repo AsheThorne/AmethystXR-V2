@@ -226,6 +226,11 @@ void AxrVulkanFontData::destroyXrSessionData() {
     m_MaterialData.destroyXrSessionData();
 }
 
+void AxrVulkanFontData::updateDirtyUniformBufferData(const uint32_t frameIndex) const {
+    m_FontUniformBufferData.updateDirtyData(frameIndex);
+    m_GlyphUniformBufferData.updateDirtyData(frameIndex);
+}
+
 // ---- Private Functions ----
 
 void AxrVulkanFontData::cleanup() {

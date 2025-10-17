@@ -100,19 +100,22 @@ public:
 
     /// Set the buffer data.
     /// If `alignData` is true, `data` must contain whole instance objects without any padding between them.
-    /// @param index Frame in flight index
+    /// @param frameIndex Frame in flight index
     /// @param alignData True if we want to align it with the min uniform buffer offset alignment.
     /// @param offset Offset of the data to set
     /// @param size Size of the data to set
     /// @param data Data to set
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult setData(
-        uint32_t index,
+        uint32_t frameIndex,
         bool alignData,
         vk::DeviceSize offset,
         vk::DeviceSize size,
         const void* data
     ) const;
+    /// Update 'dirty' data
+    /// @param frameIndex Frame in flight index
+    void updateDirtyData(uint32_t frameIndex) const;
 
     // ----------------------------------------- //
     // Public Static Functions
@@ -135,20 +138,21 @@ private:
     // ----------------------------------------- //
 
     // ---- Config Variables ----
-    const AxrUniformBuffer* m_UniformBufferHandle;
-    uint32_t m_MaxFramesInFlight;
-    vk::PhysicalDevice m_PhysicalDevice;
-    vk::Device m_Device;
-    vk::CommandPool m_TransferCommandPool;
-    vk::Queue m_TransferQueue;
-    vk::DispatchLoaderDynamic* m_DispatchHandle;
+    const AxrUniformBuffer* m_UniformBufferHandle = nullptr;
+    uint32_t m_MaxFramesInFlight = 0;
+    vk::PhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+    vk::Device m_Device = VK_NULL_HANDLE;
+    vk::CommandPool m_TransferCommandPool = VK_NULL_HANDLE;
+    vk::Queue m_TransferQueue = VK_NULL_HANDLE;
+    vk::DispatchLoaderDynamic* m_DispatchHandle = nullptr;
 
     // ---- Data ----
     /// This should never be used for anything other than returning a reference to the name if no name can be found.
     std::string m_DummyName;
-    vk::DeviceSize m_UniformBufferAlignment;
+    vk::DeviceSize m_UniformBufferAlignment = 0;
     /// One buffer per frame in flight
     std::vector<AxrVulkanBuffer> m_UniformBuffers;
+    bool m_IsDataDirty = false;
 
     // ----------------------------------------- //
     // Private Functions

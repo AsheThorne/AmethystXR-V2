@@ -169,6 +169,10 @@ public:
             return axrResult;
         }
 
+        // ---- Update 'dirty' buffer data ----
+
+        sceneData->updateDirtyUniformBufferData(currentFrame);
+
         return AXR_SUCCESS;
     }
 

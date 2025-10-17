@@ -9,7 +9,6 @@
 
 ### UI
 
-- [x] Implement CLAY_RENDER_COMMAND_TYPE_TEXT
 - [ ] Implement CLAY_RENDER_COMMAND_TYPE_SCISSOR_START
 - [ ] Implement CLAY_RENDER_COMMAND_TYPE_SCISSOR_END
 - [ ] Correct issues with OpenXR UI

@@ -13,16 +13,7 @@
 
 // ---- Special Functions ----
 
-AxrVulkanUniformBufferData::AxrVulkanUniformBufferData():
-    m_UniformBufferHandle(nullptr),
-    m_MaxFramesInFlight(0),
-    m_PhysicalDevice(VK_NULL_HANDLE),
-    m_Device(VK_NULL_HANDLE),
-    m_TransferCommandPool(VK_NULL_HANDLE),
-    m_TransferQueue(VK_NULL_HANDLE),
-    m_DispatchHandle(nullptr),
-    m_UniformBufferAlignment(0) {
-}
+AxrVulkanUniformBufferData::AxrVulkanUniformBufferData() = default;
 
 AxrVulkanUniformBufferData::AxrVulkanUniformBufferData(const Config& config):
     m_UniformBufferHandle(config.UniformBufferHandle),
@@ -31,8 +22,7 @@ AxrVulkanUniformBufferData::AxrVulkanUniformBufferData(const Config& config):
     m_Device(config.Device),
     m_TransferCommandPool(config.TransferCommandPool),
     m_TransferQueue(config.TransferQueue),
-    m_DispatchHandle(config.DispatchHandle),
-    m_UniformBufferAlignment(0) {
+    m_DispatchHandle(config.DispatchHandle) {
     m_UniformBufferHandle->addOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(this);
 }
 
@@ -47,6 +37,7 @@ AxrVulkanUniformBufferData::AxrVulkanUniformBufferData(AxrVulkanUniformBufferDat
     m_TransferQueue = src.m_TransferQueue;
     m_DispatchHandle = src.m_DispatchHandle;
     m_UniformBufferAlignment = src.m_UniformBufferAlignment;
+    m_IsDataDirty = src.m_IsDataDirty;
 
     if (m_UniformBufferHandle != nullptr) {
         m_UniformBufferHandle->removeOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(
@@ -65,6 +56,7 @@ AxrVulkanUniformBufferData::AxrVulkanUniformBufferData(AxrVulkanUniformBufferDat
     src.m_TransferQueue = VK_NULL_HANDLE;
     src.m_DispatchHandle = nullptr;
     src.m_UniformBufferAlignment = 0;
+    src.m_IsDataDirty = false;
 }
 
 AxrVulkanUniformBufferData::~AxrVulkanUniformBufferData() {
@@ -85,6 +77,7 @@ AxrVulkanUniformBufferData& AxrVulkanUniformBufferData::operator=(AxrVulkanUnifo
         m_TransferQueue = src.m_TransferQueue;
         m_DispatchHandle = src.m_DispatchHandle;
         m_UniformBufferAlignment = src.m_UniformBufferAlignment;
+        m_IsDataDirty = src.m_IsDataDirty;
 
         if (m_UniformBufferHandle != nullptr) {
             m_UniformBufferHandle->removeOnDataChangedCallback<&AxrVulkanUniformBufferData::onDataChangedCallback>(
@@ -103,6 +96,7 @@ AxrVulkanUniformBufferData& AxrVulkanUniformBufferData::operator=(AxrVulkanUnifo
         src.m_TransferQueue = VK_NULL_HANDLE;
         src.m_DispatchHandle = nullptr;
         src.m_UniformBufferAlignment = 0;
+        src.m_IsDataDirty = false;
     }
 
     return *this;
@@ -209,7 +203,7 @@ void AxrVulkanUniformBufferData::destroyData() {
 }
 
 AxrResult AxrVulkanUniformBufferData::setData(
-    const uint32_t index,
+    const uint32_t frameIndex,
     const bool alignData,
     const vk::DeviceSize offset,
     const vk::DeviceSize size,
@@ -224,12 +218,12 @@ AxrResult AxrVulkanUniformBufferData::setData(
         return AXR_ERROR;
     }
 
-    if (index > m_UniformBuffers.size() - 1) {
+    if (frameIndex > m_UniformBuffers.size() - 1) {
         axrLogErrorLocation("Index out of bounds.");
         return AXR_ERROR;
     }
 
-    if (m_UniformBuffers[index].isEmpty()) {
+    if (m_UniformBuffers[frameIndex].isEmpty()) {
         axrLogErrorLocation("Buffer is empty.");
         return AXR_ERROR;
     }
@@ -238,7 +232,29 @@ AxrResult AxrVulkanUniformBufferData::setData(
     // Process
     // ----------------------------------------- //
 
-    return setData(m_UniformBuffers[index], alignData, offset, size, data);
+    return setData(m_UniformBuffers[frameIndex], alignData, offset, size, data);
+}
+
+void AxrVulkanUniformBufferData::updateDirtyData(const uint32_t frameIndex) const {
+    if (!m_IsDataDirty) return;
+
+    if (m_UniformBufferHandle == nullptr) {
+        axrLogErrorLocation("Uniform buffer handle is null.");
+        return;
+    }
+
+    const bool alignData = m_UniformBufferHandle->getBufferType() == AXR_UNIFORM_BUFFER_TYPE_DYNAMIC;
+    const AxrResult axrResult = setData(
+        frameIndex,
+        alignData,
+        0,
+        m_UniformBufferHandle->getDataSize(),
+        m_UniformBufferHandle->getData()
+    );
+
+    if (AXR_FAILED(axrResult)) {
+        axrLogErrorLocation("Failed to update uniform buffer data.");
+    }
 }
 
 // ---- Public Static Functions ----
@@ -293,6 +309,7 @@ void AxrVulkanUniformBufferData::cleanup() {
     m_TransferQueue = VK_NULL_HANDLE;
     m_DispatchHandle = nullptr;
     m_UniformBufferAlignment = 0;
+    m_IsDataDirty = false;
 }
 
 AxrResult AxrVulkanUniformBufferData::setAlignment() {
@@ -451,10 +468,7 @@ AxrResult AxrVulkanUniformBufferData::setData(
 }
 
 void AxrVulkanUniformBufferData::onDataChangedCallback() {
-    // TODO: Set an 'isDirty' flag here and nothing else.
-    //  Have a function in vulkanSceneData that updates all 'vulkan uniform buffer data's with the current frame index.
-    //  if the uniform buffer data is dirty, then it updates the data from the original uniform buffer handle.
-    auto test = 0;
+    m_IsDataDirty = true;
 }
 
 #endif

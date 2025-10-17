@@ -164,6 +164,10 @@ public:
         const void* data
     ) const;
 
+    /// Update all 'dirty' uniform buffer data
+    /// @param frameIndex Frame index to use
+    void updateDirtyUniformBufferData(uint32_t frameIndex) const;
+
     /// Set the UI Image data
     /// @param platformType Platform to set ui image data for
     /// @param frameIndex Frame index to use
