@@ -53,7 +53,8 @@ by another asset that the application wants to use and that asset doesn't alread
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_SCENE_DATA         |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA        |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS        |         Yes         |     ReadOnly      |           Yes           |
-| AXR_ENGINE_ASSET_UNIFORM_BUFFER_GLYPHS             |         Yes         |     ReadOnly      |           Yes           |
+| AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS          |         Yes         |     ReadOnly      |           Yes           |
+| AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA          |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MODEL_MATRIX |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_PUSH_CONSTANT_BUFFER_MVP_MATRIX   |         Yes         |     ReadOnly      |           Yes           |
 | AXR_ENGINE_ASSET_IMAGE_MISSING_TEXTURE             |         Yes         |   Constructable   |           Yes           |
