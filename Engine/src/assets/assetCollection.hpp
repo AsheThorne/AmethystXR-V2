@@ -195,6 +195,12 @@ public:
     /// @returns AXR_SUCCESS if the function succeeded
     [[nodiscard]] AxrResult createFont(AxrEngineAssetEnum engineAssetEnum);
 
+    /// Get the font ID for the named font
+    /// @param fontName Font name
+    /// @param fontID Output font ID
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult getFontID(const std::string& fontName, uint16_t& fontID) const;
+
     // ---- For Internal Use ----
     // These functions are only to be used internally in the AmethystXr engine.
     // They have not been given a publicly accessible function in the 'include headers' to be used by an application.
@@ -248,6 +254,10 @@ public:
     /// @param fontID The font ID
     /// @returns A handle to the font if it was found. nullptr if it wasn't found
     [[nodiscard]] const AxrFont* findFont(uint16_t fontID) const;
+    /// Find the font from the given font name
+    /// @param fontName The font name
+    /// @returns A handle to the font if it was found. nullptr if it wasn't found
+    [[nodiscard]] const AxrFont* findFont(const std::string& fontName) const;
 
     /// Get the shaders
     /// @returns A map of the shaders 

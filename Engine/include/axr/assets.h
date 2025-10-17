@@ -1259,6 +1259,17 @@ extern "C" {
         AxrAssetCollection_T assetCollection,
         AxrEngineAssetEnum engineAssetEnum
     );
+
+    /// Get the font ID for the named font
+    /// @param assetCollection Asset collection to use
+    /// @param fontName Font name
+    /// @param fontID Output font ID
+    /// @returns AXR_SUCCESS if the function succeeded
+    AXR_API AxrResult axrAssetCollectionGetFontID(
+        AxrAssetCollection_T assetCollection,
+        const char* fontName,
+        uint16_t* fontID
+    );
 }
 
 // ---------------------------------------------------------------------------------- //

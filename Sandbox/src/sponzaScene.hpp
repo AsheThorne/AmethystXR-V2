@@ -60,4 +60,5 @@ private:
     axr::UIImageData m_UIImageData;
     std::string fpsString;
     std::string deltaTimeString;
+    uint16_t m_FontID = 0;
 };

@@ -4093,6 +4093,14 @@ namespace axr {
             ));
         }
 
+        /// Get the font ID for the named font
+        /// @param fontName Font name
+        /// @param fontID Output font ID
+        /// @returns AXR_SUCCESS if the function succeeded
+        [[nodiscard]] axr::Result getFontID(const char* fontName, uint16_t* fontID) const {
+            return static_cast<axr::Result>(axrAssetCollectionGetFontID(m_AssetCollection, fontName, fontID));
+        }
+
     private:
         // ----------------------------------------- //
         // Private Variables

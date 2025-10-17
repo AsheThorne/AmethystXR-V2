@@ -236,6 +236,24 @@ AxrResult axrAssetCollectionCreateEngineAssetFont(
     return assetCollection->createFont(engineAssetEnum);
 }
 
+AxrResult axrAssetCollectionGetFontID(
+    const AxrAssetCollection_T assetCollection,
+    const char* fontName,
+    uint16_t* fontID
+) {
+    if (assetCollection == nullptr) {
+        axrLogErrorLocation("`assetCollection` is null.");
+        return AXR_ERROR;
+    }
+
+    if (fontID == nullptr) {
+        axrLogErrorLocation("`fontID` is null.");
+        return AXR_ERROR;
+    }
+
+    return assetCollection->getFontID(fontName, *fontID);
+}
+
 // ----------------------------------------- //
 // Internal Functions
 // ----------------------------------------- //
@@ -887,6 +905,17 @@ AxrResult AxrAssetCollection::createFont(const AxrEngineAssetEnum engineAssetEnu
     return AXR_SUCCESS;
 }
 
+AxrResult AxrAssetCollection::getFontID(const std::string& fontName, uint16_t& fontID) const {
+    const AxrFont* foundFont = findFont(fontName);
+    if (foundFont == nullptr) {
+        axrLogErrorLocation("Failed to find font named: {0}.", fontName.c_str());
+        return AXR_ERROR;
+    }
+
+    fontID = foundFont->getID();
+    return AXR_SUCCESS;
+}
+
 AxrResult AxrAssetCollection::createModel(const AxrEngineAssetEnum engineAssetEnum) {
     // ----------------------------------------- //
     // Validation
@@ -1151,7 +1180,11 @@ const AxrFont* AxrAssetCollection::findFont(const uint16_t fontID) const {
         return nullptr;
     }
 
-    const auto foundFontIterator = m_Fonts.find(foundFontNameIterator->second);
+    return findFont(foundFontNameIterator->second);
+}
+
+const AxrFont* AxrAssetCollection::findFont(const std::string& fontName) const {
+    const auto foundFontIterator = m_Fonts.find(fontName);
     if (foundFontIterator == m_Fonts.end()) {
         return nullptr;
     }

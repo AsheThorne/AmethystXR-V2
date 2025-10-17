@@ -342,6 +342,15 @@ axr::Result SponzaScene::setup() {
         }
     );
 
+    if (AXR_FAILED(
+        m_Application.getGlobalAssetCollection().getFontID(
+            axr::engineAssetGetName(axr::EngineAssetEnum::FontJetbrainsMono_Regular),
+            &m_FontID
+        )
+    )) {
+        return axr::Result::Error;
+    }
+
     return axr::Result::Success;
 }
 
@@ -465,8 +474,7 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                                 1.0f,
                                 1.0f
                             },
-                            // TODO: get the font ID
-                            .fontId = 0,
+                            .fontId = m_FontID,
                             .fontSize = 20,
                         }
                     );
@@ -550,8 +558,7 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                                     1.0f,
                                     1.0f
                                 },
-                                // TODO: get the font ID
-                                .fontId = 0,
+                                .fontId = m_FontID,
                                 .fontSize = 14,
                             }
                         );
