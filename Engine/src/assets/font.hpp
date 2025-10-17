@@ -11,6 +11,7 @@
 // C/C++ Headers
 // ----------------------------------------- //
 #include <string>
+#include <map>
 
 // ----------------------------------------- //
 // Json Headers
@@ -38,16 +39,23 @@ public:
 
     /// Font Atlas Bounds
     struct Bounds {
-        float Left;
-        float Right;
-        float Top;
-        float Bottom;
+        float Left = 0.0f;
+        float Right = 0.0f;
+        float Top = 0.0f;
+        float Bottom = 0.0f;
     };
 
     /// Font Glyph
     struct Glyph {
-        uint32_t Unicode;
+        uint32_t Unicode = 0;
+        uint32_t UniformBufferIndex = 0;
+        /// The horizontal advance in em's
+        float Advance = 0.0f;
+        /// The glyph quad's bounds in em's relative to the baseline and horizontal cursor position
+        Bounds PlaneBounds;
+        /// The glyph's bounds in the atlas in pixels
         Bounds AtlasPixelBounds;
+        /// The normalized glyph's bounds in the atlas (ranged from 1-0)
         Bounds AtlasUVBounds;
     };
 
@@ -60,11 +68,12 @@ public:
         Type Type = Type::Undefined;
         uint32_t AtlasWidth = 0;
         uint32_t AtlasHeight = 0;
+        float Size = 0.0f;
         float LineHeight = 0.0f;
         float UnderlineY = 0.0f;
         float UnderlineThickness = 0.0f;
         /// Key is the Unicode character, value is the glyph data
-        std::unordered_map<uint32_t, Glyph> Glyphs;
+        std::map<uint32_t, Glyph> Glyphs;
 
         // ----------------------------------------- //
         // Special Functions
@@ -75,89 +84,6 @@ public:
         /// Default Constructor
         Data() = default;
 
-        /// Copy Constructor
-        /// @param src Source Data to copy from
-        Data(const Data& src) {
-            Type = src.Type;
-            AtlasWidth = src.AtlasWidth;
-            AtlasHeight = src.AtlasHeight;
-            LineHeight = src.LineHeight;
-            UnderlineY = src.UnderlineY;
-            UnderlineThickness = src.UnderlineThickness;
-            Glyphs = src.Glyphs;
-        }
-
-        /// Move Constructor
-        /// @param src Source Data to move from
-        Data(Data&& src) noexcept {
-            Glyphs = std::move(src.Glyphs);
-
-            Type = src.Type;
-            AtlasWidth = src.AtlasWidth;
-            AtlasHeight = src.AtlasHeight;
-            LineHeight = src.LineHeight;
-            UnderlineY = src.UnderlineY;
-            UnderlineThickness = src.UnderlineThickness;
-
-            src.Type = Type::Undefined;
-            src.AtlasWidth = 0;
-            src.AtlasHeight = 0;
-            src.LineHeight = 0.0f;
-            src.UnderlineY = 0.0f;
-            src.UnderlineThickness = 0.0f;
-        }
-
-        // ---- Destructor ----
-
-        /// Destructor
-        ~Data() {
-            cleanup();
-        }
-
-        // ---- Operator Overloads ----
-
-        /// Copy Assignment Operator
-        /// @param src Source Data to copy from
-        Data& operator=(const Data& src) {
-            if (this != &src) {
-                cleanup();
-
-                Type = src.Type;
-                AtlasWidth = src.AtlasWidth;
-                AtlasHeight = src.AtlasHeight;
-                LineHeight = src.LineHeight;
-                UnderlineY = src.UnderlineY;
-                UnderlineThickness = src.UnderlineThickness;
-                Glyphs = src.Glyphs;
-            }
-            return *this;
-        }
-
-        /// Move Assignment Operator
-        /// @param src Source Data to move from
-        Data& operator=(Data&& src) noexcept {
-            if (this != &src) {
-                cleanup();
-
-                Glyphs = std::move(src.Glyphs);
-
-                Type = src.Type;
-                AtlasWidth = src.AtlasWidth;
-                AtlasHeight = src.AtlasHeight;
-                LineHeight = src.LineHeight;
-                UnderlineY = src.UnderlineY;
-                UnderlineThickness = src.UnderlineThickness;
-
-                src.Type = Type::Undefined;
-                src.AtlasWidth = 0;
-                src.AtlasHeight = 0;
-                src.LineHeight = 0.0f;
-                src.UnderlineY = 0.0f;
-                src.UnderlineThickness = 0.0f;
-            }
-            return *this;
-        }
-
         // ----------------------------------------- //
         // Public Functions
         // ----------------------------------------- //
@@ -167,6 +93,7 @@ public:
             Type = Type::Undefined;
             AtlasWidth = 0;
             AtlasHeight = 0;
+            Size = 0.0f;
             LineHeight = 0.0f;
             UnderlineY = 0.0f;
             UnderlineThickness = 0.0f;
@@ -179,6 +106,7 @@ public:
             return Type != Type::Undefined &&
                 AtlasWidth != 0 &&
                 AtlasHeight != 0 &&
+                Size != 0 &&
                 LineHeight != 0.0f &&
                 !Glyphs.empty();
         }
@@ -233,6 +161,10 @@ public:
     /// Get the font's glyph uniform buffer
     /// @returns The font's glyph uniform buffer
     [[nodiscard]] const AxrUniformBuffer& getGlyphUniformBuffer() const;
+    /// Get the glyph data for the given Unicode
+    /// @param unicode Unicode
+    /// @returns A handle to the glyph data. Or nullptr if it wasn't found
+    [[nodiscard]] const AxrFont::Glyph* getGlyph(uint32_t unicode) const;
 
     // ---- For Internal Use ----
     // These functions are only to be used internally in the AmethystXr engine.

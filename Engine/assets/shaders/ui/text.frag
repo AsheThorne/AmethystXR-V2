@@ -26,6 +26,8 @@ vec2 atlasUV() {
 }
 
 float screenPxRange() {
+    // TODO: Pre calculate the unit range and pass it in uniform buffer
+    //  The '2' is the distanceRange value in the font atlas
     vec2 unitRange = vec2(2.0) / vec2(textureSize(texAtlas, 0));
     vec2 screenTexSize = vec2(1.0) / fwidth(atlasUV());
     return max(0.5 * dot(unitRange, screenTexSize), 1.0);

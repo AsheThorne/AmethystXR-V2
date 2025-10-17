@@ -159,6 +159,15 @@ const AxrUniformBuffer& AxrFont::getGlyphUniformBuffer() const {
     return m_GlyphUniformBuffer;
 }
 
+const AxrFont::Glyph* AxrFont::getGlyph(const uint32_t unicode) const {
+    const auto foundGlyph = m_Data.Glyphs.find(unicode);
+    if (foundGlyph == m_Data.Glyphs.end()) {
+        return nullptr;
+    }
+
+    return &foundGlyph->second;
+}
+
 bool AxrFont::isLoaded() const {
     return m_Data.isValid();
 }
@@ -214,6 +223,11 @@ AxrResult AxrFont::loadFile() const {
         return readDataError(file);
     }
 
+    if (atlas.value("yOrigin", "") != "bottom") {
+        axrLogErrorLocation("Only 'bottom' yOrigin is currently supported.");
+        return readDataError(file);
+    }
+
     Data fontData;
 
     const std::string& atlasType = atlas.value("type", "");
@@ -227,6 +241,7 @@ AxrResult AxrFont::loadFile() const {
 
     fontData.AtlasWidth = atlas.value("width", 0);
     fontData.AtlasHeight = atlas.value("height", 0);
+    fontData.Size = atlas.value("size", 0.0f);
 
     fontData.LineHeight = metrics.value("lineHeight", 0.0f);
     fontData.UnderlineY = metrics.value("underlineY", 0.0f);
@@ -238,6 +253,9 @@ AxrResult AxrFont::loadFile() const {
             axrResult = AXR_ERROR;
             break;
         }
+
+        float advance = glyph.value("advance", 0.0f);
+
         Bounds atlasBoundsData{};
         if (glyph.contains("atlasBounds")) {
             const json& atlasBounds = glyph["atlasBounds"];
@@ -253,18 +271,30 @@ AxrResult AxrFont::loadFile() const {
             };
         }
 
+        Bounds planeBoundsData{};
+        if (glyph.contains("planeBounds")) {
+            const json& planeBounds = glyph["planeBounds"];
+            if (!planeBounds.is_object()) {
+                axrResult = AXR_ERROR;
+                break;
+            }
+            planeBoundsData = Bounds{
+                .Left = planeBounds.value("left", 0.0f),
+                .Right = planeBounds.value("right", 0.0f),
+                .Top = planeBounds.value("top", 0.0f),
+                .Bottom = planeBounds.value("bottom", 0.0f),
+            };
+        }
+
         uint32_t unicode = glyph.value("unicode", 0);
         fontData.Glyphs.emplace(
             std::pair(
                 unicode,
                 Glyph{
                     .Unicode = unicode,
-                    .AtlasPixelBounds = Bounds{
-                        .Left = atlasBoundsData.Left,
-                        .Right = atlasBoundsData.Right,
-                        .Top = atlasBoundsData.Top,
-                        .Bottom = atlasBoundsData.Bottom,
-                    },
+                    .Advance = advance,
+                    .PlaneBounds = planeBoundsData,
+                    .AtlasPixelBounds = atlasBoundsData,
                     .AtlasUVBounds = {
                         .Left = atlasBoundsData.Left / static_cast<float>(fontData.AtlasWidth),
                         .Right = atlasBoundsData.Right / static_cast<float>(fontData.AtlasWidth),
@@ -284,7 +314,10 @@ AxrResult AxrFont::loadFile() const {
 
     std::vector<AxrEngineAssetUniformBuffer_UIGlyph> uiGlyphUniformBufferData;
     uiGlyphUniformBufferData.reserve(m_Data.Glyphs.size());
-    for (const Glyph& glyph : m_Data.Glyphs | std::views::values) {
+    uint32_t index = 0;
+    for (Glyph& glyph : m_Data.Glyphs | std::views::values) {
+        glyph.UniformBufferIndex = index++;
+
         uiGlyphUniformBufferData.push_back(
             AxrEngineAssetUniformBuffer_UIGlyph{
                 .Size = glm::vec2(

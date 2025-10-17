@@ -237,13 +237,17 @@ public:
     /// Find the named shader
     /// @param name Name of the shader
     /// @returns A handle to the shader if it was found. nullptr if it wasn't found
-    [[nodiscard]] const AxrShader* findShader(const std::string& name);
+    [[nodiscard]] const AxrShader* findShader(const std::string& name) const;
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
     /// Find the named push constant buffer
     /// @param name Name of the push constant buffer
     /// @returns A handle to the push constant buffer if it was found. nullptr if it wasn't found
-    [[nodiscard]] const AxrPushConstantBuffer* findPushConstantBuffer(const std::string& name);
+    [[nodiscard]] const AxrPushConstantBuffer* findPushConstantBuffer(const std::string& name) const;
 #endif
+    /// Find the font from the given fontID
+    /// @param fontID The font ID
+    /// @returns A handle to the font if it was found. nullptr if it wasn't found
+    [[nodiscard]] const AxrFont* findFont(uint16_t fontID) const;
 
     /// Get the shaders
     /// @returns A map of the shaders 
@@ -296,6 +300,7 @@ private:
     std::unordered_map<std::string, AxrImage> m_Images;
     std::unordered_map<std::string, AxrImageSampler> m_ImageSamplers;
     std::unordered_map<std::string, AxrFont> m_Fonts;
+    std::unordered_map<uint16_t, std::string> m_FontNames;
 
     // ----------------------------------------- //
     // Private Functions

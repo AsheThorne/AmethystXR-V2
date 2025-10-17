@@ -268,6 +268,7 @@ AxrAssetCollection::AxrAssetCollection(AxrAssetCollection&& src) noexcept {
     m_Images = std::move(src.m_Images);
     m_ImageSamplers = std::move(src.m_ImageSamplers);
     m_Fonts = std::move(src.m_Fonts);
+    m_FontNames = std::move(src.m_FontNames);
 
     m_IsGlobalAssetCollection = src.m_IsGlobalAssetCollection;
     m_GraphicsApi = src.m_GraphicsApi;
@@ -304,6 +305,7 @@ AxrAssetCollection& AxrAssetCollection::operator=(AxrAssetCollection&& src) noex
         m_Images = std::move(src.m_Images);
         m_ImageSamplers = std::move(src.m_ImageSamplers);
         m_Fonts = std::move(src.m_Fonts);
+        m_FontNames = std::move(src.m_FontNames);
 
         m_IsGlobalAssetCollection = src.m_IsGlobalAssetCollection;
         m_GraphicsApi = src.m_GraphicsApi;
@@ -784,23 +786,34 @@ AxrResult AxrAssetCollection::createFont(const AxrFontConfig& fontConfig) {
         return AXR_ERROR;
     }
 
-    // ----------------------------------------- //
-    // Process
-    // ----------------------------------------- //
-
     uint16_t id;
     if (AXR_FAILED(generateFontID(id))) {
         axrLogErrorLocation("Font ID isn't valid.");
         return AXR_ERROR;
     }
 
-    const auto insertResult = m_Fonts.insert(std::pair(fontConfig.Name, AxrFont(fontConfig, id)));
-    if (!insertResult.second) {
+    if (m_FontNames.contains(id)) {
+        axrLogErrorLocation("Font ID already exists.");
+        return AXR_ERROR;
+    }
+
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    const auto fontInsertResult = m_Fonts.insert(std::pair(fontConfig.Name, AxrFont(fontConfig, id)));
+    if (!fontInsertResult.second) {
         axrLogErrorLocation("Failed to insert font.");
         return AXR_ERROR;
     }
 
-    OnFontCreatedCallbackGraphics(&insertResult.first->second);
+    const auto fontNameInsertResult = m_FontNames.insert(std::pair(id, fontConfig.Name));
+    if (!fontInsertResult.second) {
+        axrLogErrorLocation("Failed to insert font name.");
+        return AXR_ERROR;
+    }
+
+    OnFontCreatedCallbackGraphics(&fontInsertResult.first->second);
 
     return AXR_SUCCESS;
 }
@@ -832,6 +845,11 @@ AxrResult AxrAssetCollection::createFont(const AxrEngineAssetEnum engineAssetEnu
         return AXR_ERROR;
     }
 
+    if (m_FontNames.contains(id)) {
+        axrLogErrorLocation("Font ID already exists.");
+        return AXR_ERROR;
+    }
+
     AxrEngineAssetEnum fontImageAtlas = AXR_ENGINE_ASSET_UNDEFINED;
     AxrFont font;
     AxrResult axrResult = axrEngineAssetCreateFont(id, engineAssetEnum, font, fontImageAtlas);
@@ -852,13 +870,19 @@ AxrResult AxrAssetCollection::createFont(const AxrEngineAssetEnum engineAssetEnu
         }
     }
 
-    const auto insertResult = m_Fonts.insert(std::pair(fontName, std::move(font)));
-    if (!insertResult.second) {
+    const auto fontInsertResult = m_Fonts.insert(std::pair(fontName, std::move(font)));
+    if (!fontInsertResult.second) {
         axrLogErrorLocation("Failed to insert font.");
         return AXR_ERROR;
     }
 
-    OnFontCreatedCallbackGraphics(&insertResult.first->second);
+    const auto fontNameInsertResult = m_FontNames.insert(std::pair(id, fontName));
+    if (!fontInsertResult.second) {
+        axrLogErrorLocation("Failed to insert font name.");
+        return AXR_ERROR;
+    }
+
+    OnFontCreatedCallbackGraphics(&fontInsertResult.first->second);
 
     return AXR_SUCCESS;
 }
@@ -1017,6 +1041,7 @@ void AxrAssetCollection::cleanup() {
     m_Images.clear();
     m_ImageSamplers.clear();
     m_Fonts.clear();
+    m_FontNames.clear();
 
     m_IsGlobalAssetCollection = false;
     m_GraphicsApi = AXR_GRAPHICS_API_UNDEFINED;
@@ -1100,7 +1125,7 @@ void AxrAssetCollection::unloadAssets() {
     }
 }
 
-const AxrShader* AxrAssetCollection::findShader(const std::string& name) {
+const AxrShader* AxrAssetCollection::findShader(const std::string& name) const {
     const auto foundShaderIterator = m_Shaders.find(name);
     if (foundShaderIterator == m_Shaders.end()) {
         return nullptr;
@@ -1110,7 +1135,7 @@ const AxrShader* AxrAssetCollection::findShader(const std::string& name) {
 }
 
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
-const AxrPushConstantBuffer* AxrAssetCollection::findPushConstantBuffer(const std::string& name) {
+const AxrPushConstantBuffer* AxrAssetCollection::findPushConstantBuffer(const std::string& name) const {
     const auto foundPushConstantBufferIterator = m_PushConstantBuffers.find(name);
     if (foundPushConstantBufferIterator == m_PushConstantBuffers.end()) {
         return nullptr;
@@ -1119,6 +1144,20 @@ const AxrPushConstantBuffer* AxrAssetCollection::findPushConstantBuffer(const st
     return &foundPushConstantBufferIterator->second;
 }
 #endif
+
+const AxrFont* AxrAssetCollection::findFont(const uint16_t fontID) const {
+    const auto foundFontNameIterator = m_FontNames.find(fontID);
+    if (foundFontNameIterator == m_FontNames.end()) {
+        return nullptr;
+    }
+
+    const auto foundFontIterator = m_Fonts.find(foundFontNameIterator->second);
+    if (foundFontIterator == m_Fonts.end()) {
+        return nullptr;
+    }
+
+    return &foundFontIterator->second;
+}
 
 const std::unordered_map<std::string, AxrShader>& AxrAssetCollection::getShaders() {
     return m_Shaders;

@@ -441,7 +441,10 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                                 .childGap = 16,
                             },
                             .backgroundColor = Clay_Color{
-                                0.1, 0.0, 0.2, 0.5
+                                0.1,
+                                0.0,
+                                0.2,
+                                1.0
                             },
                             .cornerRadius = Clay_CornerRadius{
                                 .topLeft = 10,

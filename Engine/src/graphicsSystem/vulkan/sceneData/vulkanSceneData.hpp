@@ -177,6 +177,11 @@ public:
 
     // ---- Find Assets ----
 
+    /// Find the font with the given fontID, including the global data in the search
+    /// @param fontID The font ID
+    /// @returns A handle to the found font. Or nullptr if it wasn't found
+    [[nodiscard]] AxrFontConst_T findFont_shared(uint16_t fontID) const;
+
     /// Find the named push constant buffer, including the global data in the search
     /// @param name The name of the push constant buffer
     /// @returns A handle to the found push constant buffer. Or nullptr if it wasn't found

@@ -406,6 +406,23 @@ AxrResult AxrVulkanSceneData::setUIImageData(
     return writeUIImageDescriptorSets(platformType, frameIndex, viewCount, uiImageData);
 }
 
+AxrFontConst_T AxrVulkanSceneData::findFont_shared(const uint16_t fontID) const {
+    AxrAssetCollectionConst_T assetCollectionHandle = m_AssetCollection;
+
+    if (AxrAssetCollection::isGlobalFont(fontID) && m_GlobalSceneData != nullptr) {
+        assetCollectionHandle = m_GlobalSceneData->m_AssetCollection;
+    }
+
+    if (assetCollectionHandle == nullptr) {
+        axrLogErrorLocation("Asset collection is null.");
+        return nullptr;
+    }
+
+    return assetCollectionHandle->findFont(fontID);
+}
+
+// TODO: Remove the 'shared' thing and don't do the search recursively. have a param for 'shared' instead that defaults to true
+//  Copy the format used in findFont_shared for all 'find' functions
 const AxrPushConstantBuffer* AxrVulkanSceneData::findPushConstantBuffer_shared(const std::string& name) const {
     if (name.empty()) return nullptr;
 
