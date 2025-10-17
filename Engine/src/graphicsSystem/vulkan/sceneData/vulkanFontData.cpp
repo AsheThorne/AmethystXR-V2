@@ -32,6 +32,18 @@ AxrVulkanFontData::AxrVulkanFontData(const Config& config):
         );
         setMaterialDataCallbacks();
 
+        m_FontUniformBufferData = AxrVulkanUniformBufferData(
+            AxrVulkanUniformBufferData::Config{
+                .UniformBufferHandle = &m_FontHandle->getFontDataUniformBuffer(),
+                .MaxFramesInFlight = config.MaxFramesInFlight,
+                .PhysicalDevice = config.PhysicalDevice,
+                .Device = m_Device,
+                .TransferCommandPool = config.TransferCommandPool,
+                .TransferQueue = config.TransferQueue,
+                .DispatchHandle = m_DispatchHandle,
+            }
+        );
+
         m_GlyphUniformBufferData = AxrVulkanUniformBufferData(
             AxrVulkanUniformBufferData::Config{
                 .UniformBufferHandle = &m_FontHandle->getGlyphUniformBuffer(),
@@ -51,6 +63,7 @@ AxrVulkanFontData::AxrVulkanFontData(AxrVulkanFontData&& src) noexcept {
     FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
     FindImageCallback = std::move(src.FindImageCallback);
     m_MaterialData = std::move(src.m_MaterialData);
+    m_FontUniformBufferData = std::move(src.m_FontUniformBufferData);
     m_GlyphUniformBufferData = std::move(src.m_GlyphUniformBufferData);
 
     // We need to set these again because 'this' changed
@@ -77,6 +90,7 @@ AxrVulkanFontData& AxrVulkanFontData::operator=(AxrVulkanFontData&& src) noexcep
         FindImageSamplerCallback = std::move(src.FindImageSamplerCallback);
         FindImageCallback = std::move(src.FindImageCallback);
         m_MaterialData = std::move(src.m_MaterialData);
+        m_FontUniformBufferData = std::move(src.m_FontUniformBufferData);
         m_GlyphUniformBufferData = std::move(src.m_GlyphUniformBufferData);
 
         // We need to set these again because 'this' changed
@@ -115,12 +129,17 @@ const AxrVulkanMaterialData& AxrVulkanFontData::getMaterialData() const {
     return m_MaterialData;
 }
 
+const AxrVulkanUniformBufferData& AxrVulkanFontData::getFontUniformBufferData() const {
+    return m_FontUniformBufferData;
+}
+
 const AxrVulkanUniformBufferData& AxrVulkanFontData::getGlyphUniformBufferData() const {
     return m_GlyphUniformBufferData;
 }
 
 bool AxrVulkanFontData::doesDataExist() const {
     return m_MaterialData.doesDataExist() &&
+        m_FontUniformBufferData.doesDataExist() &&
         m_GlyphUniformBufferData.doesDataExist();
 }
 
@@ -157,6 +176,12 @@ AxrResult AxrVulkanFontData::createData() {
         }
     }
 
+    axrResult = m_FontUniformBufferData.createData();
+    if (AXR_FAILED(axrResult)) {
+        destroyData();
+        return axrResult;
+    }
+
     axrResult = m_GlyphUniformBufferData.createData();
     if (AXR_FAILED(axrResult)) {
         destroyData();
@@ -174,6 +199,7 @@ AxrResult AxrVulkanFontData::createData() {
 
 void AxrVulkanFontData::destroyData() {
     m_MaterialData.destroyData();
+    m_FontUniformBufferData.destroyData();
     m_GlyphUniformBufferData.destroyData();
 }
 
@@ -224,6 +250,10 @@ const AxrVulkanUniformBufferData* AxrVulkanFontData::findUniformBufferData(
     const AxrPlatformType platformType,
     const uint32_t viewIndex
 ) const {
+    if (name == axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA)) {
+        return &m_FontUniformBufferData;
+    }
+
     if (name == axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS)) {
         return &m_GlyphUniformBufferData;
     }

@@ -106,6 +106,9 @@ public:
     /// Get the font's material data
     /// @returns The font's material data
     [[nodiscard]] const AxrVulkanMaterialData& getMaterialData() const;
+    /// Get the font data uniform buffer data
+    /// @returns The font data uniform buffer data
+    [[nodiscard]] const AxrVulkanUniformBufferData& getFontUniformBufferData() const;
     /// Get the font's glyph uniform buffer data
     /// @returns The font's glyph uniform buffer data
     [[nodiscard]] const AxrVulkanUniformBufferData& getGlyphUniformBufferData() const;
@@ -164,6 +167,7 @@ private:
     /// This should never be used for anything other than returning a reference to the name if no name can be found.
     std::string m_DummyName;
     AxrVulkanMaterialData m_MaterialData = {};
+    AxrVulkanUniformBufferData m_FontUniformBufferData = {};
     AxrVulkanUniformBufferData m_GlyphUniformBufferData = {};
 
     // ----------------------------------------- //

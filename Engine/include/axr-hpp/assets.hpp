@@ -3171,6 +3171,7 @@ namespace axr {
         UniformBufferCameraData = AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA,
         UniformBufferUIElements = AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS,
         UniformBufferUIGlyphs = AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS,
+        UniformBufferFontData = AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA,
         UniformBufferEnd = AXR_ENGINE_ASSET_UNIFORM_BUFFER_END,
 
         // ---- Push Constant Buffers ----
@@ -3599,6 +3600,56 @@ namespace axr {
 
     static_assert(
         sizeof(AxrEngineAssetUniformBuffer_UIGlyph) == sizeof(axr::EngineAssetUniformBuffer_UIGlyph),
+        "Original type and wrapper have different size!"
+    );
+
+    /// Engine asset uniform buffer named 'Font Data' structure
+    struct alignas(16) EngineAssetUniformBuffer_FontData {
+        // ----------------------------------------- //
+        // Public Variables
+        // ----------------------------------------- //
+        alignas(4) float SdfDistanceRange = 0.0f;
+        alignas(8) glm::vec2 SdfUnitRange = {};
+        float _padding = {};
+
+        // ----------------------------------------- //
+        // Special Functions
+        // ----------------------------------------- //
+
+        // ---- Constructors ----
+
+        /// Default Constructor
+        EngineAssetUniformBuffer_FontData() = default;
+
+        /// Constructor
+        /// @param sdfDistanceRange The sdf distance range
+        /// @param sdfUnitRange The precalculated sdf unit range
+        EngineAssetUniformBuffer_FontData(
+            const float sdfDistanceRange,
+            const glm::vec2& sdfUnitRange
+        ): SdfDistanceRange(sdfDistanceRange),
+            SdfUnitRange(sdfUnitRange) {
+        }
+
+        // ----------------------------------------- //
+        // Public Functions
+        // ----------------------------------------- //
+
+        /// Get a handle to the EngineAssetUniformBuffer_FontData as an AxrEngineAssetUniformBuffer_FontData
+        /// @returns This as an AxrEngineAssetUniformBuffer_FontData
+        const AxrEngineAssetUniformBuffer_FontData* toRaw() const {
+            return reinterpret_cast<const AxrEngineAssetUniformBuffer_FontData*>(this);
+        }
+
+        /// Get a handle to the EngineAssetUniformBuffer_FontData as an AxrEngineAssetUniformBuffer_FontData
+        /// @returns This as an AxrEngineAssetUniformBuffer_FontData
+        AxrEngineAssetUniformBuffer_FontData* toRaw() {
+            return reinterpret_cast<AxrEngineAssetUniformBuffer_FontData*>(this);
+        }
+    };
+
+    static_assert(
+        sizeof(AxrEngineAssetUniformBuffer_FontData) == sizeof(axr::EngineAssetUniformBuffer_FontData),
         "Original type and wrapper have different size!"
     );
 

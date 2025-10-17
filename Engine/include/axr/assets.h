@@ -910,6 +910,7 @@ enum AxrEngineAssetEnum {
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_CAMERA_DATA = 66,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS = 67,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS = 68,
+    AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA = 69,
     AXR_ENGINE_ASSET_UNIFORM_BUFFER_END = 96,
 
     // ---- Push Constant Buffers - Max of 32 ----
@@ -1027,6 +1028,13 @@ struct alignas(16) AxrEngineAssetUniformBuffer_UIGlyph {
     alignas(8) glm::vec2 Size;
     /// Normalized offset (0 - 1)
     alignas(8) glm::vec2 AtlasOffset;
+};
+
+/// Engine asset uniform buffer named 'Font Data' structure
+struct alignas(16) AxrEngineAssetUniformBuffer_FontData {
+    alignas(4) float SdfDistanceRange;
+    alignas(8) glm::vec2 SdfUnitRange;
+    float _padding;
 };
 
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN

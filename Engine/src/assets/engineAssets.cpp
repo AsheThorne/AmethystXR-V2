@@ -103,6 +103,10 @@ const std::unordered_map EngineAssetUniformBufferNames{
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS,
         AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "UIGlyphs"
     ),
+    std::pair(
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA,
+        AXR_ENGINE_ASSET_UNIFORM_BUFFER_PREFIX "FontData"
+    ),
 };
 
 // ----------------------------------------- //
@@ -277,6 +281,9 @@ uint64_t axrEngineAssetGetUniformBufferSize(const AxrEngineAssetEnum engineAsset
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS: {
             return sizeof(AxrEngineAssetUniformBuffer_UIGlyph) * AXR_MAX_FONT_ATLAS_GLYPH_COUNT;
         }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA: {
+            return sizeof(AxrEngineAssetUniformBuffer_FontData);
+        }
         case AXR_ENGINE_ASSET_UNDEFINED:
         default: { // NOLINT(clang-diagnostic-covered-switch-default)
             return 0;
@@ -303,6 +310,9 @@ uint64_t axrEngineAssetGetUniformBufferInstanceSize(const AxrEngineAssetEnum eng
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS: {
             return sizeof(AxrEngineAssetUniformBuffer_UIGlyph);
         }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA: {
+            return sizeof(AxrEngineAssetUniformBuffer_FontData);
+        }
         case AXR_ENGINE_ASSET_UNDEFINED:
         default: { // NOLINT(clang-diagnostic-covered-switch-default)
             return 0;
@@ -328,6 +338,9 @@ AxrUniformBufferTypeEnum axrEngineAssetGetUniformBufferType(const AxrEngineAsset
         }
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS: {
             return AXR_UNIFORM_BUFFER_TYPE_DYNAMIC;
+        }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA: {
+            return AXR_UNIFORM_BUFFER_TYPE_STANDARD;
         }
         case AXR_ENGINE_ASSET_UNDEFINED:
         default: { // NOLINT(clang-diagnostic-covered-switch-default)
@@ -805,17 +818,23 @@ AxrResult axrEngineAssetCreateShader_UITextFrag(const AxrGraphicsApiEnum graphic
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS),
     };
 
-    AxrShaderDynamicUniformBufferLayout uiGlyphUniformBufferLayout{
+    AxrShaderUniformBufferLayout fontDataUniformBufferLayout{
         .Binding = 2,
+        .BufferSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA),
+    };
+
+    AxrShaderDynamicUniformBufferLayout uiGlyphUniformBufferLayout{
+        .Binding = 3,
         .InstanceSize = axrEngineAssetGetUniformBufferInstanceSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS),
     };
 
     AxrShaderImageSamplerBufferLayout imageSamplerBufferLayout{
-        .Binding = 3,
+        .Binding = 4,
     };
 
     std::array bufferLayouts{
         reinterpret_cast<AxrShaderBufferLayout_T>(&uiElementUniformBufferLayout),
+        reinterpret_cast<AxrShaderBufferLayout_T>(&fontDataUniformBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&uiGlyphUniformBufferLayout),
         reinterpret_cast<AxrShaderBufferLayout_T>(&imageSamplerBufferLayout),
     };
@@ -908,6 +927,9 @@ AxrResult axrEngineAssetCreateUniformBuffer(const AxrEngineAssetEnum engineAsset
         case AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS: {
             return axrEngineAssetCreateUniformBuffer_UIGlyphs(uniformBuffer);
         }
+        case AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA: {
+            return axrEngineAssetCreateUniformBuffer_FontData(uniformBuffer);
+        }
         case AXR_ENGINE_ASSET_UNDEFINED:
         default: { // NOLINT(clang-diagnostic-covered-switch-default)
             axrLogErrorLocation("Unknown uniform buffer engine asset.");
@@ -985,6 +1007,23 @@ AxrResult axrEngineAssetCreateUniformBuffer_UIGlyphs(AxrUniformBuffer& uniformBu
     strncpy_s(
         uniformBufferConfig.Name,
         axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+
+    uniformBuffer = AxrUniformBuffer(uniformBufferConfig);
+
+    return AXR_SUCCESS;
+}
+
+AxrResult axrEngineAssetCreateUniformBuffer_FontData(AxrUniformBuffer& uniformBuffer) {
+    AxrUniformBufferConfig uniformBufferConfig{
+        .Name = {},
+        .DataSize = axrEngineAssetGetUniformBufferSize(AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA),
+        .Data = nullptr,
+    };
+    strncpy_s(
+        uniformBufferConfig.Name,
+        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA),
         AXR_MAX_ASSET_NAME_SIZE
     );
 
@@ -1451,8 +1490,18 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
         AXR_MAX_ASSET_NAME_SIZE
     );
 
-    AxrShaderUniformBufferLink glyphUniformBufferLink{
+    AxrShaderUniformBufferLink fontDataUniformBufferLink{
         .Binding = 2,
+        .BufferName = {},
+    };
+    strncpy_s(
+        fontDataUniformBufferLink.BufferName,
+        axrEngineAssetGetUniformBufferName(AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA),
+        AXR_MAX_ASSET_NAME_SIZE
+    );
+
+    AxrShaderUniformBufferLink glyphUniformBufferLink{
+        .Binding = 3,
         .BufferName = {},
     };
     strncpy_s(
@@ -1462,7 +1511,7 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
     );
 
     AxrShaderImageSamplerBufferLink imageSamplerBufferLink{
-        .Binding = 3,
+        .Binding = 4,
         .ImageName = {},
         .ImageSamplerName = {},
     };
@@ -1479,6 +1528,7 @@ AxrResult axrEngineAssetCreateMaterial_UIText(
 
     std::array fragmentBufferLinks{
         reinterpret_cast<AxrShaderBufferLink_T>(&uiElementUniformBufferLink),
+        reinterpret_cast<AxrShaderBufferLink_T>(&fontDataUniformBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&glyphUniformBufferLink),
         reinterpret_cast<AxrShaderBufferLink_T>(&imageSamplerBufferLink),
     };

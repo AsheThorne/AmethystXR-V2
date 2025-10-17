@@ -66,6 +66,7 @@ public:
         // Public Variables
         // ----------------------------------------- //
         Type Type = Type::Undefined;
+        float DistanceRange = 0.0f;
         uint32_t AtlasWidth = 0;
         uint32_t AtlasHeight = 0;
         float Size = 0.0f;
@@ -91,6 +92,7 @@ public:
         /// Clean up this class
         void cleanup() {
             Type = Type::Undefined;
+            DistanceRange = 0.0f;
             AtlasWidth = 0;
             AtlasHeight = 0;
             Size = 0.0f;
@@ -104,6 +106,7 @@ public:
         /// @returns True if this data is valid
         [[nodiscard]] bool isValid() const {
             return Type != Type::Undefined &&
+                DistanceRange != 0.0f &&
                 AtlasWidth != 0 &&
                 AtlasHeight != 0 &&
                 Size != 0 &&
@@ -158,6 +161,9 @@ public:
     /// Get the font's material
     /// @returns The font's material
     [[nodiscard]] const AxrMaterial& getMaterial() const;
+    /// Get the font data uniform buffer
+    /// @returns The font data uniform buffer
+    [[nodiscard]] const AxrUniformBuffer& getFontDataUniformBuffer() const;
     /// Get the font's glyph uniform buffer
     /// @returns The font's glyph uniform buffer
     [[nodiscard]] const AxrUniformBuffer& getGlyphUniformBuffer() const;
@@ -193,6 +199,7 @@ private:
 
     // ---- Data ----
     AxrMaterial m_Material;
+    mutable AxrUniformBuffer m_FontDataUniformBuffer;
     mutable AxrUniformBuffer m_GlyphUniformBuffer;
 
     mutable Data m_Data;
@@ -204,4 +211,14 @@ private:
 
     /// Clean up this class
     void cleanup();
+
+    /// Load atlas layout data
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult loadAtlasLayoutData() const;
+    /// Set the 'font data' uniform buffer data
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult setFontUniformBufferData() const;
+    /// Set the 'glyph' uniform buffer data
+    /// @returns AXR_SUCCESS if the function succeeded
+    [[nodiscard]] AxrResult setGlyphUniformBufferData() const;
 };

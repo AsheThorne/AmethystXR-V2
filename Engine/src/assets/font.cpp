@@ -67,6 +67,15 @@ AxrFont::AxrFont(const AxrFontConfig& config, const uint16_t id):
         m_Material = std::move(material);
     }
 
+    AxrUniformBuffer fontDataUniformBuffer;
+    if (AXR_FAILED(
+        axrEngineAssetCreateUniformBuffer(AXR_ENGINE_ASSET_UNIFORM_BUFFER_FONT_DATA, fontDataUniformBuffer)
+    )) {
+        axrLogErrorLocation("Font data uniform buffer is invalid.");
+    } else {
+        m_FontDataUniformBuffer = std::move(fontDataUniformBuffer);
+    }
+
     AxrUniformBuffer glyphUniformBuffer;
     if (AXR_FAILED(axrEngineAssetCreateUniformBuffer(AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS, glyphUniformBuffer))) {
         axrLogErrorLocation("Glyph uniform buffer is invalid.");
@@ -82,6 +91,7 @@ AxrFont::AxrFont(const AxrFont& src) {
     m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
     m_ID = src.m_ID;
     m_Material = src.m_Material;
+    m_FontDataUniformBuffer = src.m_FontDataUniformBuffer;
     m_GlyphUniformBuffer = src.m_GlyphUniformBuffer;
     m_Data = src.m_Data;
 }
@@ -92,6 +102,7 @@ AxrFont::AxrFont(AxrFont&& src) noexcept {
     m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
     m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
     m_Material = std::move(src.m_Material);
+    m_FontDataUniformBuffer = std::move(src.m_FontDataUniformBuffer);
     m_GlyphUniformBuffer = std::move(src.m_GlyphUniformBuffer);
     m_Data = std::move(src.m_Data);
 
@@ -114,6 +125,7 @@ AxrFont& AxrFont::operator=(const AxrFont& src) {
         m_AtlasLayoutFilePath = src.m_AtlasLayoutFilePath;
         m_ID = src.m_ID;
         m_Material = src.m_Material;
+        m_FontDataUniformBuffer = src.m_FontDataUniformBuffer;
         m_GlyphUniformBuffer = src.m_GlyphUniformBuffer;
         m_Data = src.m_Data;
     }
@@ -130,6 +142,7 @@ AxrFont& AxrFont::operator=(AxrFont&& src) noexcept {
         m_AtlasImageSamplerName = std::move(src.m_AtlasImageSamplerName);
         m_AtlasLayoutFilePath = std::move(src.m_AtlasLayoutFilePath);
         m_Material = std::move(src.m_Material);
+        m_FontDataUniformBuffer = std::move(src.m_FontDataUniformBuffer);
         m_GlyphUniformBuffer = std::move(src.m_GlyphUniformBuffer);
         m_Data = std::move(src.m_Data);
 
@@ -153,6 +166,10 @@ uint16_t AxrFont::getID() const {
 
 const AxrMaterial& AxrFont::getMaterial() const {
     return m_Material;
+}
+
+const AxrUniformBuffer& AxrFont::getFontDataUniformBuffer() const {
+    return m_FontDataUniformBuffer;
 }
 
 const AxrUniformBuffer& AxrFont::getGlyphUniformBuffer() const {
@@ -181,6 +198,56 @@ AxrResult AxrFont::loadFile() const {
         return AXR_SUCCESS;
     }
 
+    // ----------------------------------------- //
+    // Process
+    // ----------------------------------------- //
+
+    AxrResult axrResult = AXR_SUCCESS;
+
+    axrResult = loadAtlasLayoutData();
+    if (AXR_FAILED(axrResult)) {
+        return axrResult;
+    }
+
+    axrResult = setFontUniformBufferData();
+    if (AXR_FAILED(axrResult)) {
+        return axrResult;
+    }
+
+    axrResult = setGlyphUniformBufferData();
+    if (AXR_FAILED(axrResult)) {
+        return axrResult;
+    }
+
+    return AXR_SUCCESS;
+}
+
+void AxrFont::unloadFile() const {
+    m_GlyphUniformBuffer.clear();
+    m_FontDataUniformBuffer.clear();
+    m_Data.cleanup();
+}
+
+// ---- Private Functions ----
+
+void AxrFont::cleanup() {
+    unloadFile();
+
+    m_Name.clear();
+    m_AtlasImageName.clear();
+    m_AtlasImageSamplerName.clear();
+    m_AtlasLayoutFilePath.clear();
+    m_ID = 0;
+    m_Material.cleanup();
+    m_FontDataUniformBuffer.cleanup();
+    m_GlyphUniformBuffer.cleanup();
+}
+
+AxrResult AxrFont::loadAtlasLayoutData() const {
+    // ----------------------------------------- //
+    // Validation
+    // ----------------------------------------- //
+
     if (m_AtlasLayoutFilePath.empty()) {
         axrLogErrorLocation("File path is empty.");
         return AXR_ERROR;
@@ -189,6 +256,8 @@ AxrResult AxrFont::loadFile() const {
     // ----------------------------------------- //
     // Process
     // ----------------------------------------- //
+
+    AxrResult axrResult = AXR_SUCCESS;
 
     const auto readDataError = [this](std::ifstream& file) -> AxrResult {
         axrLogErrorLocation("Json data is invalid.");
@@ -239,6 +308,7 @@ AxrResult AxrFont::loadFile() const {
         return readDataError(file);
     }
 
+    fontData.DistanceRange = atlas.value("distanceRange", 0.0f);
     fontData.AtlasWidth = atlas.value("width", 0);
     fontData.AtlasHeight = atlas.value("height", 0);
     fontData.Size = atlas.value("size", 0.0f);
@@ -247,14 +317,13 @@ AxrResult AxrFont::loadFile() const {
     fontData.UnderlineY = metrics.value("underlineY", 0.0f);
     fontData.UnderlineThickness = metrics.value("underlineThickness", 0.0f);
 
-    AxrResult axrResult = AXR_SUCCESS;
     for (const json& glyph : glyphs) {
         if (!glyph.is_object()) {
             axrResult = AXR_ERROR;
             break;
         }
 
-        float advance = glyph.value("advance", 0.0f);
+        const float advance = glyph.value("advance", 0.0f);
 
         Bounds atlasBoundsData{};
         if (glyph.contains("atlasBounds")) {
@@ -312,6 +381,34 @@ AxrResult AxrFont::loadFile() const {
     file.close();
     m_Data = std::move(fontData);
 
+    return AXR_SUCCESS;
+}
+
+AxrResult AxrFont::setFontUniformBufferData() const {
+    AxrResult axrResult = AXR_SUCCESS;
+
+    const AxrEngineAssetUniformBuffer_FontData fontData{
+        .SdfDistanceRange = m_Data.DistanceRange,
+        .SdfUnitRange = glm::vec2(m_Data.DistanceRange, m_Data.DistanceRange) /
+        glm::vec2(m_Data.AtlasWidth, m_Data.AtlasHeight),
+    };
+
+    axrResult = m_FontDataUniformBuffer.setData(
+        0,
+        sizeof(fontData),
+        &fontData
+    );
+    if (AXR_FAILED(axrResult)) {
+        axrLogErrorLocation("Failed to set glyph uniform buffer data.");
+        return AXR_ERROR;
+    }
+
+    return AXR_SUCCESS;
+}
+
+AxrResult AxrFont::setGlyphUniformBufferData() const {
+    AxrResult axrResult = AXR_SUCCESS;
+
     std::vector<AxrEngineAssetUniformBuffer_UIGlyph> uiGlyphUniformBufferData;
     uiGlyphUniformBufferData.reserve(m_Data.Glyphs.size());
     uint32_t index = 0;
@@ -343,23 +440,4 @@ AxrResult AxrFont::loadFile() const {
     }
 
     return AXR_SUCCESS;
-}
-
-void AxrFont::unloadFile() const {
-    m_GlyphUniformBuffer.clear();
-    m_Data.cleanup();
-}
-
-// ---- Private Functions ----
-
-void AxrFont::cleanup() {
-    unloadFile();
-
-    m_Name.clear();
-    m_AtlasImageName.clear();
-    m_AtlasImageSamplerName.clear();
-    m_AtlasLayoutFilePath.clear();
-    m_ID = 0;
-    m_Material.cleanup();
-    m_GlyphUniformBuffer.cleanup();
 }

@@ -121,6 +121,10 @@ AxrResult axrEngineAssetCreateUniformBuffer_UIElements(AxrUniformBuffer& uniform
 /// @param uniformBuffer Output created uniform buffer
 /// @returns AXR_SUCCESS if the function succeeded
 AxrResult axrEngineAssetCreateUniformBuffer_UIGlyphs(AxrUniformBuffer& uniformBuffer);
+/// Create the 'Font Data' engine asset uniform buffer
+/// @param uniformBuffer Output created uniform buffer
+/// @returns AXR_SUCCESS if the function succeeded
+AxrResult axrEngineAssetCreateUniformBuffer_FontData(AxrUniformBuffer& uniformBuffer);
 
 #ifdef AXR_SUPPORTED_GRAPHICS_VULKAN
 // ---------------------------------------------------------------------------------- //

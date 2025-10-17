@@ -8,12 +8,17 @@ layout (std140, binding = 1) uniform UIElement {
     vec4 textColor;
 } uiElement;
 
-layout (std140, binding = 2) uniform UIGlyph {
+layout (std140, binding = 2) uniform FontData {
+    float sdfDistanceRange;
+    vec2 sdfUnitRange;
+} font;
+
+layout (std140, binding = 3) uniform UIGlyph {
     vec2 size;
     vec2 atlasOffset;
 } uiGlyph;
 
-layout (binding = 3) uniform sampler2D texAtlas;
+layout (binding = 4) uniform sampler2D texAtlas;
 
 layout (location = 0) out vec4 outColor;
 
@@ -26,11 +31,8 @@ vec2 atlasUV() {
 }
 
 float screenPxRange() {
-    // TODO: Pre calculate the unit range and pass it in uniform buffer
-    //  The '2' is the distanceRange value in the font atlas
-    vec2 unitRange = vec2(2.0) / vec2(textureSize(texAtlas, 0));
     vec2 screenTexSize = vec2(1.0) / fwidth(atlasUV());
-    return max(0.5 * dot(unitRange, screenTexSize), 1.0);
+    return max(0.5 * dot(font.sdfUnitRange, screenTexSize), 1.0);
 }
 
 void main() {
