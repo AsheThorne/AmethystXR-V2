@@ -1550,10 +1550,18 @@ void AxrVulkanGraphicsSystem::renderClayUI(
         .XrSessionPipeline = VK_NULL_HANDLE,
     };
 
-    const vk::DeviceSize uniformBufferAlignment = AxrVulkanUniformBufferData::calculateUniformBufferAlignment(
+    const vk::DeviceSize elementUniformBufferAlignment = AxrVulkanUniformBufferData::calculateUniformBufferAlignment(
         m_PhysicalDevice,
         axrEngineAssetGetUniformBufferInstanceSize(
             AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_ELEMENTS
+        ),
+        m_Dispatch
+    );
+
+    const vk::DeviceSize glyphUniformBufferAlignment = AxrVulkanUniformBufferData::calculateUniformBufferAlignment(
+        m_PhysicalDevice,
+        axrEngineAssetGetUniformBufferInstanceSize(
+            AXR_ENGINE_ASSET_UNIFORM_BUFFER_UI_GLYPHS
         ),
         m_Dispatch
     );
@@ -1627,7 +1635,7 @@ void AxrVulkanGraphicsSystem::renderClayUI(
          ++renderCommandIndex
     ) {
         const AxrVulkanMaterialForRendering* materialForRendering = nullptr;
-        uint32_t uiElementUniformBufferDataOffset = renderCommandIndex * uniformBufferAlignment;
+        uint32_t uiElementUniformBufferDataOffset = renderCommandIndex * elementUniformBufferAlignment;
 
         const Clay_RenderCommand clayRenderCommand =
             uiCanvasConfig.ClayRenderCommands.internalArray[renderCommandIndex];
@@ -1719,8 +1727,7 @@ void AxrVulkanGraphicsSystem::renderClayUI(
                     continue;
                 }
 
-                // TODO: Get the proper alignment. don't hard code 64
-                uint32_t uiGlyphUniformBufferDataOffset = 64 * glyph->UniformBufferIndex;
+                uint32_t uiGlyphUniformBufferDataOffset = glyphUniformBufferAlignment * glyph->UniformBufferIndex;
 
                 float glyphWidth = (glyph->PlaneBounds.Right - glyph->PlaneBounds.Left) * textFontSize;
                 float glyphHeight = (glyph->PlaneBounds.Top - glyph->PlaneBounds.Bottom) * textFontSize;
