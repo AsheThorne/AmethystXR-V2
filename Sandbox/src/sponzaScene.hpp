@@ -56,11 +56,12 @@ private:
     axr::Entity_T m_CameraEntity;
     axr::Entity_T m_XrHeadEntity;
     axr::Entity_T m_XrHandEntity;
+    axr::ActionSet m_UIActionSet = axr::ActionSet(nullptr);
 
     axr::UIImageData m_UIImageData;
-    float accumulatedDeltaTime = 0.0f;
-    uint32_t accumulatedDeltaTimeCount = 0;
-    std::string fpsString;
-    std::string deltaTimeString;
+    float m_AccumulatedDeltaTime = 0.0f;
+    uint32_t m_AccumulatedDeltaTimeCount = 0;
+    std::string m_FpsString;
+    std::string m_DeltaTimeString;
     uint16_t m_FontID = 0;
 };

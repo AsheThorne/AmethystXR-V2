@@ -1395,7 +1395,11 @@ AxrResult AxrVulkanGraphicsSystem::renderCurrentFrame(
 
         renderCommands.beginRenderPass(viewIndex);
         renderCommands.setViewport(viewIndex);
-        renderCommands.setScissor(viewIndex);
+        renderCommands.setScissor(
+            viewIndex,
+            vk::Offset2D(0.0f, 0.0f),
+            renderCommands.getSwapchainExtent(viewIndex)
+        );
 
         // TODO: Use Forward+ rendering technique
 
@@ -1630,18 +1634,21 @@ void AxrVulkanGraphicsSystem::renderClayUI(
     };
 
     uint32_t imageIndex = 0;
+    uint32_t skippedRenderCommands = 0;
     for (int32_t renderCommandIndex = 0;
          renderCommandIndex < uiCanvasConfig.ClayRenderCommands.length;
          ++renderCommandIndex
     ) {
         const AxrVulkanMaterialForRendering* materialForRendering = nullptr;
-        uint32_t uiElementUniformBufferDataOffset = renderCommandIndex * elementUniformBufferAlignment;
+        uint32_t uiElementUniformBufferDataOffset = (renderCommandIndex - skippedRenderCommands) *
+            elementUniformBufferAlignment;
 
         const Clay_RenderCommand clayRenderCommand =
             uiCanvasConfig.ClayRenderCommands.internalArray[renderCommandIndex];
 
         switch (clayRenderCommand.commandType) {
             case CLAY_RENDER_COMMAND_TYPE_NONE: {
+                skippedRenderCommands++;
                 continue;
             }
             case CLAY_RENDER_COMMAND_TYPE_RECTANGLE: {
@@ -1663,12 +1670,28 @@ void AxrVulkanGraphicsSystem::renderClayUI(
                 break;
             }
             case CLAY_RENDER_COMMAND_TYPE_SCISSOR_START: {
-                axrLogErrorLocation("`Scissor Start` clay render command not supported.");
-                break;
+                skippedRenderCommands++;
+                renderCommands.setScissor(
+                    viewIndex,
+                    vk::Offset2D(
+                        static_cast<int32_t>(clayRenderCommand.boundingBox.x),
+                        static_cast<int32_t>(clayRenderCommand.boundingBox.y)
+                    ),
+                    vk::Extent2D(
+                        static_cast<int32_t>(clayRenderCommand.boundingBox.width),
+                        static_cast<int32_t>(clayRenderCommand.boundingBox.height)
+                    )
+                );
+                continue;
             }
             case CLAY_RENDER_COMMAND_TYPE_SCISSOR_END: {
-                axrLogErrorLocation("`Scissor End` clay render command not supported.");
-                break;
+                skippedRenderCommands++;
+                renderCommands.setScissor(
+                    viewIndex,
+                    vk::Offset2D(0.0f, 0.0f),
+                    renderCommands.getSwapchainExtent(viewIndex)
+                );
+                continue;
             }
             case CLAY_RENDER_COMMAND_TYPE_CUSTOM: {
                 axrLogErrorLocation("`Custom` clay render command not supported.");
@@ -1676,6 +1699,7 @@ void AxrVulkanGraphicsSystem::renderClayUI(
             }
             default: {
                 axrLogErrorLocation("Unknown clay render command.");
+                skippedRenderCommands++;
                 continue;
             }
         }

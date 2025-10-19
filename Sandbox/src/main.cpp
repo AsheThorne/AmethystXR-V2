@@ -141,7 +141,45 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
                         }
                     ),
                 }
-            )
+            ),
+            axr::ActionSetConfig(
+                "ui",
+                "UI",
+                std::vector<axr::BoolInputActionConfig>{
+                    axr::BoolInputActionConfig(
+                        axr::BoolInputActionConfig(
+                            "click",
+                            "Click",
+                            axr::ActionXrVisibilityEnum::Auto,
+                            std::vector{
+                                axr::BoolInputActionEnum::MouseClickL,
+                            }
+                        )
+                    ),
+                },
+                std::vector<axr::FloatInputActionConfig>{
+                    axr::FloatInputActionConfig(
+                        "scroll",
+                        "Scroll",
+                        axr::ActionXrVisibilityEnum::Auto,
+                        std::vector{
+                            axr::FloatInputActionEnum::MouseWheel,
+                        }
+                    ),
+                },
+                std::vector<axr::Vec2InputActionConfig>{
+                    axr::Vec2InputActionConfig(
+                        "cursor_position",
+                        "Cursor Position",
+                        axr::ActionXrVisibilityEnum::Auto,
+                        std::vector{
+                            axr::Vec2InputActionEnum::MousePosition,
+                        }
+                    ),
+                },
+                std::vector<axr::PoseInputActionConfig>{},
+                std::vector<axr::HapticOutputActionConfig>{}
+            ),
         },
         std::vector<axr::XrInteractionProfileEnum>{
             axr::XrInteractionProfileEnum::ValveIndexController,

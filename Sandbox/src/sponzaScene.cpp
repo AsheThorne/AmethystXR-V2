@@ -351,8 +351,9 @@ axr::Result SponzaScene::setup() {
         return axr::Result::Error;
     }
 
-    fpsString = "FPS: 0";
-    deltaTimeString = "DeltaTime: 0";
+    m_FpsString = "FPS: 0";
+    m_DeltaTimeString = "DeltaTime: 0";
+    m_UIActionSet = m_Application.getActionSystem().getActionSet("ui");
 
     return axr::Result::Success;
 }
@@ -367,27 +368,39 @@ axr::Result SponzaScene::setAsActiveScene() const {
 
 void SponzaScene::update() {
     const float deltaTime = m_Application.getDeltaTime();
-    accumulatedDeltaTime += deltaTime;
-    accumulatedDeltaTimeCount++;
+    m_AccumulatedDeltaTime += deltaTime;
+    m_AccumulatedDeltaTimeCount++;
 
-    if (accumulatedDeltaTime >= 0.5f) {
-        const float averageDeltaTime = accumulatedDeltaTime / static_cast<float>(accumulatedDeltaTimeCount);
+    if (m_AccumulatedDeltaTime >= 0.5f) {
+        const float averageDeltaTime = m_AccumulatedDeltaTime / static_cast<float>(m_AccumulatedDeltaTimeCount);
         const auto fps = static_cast<uint32_t>(std::round(1.0f / averageDeltaTime));
 
-        fpsString = "FPS: " + std::to_string(fps);
-        deltaTimeString = "DeltaTime: " + std::to_string(averageDeltaTime);
+        m_FpsString = "FPS: " + std::to_string(fps);
+        m_DeltaTimeString = "DeltaTime: " + std::to_string(averageDeltaTime);
 
-        accumulatedDeltaTime = 0.0f;
-        accumulatedDeltaTimeCount = 0;
+        m_AccumulatedDeltaTime = 0.0f;
+        m_AccumulatedDeltaTimeCount = 0;
     }
 }
 
 axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType, Clay_Context* context) {
     // Only handle UI for the window
     if (platformType != axr::PlatformType::Window) return {};
-
     Clay_SetCurrentContext(context);
+
+    const axr::Vec2 cursorPos = m_UIActionSet.getVec2InputAction("cursor_position").getValue();
+    const bool click = m_UIActionSet.getBoolInputAction("click").getValue();
+    const float scroll = m_UIActionSet.getFloatInputAction("scroll").getValue();
+
+    Clay_SetPointerState(Clay_Vector2{.x = cursorPos.x, .y = cursorPos.y}, click);
+    Clay_UpdateScrollContainers(
+        true,
+        Clay_Vector2{.x = 0.0f, .y = scroll},
+        m_Application.getDeltaTime()
+    );
+
     Clay_SetMeasureTextFunction(axrApplicationHandleClayMeasureText, m_Application.toRaw());
+
     Clay_BeginLayout();
 
     // TODO: Maybe make axr versions of all these functions. that way we won't need to set the context and the measure text function here
@@ -401,7 +414,12 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                         .width = CLAY_SIZING_GROW(0),
                         .height = CLAY_SIZING_GROW(0)
                     },
-                    .padding = CLAY_PADDING_ALL(16),
+                    .padding = Clay_Padding{
+                        .left = 16,
+                        .right = 16,
+                        .top = 60,
+                        .bottom = 16,
+                    },
                     .childGap = 16,
                 },
             }
@@ -435,6 +453,10 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                         .topRight = 25,
                         .bottomLeft = 25,
                         .bottomRight = 25,
+                    },
+                    .clip = Clay_ClipElementConfig{
+                        .vertical = true,
+                        .childOffset = Clay_GetScrollOffset(),
                     },
                     .border = Clay_BorderElementConfig{
                         .color = Clay_Color{
@@ -494,17 +516,17 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                         }
                     );
                     Clay__OpenTextElement(
-                        Clay_String(false, fpsString.length(), fpsString.c_str()),
+                        Clay_String(false, m_FpsString.length(), m_FpsString.c_str()),
                         textElementConfig
                     );
                     Clay__OpenTextElement(
-                        Clay_String(false, deltaTimeString.length(), deltaTimeString.c_str()),
+                        Clay_String(false, m_DeltaTimeString.length(), m_DeltaTimeString.c_str()),
                         textElementConfig
                     );
                 }
                 Clay__CloseElement();
             }
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 20; ++i) {
                 { // ---- Profile Picture Outer ----
                     std::string outer_id = std::string("ProfilePictureOuter") + std::to_string(i);
                     Clay__OpenElement();

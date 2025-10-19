@@ -105,6 +105,13 @@ public:
         return m_RenderTarget.getUIRegion();
     }
 
+    /// Get the swapchain extent
+    /// @param viewIndex View index
+    /// @returns The swapchain extent
+    [[nodiscard]] vk::Extent2D getSwapchainExtent(uint32_t viewIndex) const {
+        return m_RenderTarget.getSwapchainExtent(viewIndex);
+    }
+
     /// Update all uniform buffers for the current frame
     /// @param viewIndex The view index
     /// @param sceneData The active scene
@@ -544,15 +551,13 @@ public:
 
     /// Add a vkCmdSetScissor command to the render target's command buffer
     /// @param viewIndex The view index
-    void setScissor(const uint32_t viewIndex) const {
+    void setScissor(const uint32_t viewIndex, const vk::Offset2D offset, const vk::Extent2D extent) const {
         const vk::CommandBuffer commandBuffer = m_RenderTarget.getRenderingCommandBuffer(viewIndex);
         if (commandBuffer == VK_NULL_HANDLE) return;
 
-        const vk::Extent2D swapchainExtent = m_RenderTarget.getSwapchainExtent(viewIndex);
-
         const vk::Rect2D scissor(
-            vk::Offset2D(0.0f, 0.0f),
-            swapchainExtent
+            offset,
+            extent
         );
 
         commandBuffer.setScissor(0, 1, &scissor, m_Dispatch);
