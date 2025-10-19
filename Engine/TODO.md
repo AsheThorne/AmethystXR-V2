@@ -2,18 +2,12 @@
 
 ## Graphics
 
-### Uniform Buffers
-- [ ] Implement a backup strategy for dynamic uniform buffers that aren't supported on certain physical devices
-
-  Maybe use a dynamic storage buffer instead?
-
 ### UI
 
-- [ ] Implement CLAY_RENDER_COMMAND_TYPE_SCISSOR_START
-- [ ] Implement CLAY_RENDER_COMMAND_TYPE_SCISSOR_END
 - [ ] Correct issues with OpenXR UI
 - [ ] Implement UI components to use in world space
 - [ ] Implement billboard ui effect
+- [ ] Look into instance rendering ui elements
 
 # Low Priority
 

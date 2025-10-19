@@ -449,6 +449,8 @@ AxrResult AxrApplication::setupGlobalAssetCollection() {
 }
 
 AxrResult AxrApplication::setupClay() {
+    Clay_SetMaxElementCount(4096);
+    
     const uint64_t totalMemorySize = Clay_MinMemorySize();
     m_ClayArena = Clay_CreateArenaWithCapacityAndMemory(totalMemorySize, malloc(totalMemorySize));
 
@@ -470,13 +472,6 @@ AxrResult AxrApplication::setupClay() {
 
     Clay_SetMeasureTextFunction(axrApplicationHandleClayMeasureText, this);
 
-    // We chose 256 since most vulkan gpus have a uniform buffer range of 65536 or more. And the worst possible offset
-    // alignment is 256. So as long as sizeof(AxrEngineAssetUniformBuffer_UIElement) is less than 256, then we can
-    // have a max of 65536 / 256 = 256 elements.
-    // NOTE: If we need more than we should use a dynamic storage buffer instead of a dynamic uniform buffer.
-    //  Or we just accept having a max of 128 elements instead (65536 / 512 = 128).
-    // TODO: Change this to 1028. And implement a fallback in case the dynamic uniform buffer doesn't support it.
-    Clay_SetMaxElementCount(256);
     static_assert(
         sizeof(AxrEngineAssetUniformBuffer_UIElement) <= 256,
         "UI Element size is larger than 256 bytes. Consider changing to a dynamic storage buffer instead."

@@ -414,12 +414,7 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                         .width = CLAY_SIZING_GROW(0),
                         .height = CLAY_SIZING_GROW(0)
                     },
-                    .padding = Clay_Padding{
-                        .left = 16,
-                        .right = 16,
-                        .top = 60,
-                        .bottom = 16,
-                    },
+                    .padding = CLAY_PADDING_ALL(16),
                     .childGap = 16,
                 },
             }
