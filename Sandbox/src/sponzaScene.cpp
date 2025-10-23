@@ -376,7 +376,7 @@ void SponzaScene::update() {
         const auto fps = static_cast<uint32_t>(std::round(1.0f / averageDeltaTime));
 
         m_FpsString = "FPS: " + std::to_string(fps);
-        m_DeltaTimeString = "DeltaTime: " + std::to_string(averageDeltaTime);
+        m_DeltaTimeString = "ms: " + std::to_string(averageDeltaTime * 1000);
 
         m_AccumulatedDeltaTime = 0.0f;
         m_AccumulatedDeltaTimeCount = 0;
