@@ -5,7 +5,7 @@ enum AxrResult {
     // ---- Failed----
     AXR_ERROR = -1,
     AXR_DONT_RENDER = -2,
-    
+
     // ---- Succeeded ----
     AXR_SUCCESS = 0,
 };

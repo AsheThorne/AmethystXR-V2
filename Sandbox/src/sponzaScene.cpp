@@ -385,7 +385,8 @@ void SponzaScene::update() {
 
 axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType, Clay_Context* context) {
     // Only handle UI for the window
-    if (platformType != axr::PlatformType::Window) return {};
+    // if (platformType != axr::PlatformType::Window) return {};
+    // TODO: I think we need a different context per platform. Scrolling doesn't work because they share the same state
     Clay_SetCurrentContext(context);
 
     const axr::Vec2 cursorPos = m_UIActionSet.getVec2InputAction("cursor_position").getValue();
@@ -511,11 +512,11 @@ axr::UICanvasConfig SponzaScene::uiCallback(const axr::PlatformType platformType
                         }
                     );
                     Clay__OpenTextElement(
-                        Clay_String(false, m_FpsString.length(), m_FpsString.c_str()),
+                        Clay_String(false, static_cast<int32_t>(m_FpsString.length()), m_FpsString.c_str()),
                         textElementConfig
                     );
                     Clay__OpenTextElement(
-                        Clay_String(false, m_DeltaTimeString.length(), m_DeltaTimeString.c_str()),
+                        Clay_String(false, static_cast<int32_t>(m_DeltaTimeString.length()), m_DeltaTimeString.c_str()),
                         textElementConfig
                     );
                 }

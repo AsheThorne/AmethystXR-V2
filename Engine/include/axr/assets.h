@@ -1024,7 +1024,7 @@ union AxrEngineAssetUniformBuffer_UIElement {
 
 /// Engine asset uniform buffer named 'UI Glyphs' structure
 struct alignas(16) AxrEngineAssetUniformBuffer_UIGlyph {
-    /// Size in pixels
+    /// Size in the UV Atlas (0 - 1)
     alignas(8) glm::vec2 Size;
     /// Normalized offset (0 - 1)
     alignas(8) glm::vec2 AtlasOffset;
